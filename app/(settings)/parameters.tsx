@@ -2,29 +2,35 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 
 type SProps = {
     icon?: typeof Ionicons.defaultProps,
     title?: string,
     hasNotification?: boolean,
-    isLast?: boolean
+    isLast?: boolean;
+    route?: string;
 }
 const SettingsItem = ({
     icon,
     title,
     hasNotification,
-    isLast
-}: SProps) => (
-    <TouchableOpacity style={[styles.settingsItem, !isLast && styles.borderBottom]}>
-        <Ionicons name={icon} size={24} color="#fff" style={styles.icon} />
-        <Text style={styles.settingsText}>{title}</Text>
-        <View style={styles.rightContainer}>
-            {hasNotification && <View style={styles.notificationDot} />}
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-        </View>
-    </TouchableOpacity>
-);
+    isLast,
+    route
+}: SProps) => {
+
+    const router = useRouter();
+    return (
+        <TouchableOpacity style={[styles.settingsItem, !isLast && styles.borderBottom]} onPress={() => router.push(route as Href<string>)}>
+            <Ionicons name={icon} size={24} color="#fff" style={styles.icon} />
+            <Text style={styles.settingsText}>{title}</Text>
+            <View style={styles.rightContainer}>
+                {hasNotification && <View style={styles.notificationDot} />}
+                <Ionicons name="chevron-forward" size={24} color="#666" />
+            </View>
+        </TouchableOpacity>
+    );
+}
 
 const SentProjects = () => {
 
@@ -33,23 +39,24 @@ const SentProjects = () => {
         <SafeAreaView className=" h-full">
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.push("/")}>
+                    <TouchableOpacity onPress={() => router.push("/accueil")}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Paramètre de compte</Text>
                 </View>
                 <ScrollView>
                     <View style={styles.section}>
-                        <SettingsItem icon="person-outline" title="Information du compte" />
-                        <SettingsItem icon="finger-print" title="Identification" hasNotification />
+                        <SettingsItem icon="person-outline" title="Information du compte" route='/(settings)/edit-profile' />
+                        <SettingsItem icon="finger-print" title="modifier votre Identification" hasNotification route='/(settings)/AccountIdentification' />
                         <SettingsItem icon="language" title="Langue" isLast />
                     </View>
                     <View style={styles.section}>
-                        <SettingsItem icon="lock-closed-outline" title="Modifier mot de passe" />
+                        <SettingsItem icon="lock-closed-outline" title="Modifier mot de passe" route='/(settings)/modifier-pwd' />
                         <SettingsItem icon="call-outline" title="Modifier numéro de téléphone" isLast />
+                        {/* <SettingsItem icon="person" title="Modifier informations personnelles" isLast route='/(settings)/edit-profile' /> */}
                     </View>
                     <View style={styles.section}>
-                        <SettingsItem icon="notifications-outline" title="Notification" />
+                        <SettingsItem icon="notifications-outline" title="Notification" route='/notifications' />
                         <SettingsItem icon="help-circle-outline" title="Centre d'aide" />
                         <SettingsItem icon="shield-outline" title="Politique de confidentialité" />
                         <SettingsItem icon="person-add-outline" title="Invité un ami" />

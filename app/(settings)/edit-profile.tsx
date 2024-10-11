@@ -3,13 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
+
 // Profile Edit Screen
 const ProfileEditScreen: React.FC = () => {
-    const [username, setUsername] = useState('Raphael');
-    const [lastname, setLastname] = useState('Hiol');
-    const [city, setCity] = useState('Douala');
-    const [street, setStreet] = useState('Akwa');
-    const [description, setDescription] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.');
+    const [username, setUsername] = useState('firstname');
+    const [lastname, setLastname] = useState('lastname');
+    const [city, setCity] = useState('Paris');
+    const [street, setStreet] = useState('Roisi');
+    const [description, setDescription] = useState('See the impact of your donations. Our app provides transparency into how your contributions are used, so you can feel confident in your support.');
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 p-4">
@@ -67,6 +68,7 @@ const ProfileEditScreen: React.FC = () => {
                 <View className="mb-4">
                     <Text className="text-white mb-2">Description</Text>
                     <TextInput
+
                         className="bg-gray-800 rounded-lg p-3 text-white"
                         multiline
                         numberOfLines={6}
