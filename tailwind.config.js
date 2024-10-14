@@ -33,6 +33,9 @@ module.exports = {
           pbold: ["Poppins-Bold", "sans-serif"],
           pblack: ["Poppins-Black", "sans-serif"],
         }
+      },
+      backgroundImage: {
+        "login-image": "url('./assets/images/1riche1povreloginimg.png')",
       }
     },
   },

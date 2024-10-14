@@ -20,14 +20,14 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.maebrie2017.unrichcom"
+      "package": "com.bricefrkc.unrichcom"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "65a7038a-5dfd-4cd1-922a-048c972de06b"
+        "projectId": "a669ecc2-3482-464e-b74a-1282b50b12d4"
       }
     }
   }
