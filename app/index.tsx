@@ -1,3 +1,7 @@
-import LoginScreen from "./(auth)/login";
+// import SignUpScreen from "./(auth)/register";
 
-export default LoginScreen;
+// export default SignUpScreen;
+
+import SignUpScreen from "./(auth)/login";
+
+export default SignUpScreen;

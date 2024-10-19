@@ -34,5 +34,6 @@
     "plugins": [
       "expo-secure-store"
     ]
-  }
+  },
+  "jsEngine": "hermes"
 }
