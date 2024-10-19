@@ -56,7 +56,7 @@ export default function TabulateLayoutPage() {
         />
 
         <Tabs.Screen
-          name="recherche"
+          name="[query]"
           options={{
             title: 'Recherche',
             tabBarLabel: "Recherche",

@@ -31,7 +31,7 @@ const FormField = ({
         {title === 'email' ? (
           <Ionicons name="mail" size={24} color="gray" />
         ) : title === "Password" ? (
-          <Ionicons name="lock-closed" size={24} color="blue" />
+          <Ionicons name="lock-closed" size={24} color="#2563eb" />
         ) : null}
 
         <TextInput

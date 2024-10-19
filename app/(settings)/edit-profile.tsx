@@ -2,15 +2,50 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth, useUser } from '@clerk/clerk-expo';
+import * as ImagePicker from 'expo-image-picker';
 
 
 // Profile Edit Screen
 const ProfileEditScreen: React.FC = () => {
-    const [username, setUsername] = useState('firstname');
-    const [lastname, setLastname] = useState('lastname');
+    const { user } = useUser();
+    const [fullName, setFullName] = useState(user?.fullName);
+    const [username, setUsername] = useState(user?.username);
     const [city, setCity] = useState('Paris');
     const [street, setStreet] = useState('Roisi');
     const [description, setDescription] = useState('See the impact of your donations. Our app provides transparency into how your contributions are used, so you can feel confident in your support.');
+
+    const [edit, setEdit] = useState(false);
+    // save user
+    const onSaveUser = async () => {
+        try {
+            await user?.update({ firstName: fullName!, username: username! });
+            setEdit(false);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setEdit(false);
+        }
+    };
+
+    const onCaptureImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.75,
+            base64: true, //<--- important
+        });
+
+        if (!result.canceled) {
+            const base64 = `data:image/png;base64,${result.assets[0].base64}`;
+            console.log(base64);
+
+            user?.setProfileImage({
+                file: base64,
+            });
+        }
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 p-4">
@@ -27,8 +62,8 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={username}
-                            onChangeText={setUsername}
+                            value={username as string}
+                            onChangeText={(text) => setUsername(text)}
                         />
                     </View>
                 </View>
@@ -38,8 +73,8 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={lastname}
-                            onChangeText={setLastname}
+                            value={fullName as string}
+                            onChangeText={(text) => setFullName(text)}
                         />
                     </View>
                 </View>
@@ -50,7 +85,7 @@ const ProfileEditScreen: React.FC = () => {
                         <TextInput
                             className="flex-1 ml-2 text-white"
                             value={city}
-                            onChangeText={setCity}
+                            onChangeText={(text) => setCity(text)}
                         />
                     </View>
                 </View>
@@ -61,7 +96,7 @@ const ProfileEditScreen: React.FC = () => {
                         <TextInput
                             className="flex-1 ml-2 text-white"
                             value={street}
-                            onChangeText={setStreet}
+                            onChangeText={(text) => setStreet(text)}
                         />
                     </View>
                 </View>
@@ -73,7 +108,7 @@ const ProfileEditScreen: React.FC = () => {
                         multiline
                         numberOfLines={6}
                         value={description}
-                        onChangeText={setDescription}
+                        onChangeText={(text) => setDescription(text)}
                     />
                 </View>
             </ScrollView>

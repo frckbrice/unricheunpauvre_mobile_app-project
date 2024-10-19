@@ -13,8 +13,8 @@ const CustomHeader = () => {
         <BlurView
             intensity={10}
             tint={'systemMaterialDark'}
-            style={{ paddingTop: 40 }}
-            className={`pb-5 bg-gray-900  border-b border-gray-200`}
+            style={{ paddingTop: top }}
+            className={`pb-1 bg-gray-900  border-b-0.5 border-gray-700`}
         >
             <View
 

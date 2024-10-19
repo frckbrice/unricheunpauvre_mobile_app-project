@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bricefrkc.unrichcom"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +30,9 @@
       "eas": {
         "projectId": "a669ecc2-3482-464e-b74a-1282b50b12d4"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }

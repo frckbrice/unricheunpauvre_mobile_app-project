@@ -3,14 +3,18 @@
 
 
 const ProfileScreen: React.FC = () => {
+
+  const { user } = useUser()
+
+  const router = useRouter()
   return (
     <View className="">
       <View className="px-4">
         <View className="flex-row items-center mb-4">
           <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-20 h-20 rounded-full mr-4" />
           <View>
-            <Text className="text-white text-xl font-bold">Un riche un pauvre </Text>
-            <Text className="text-gray-400">Roisi Charles de Gaules</Text>
+            <Text className="text-white text-xl font-bold">{user?.username ?? user?.fullName ? user?.fullName : "NO NAME"} </Text>
+            <Text className="text-gray-400">{user?.emailAddresses[0].emailAddress ?? "NO EMAIL"}</Text>
           </View>
         </View>
         <View className="flex-row justify-around mb-4">
@@ -23,14 +27,17 @@ const ProfileScreen: React.FC = () => {
             <Text className="text-gray-400">J'aime</Text>
           </View>
         </View>
-        <TouchableOpacity className="bg-gray-800 p-2 rounded mb-4">
+        <TouchableOpacity
+          className="bg-gray-800 p-2 rounded mb-4"
+          onPress={() => router.push("/(settings)/edit-profile")}
+        >
           <Text className="text-white text-center">Éditer profil</Text>
         </TouchableOpacity>
         <View className="flex-row justify-around mb-4">
-          <TouchableOpacity className="border-b-2 border-blue-500 pb-2">
+          <TouchableOpacity className="border-b-2 border-blue-500 pb-2" >
             <Text className="text-white">Publication</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/(settings)/edit-profile")}>
             <Text className="text-gray-400">A propos de moi</Text>
           </TouchableOpacity>
           <TouchableOpacity>
@@ -43,13 +50,12 @@ const ProfileScreen: React.FC = () => {
   );
 };
 
-
-
-
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useUser } from '@clerk/clerk-expo';
 
 const Header = () => (
   <View className="flex-row justify-between items-center px-4 py-2 bg-gray-900">
@@ -59,11 +65,18 @@ const Header = () => (
   </View>
 );
 
-const PostCard = ({ name, location, time, content, imageUrl }: { name: string; location: string; time: string; content: string; imageUrl: string; }) => (
+const PostCard = ({
+  name,
+  location,
+  time,
+  content,
+  imageUrl }: { name: string; location: string; time: string; content: string; imageUrl: string; }) => (
 
   <View className="bg-gray-800 rounded-lg p-4 mb-4">
     <View className="flex-row items-center mb-2">
-      <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-10 h-10 rounded-full mr-2" />
+      <Image source={
+        { uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
+        className="w-10 h-10 rounded-full mr-2" />
       <View>
         <Text className="text-white font-medium">{name}</Text>
         <Text className="text-gray-400 text-sm">{location}</Text>

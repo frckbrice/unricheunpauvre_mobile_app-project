@@ -1,67 +1,122 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
-// Login Screen
-const LoginScreen: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+import * as React from 'react'
+import { TextInput, Button, View, ScrollView, Text } from 'react-native'
+import { useSignUp } from '@clerk/clerk-expo'
+import { useRouter } from 'expo-router'
+import { SafeAreaView } from "react-native-safe-area-context";
+//constants
+import { images } from "../../constants";
+
+// local components
+import FormField from "../../components/form-field";
+import CustomButton from "../../components/custom-button";
+import { Link, router } from "expo-router";
+
+export default function SignUpScreen() {
+    const { isLoaded, signUp, setActive } = useSignUp()
+    const router = useRouter()
+
+    // const [username, setUsername] = React.useState('')
+    const [emailAddress, setEmailAddress] = React.useState('')
+    const [password, setPassword] = React.useState('')
+    const [pendingVerification, setPendingVerification] = React.useState(false)
+    const [code, setCode] = React.useState('')
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+    const onSignUpPress = async () => {
+        if (!isLoaded) {
+            return
+        }
+        console.log("emailAddress", emailAddress, "password", password)
+        try {
+            await signUp.create({
+                emailAddress,
+                password,
+            })
+
+            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
+
+            setPendingVerification(true)
+        } catch (err: any) {
+            // See https://clerk.com/docs/custom-flows/error-handling
+            // for more info on error handling
+            console.error(JSON.stringify(err, null, 2))
+        }
+    }
+
+    const onPressVerify = async () => {
+        if (!isLoaded) {
+            return
+        }
+
+        try {
+            const completeSignUp = await signUp.attemptEmailAddressVerification({
+                code,
+            })
+
+            if (completeSignUp.status === 'complete') {
+                await setActive({ session: completeSignUp.createdSessionId })
+                router.replace('/home')
+            } else {
+                console.error(JSON.stringify(completeSignUp, null, 2))
+                router.replace('/')
+            }
+        } catch (err: any) {
+            // See https://clerk.com/docs/custom-flows/error-handling
+            // for more info on error handling
+            console.error(JSON.stringify(err, null, 2))
+        }
+    }
 
     return (
-        <SafeAreaView className="flex-1 bg-white p-4">
-            <View className="items-center mb-8 ">
-                <Image
-                    source={require('../../assets/images/adaptive-icon.png')}
-                    resizeMode='contain'
-                    className="w-5 h-5 mb-4"
-                />
-                <Text className="text-3xl font-bold text-blue-600">Bienvenue !</Text>
-            </View>
-            <Text className="text-center mb-8 text-gray-600">
-                Veuillez saisir votre adresse e-mail et votre mot de passe pour vous connecter
-            </Text>
-            <View className="mb-4">
-                <Text className="mb-2 text-gray-700">Adresse email</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
-                    <Ionicons name="mail-outline" size={24} color="gray" />
-                    <TextInput
-                        className="flex-1 ml-2"
-                        placeholder="Entrer votre adresse email"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                    />
+        <SafeAreaView className="h-full p-2">
+            <ScrollView>
+                <View className="w-full justify-center  px-4 my-6">
+                    {!pendingVerification && (
+                        <>
+                            <FormField
+                                title={"Email"}
+                                value={emailAddress}
+                                placeholder="Enter your username"
+                                handleChangeText={(email: string) => setEmailAddress(email)}
+                                inputStyle="mt-10"
+                            />
+                            <FormField
+                                title={"Password"}
+                                value={password}
+                                placeholder="Enter your password"
+                                handleChangeText={(pass: string) => setPassword(pass)}
+                                inputStyle="mt-7"
+                            />
+                            <CustomButton
+                                title="Sign Up"
+                                handlePress={onSignUpPress}
+                                isLoading={isSubmitting}
+                                containerStyles="my-6 bg-black  rounded-xl min-h-[62px] justify-center items-center p-4"
+                                textStyles='text-white font-bold text-xl '
+                            />
+                            <View className="flex-row justify-center items-center my-10 gap-2">
+                                <Text className="text-lg text-gray-700 font-pregular">
+                                    Have an account already?
+                                </Text>
+                                <Link
+                                    href="/sign-in"
+                                    className="text-lg font-psemibold text-blue-700"
+                                >
+                                    Sign In
+                                </Link>
+                            </View>
+                        </>
+                    )}
+                    {pendingVerification && (
+                        <>
+                            <TextInput value={code} placeholder="Code..." onChangeText={(code) => setCode(code)} />
+                            <Button title="Verify Email" onPress={onPressVerify} />
+                        </>
+                    )}
                 </View>
-            </View>
-            <View className="mb-4">
-                <Text className="mb-2 text-gray-700">Mot de passe</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
-                    <Ionicons name="lock-closed-outline" size={24} color="gray" />
-                    <TextInput
-                        className="flex-1 ml-2"
-                        placeholder="Entrer votre mot de passe"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
-                    <Ionicons name="eye-outline" size={24} color="gray" />
-                </View>
-            </View>
-            <TouchableOpacity>
-                <Text className="text-right text-blue-600 mb-4">Mot de passe oublié ?</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="bg-blue-600 rounded-lg p-3 mb-4">
-                <Text className="text-white text-center font-bold">CONNEXION</Text>
-            </TouchableOpacity>
-            <View className="flex-row justify-center">
-                <Text className="text-gray-600">Vous n'avez pas de compte ? </Text>
-                <TouchableOpacity>
-                    <Text className="text-blue-600 font-bold">S'inscrire</Text>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
-    );
-};
+            </ScrollView>
 
-export default LoginScreen;
+        </SafeAreaView>
+    )
+}
