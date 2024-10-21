@@ -18,7 +18,8 @@ export default function TabulateLayoutPage() {
       <Tabs
         initialRouteName="accueil"
         screenOptions={{
-          tabBarActiveTintColor: Colors.primary,
+          tabBarActiveTintColor: 'blue',
+          tabBarInactiveTintColor: 'gray',
 
           tabBarBackground: () => (
             // adding the blur with BlurView component.

@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import useApiOps from '@/hooks/use-api';
 import { Category, Publication } from '@/lib/types';
-import { getAllCategories, uploadPubData } from '@/lib/api';
+import { getAllCategories, uploadResourceData, } from '@/lib/api';
 import { SelectItem } from '@/components/picker';
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from 'react-hook-form';
@@ -50,7 +50,7 @@ const CreatePostScreen: React.FC = () => {
             idCat: Number(currentCat?.id),
         }
         console.log("from data: ", formData);
-        const result = await uploadPubData(formData);
+        const result = await uploadResourceData(formData, "Publication",);
         console.log("from poster file result: ", result);
     };
 
@@ -61,7 +61,7 @@ const CreatePostScreen: React.FC = () => {
                 selectType === "image"
                     ? ImagePicker.MediaTypeOptions.Images
                     : ImagePicker.MediaTypeOptions.Videos,
-            // allowsEditing: true, // now allow editing file.
+            allowsEditing: true, // now allow editing file.
             aspect: [4, 3],
             quality: 1,
             base64: true,

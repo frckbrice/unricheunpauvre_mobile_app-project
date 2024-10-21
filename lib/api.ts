@@ -7,25 +7,83 @@ import { AppError } from '@/utils/error-class';
 import { API_URL } from '@/constants/mock-data';
 // import { tokenCache } from '@/store/persist-token-cache';
 import axios from 'axios';
-import { Post, Publication } from '@/lib/types';
-import { useSignIn } from '@clerk/clerk-expo';
+import { Jaime, Post, Publication, User } from '@/lib/types';
 
 
-
-
+type TConnect = User;
 
 // getthe current user
-export const getCurrentUser = async () => {
+export const createUserAccount
+    = async (
+        mdpUser: string,
+        username: string,
+        endPoint: string,
+        nomUser?: string) => {
+        let dataObj, resouce;
+        if (endPoint.includes('User')) {
+            dataObj = {
+                nomUser: nomUser,
+                mdpUser: mdpUser,
+                username: username,
+                etatUser: false,
+                docUser: '',
+            } as TConnect;
+        }
+        else if (endPoint.includes('Auth/login')) {
+            dataObj = {
+                username: username,
+                password: mdpUser,
+            }
+        }
+
+        resouce = endPoint;
+        // const resouce = endPoint.toString().toLowerCase().includes('User') ? 'User' : 'Auth/login';
+        try {
+
+            const options = {
+                method: 'POST',
+                url: `${API_URL}/${resouce}`,
+                headers: {
+                    // 'Authorization': `Bearer ${token ?? ""}`,
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                data: JSON.stringify(dataObj)
+            }
+
+            const response = await axios.request(options);
+            console.log("\n\nfrom api file connect fct", response?.data);
+            return response?.data
+        } catch (error: any) {
+            console.error("Failed to connect to app: ", error);
+            throw new AppError(error.message);
+        }
+    }
+
+
+
+export const getAllResourcesById = async (resource: string, id: number): Promise<Jaime[]> => {
     try {
 
-        return null
+        const options = {
+            method: 'GET',
+            url: `${API_URL}/"${resource}"/${id}`,
+            headers: {
+                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+        }
+
+        const response = await axios.request(options);
+        console.log("\n\nfrom api file getAllLikesForAPub fct", response?.data);
+        return response?.data
 
     } catch (error: any) {
-
+        console.error(`from api file. Error fetching all resources ""${resource}"" by id ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
-
 
 // pull all videos
 export const getAllPublications = async (): Promise<Post[] | any> => {
@@ -44,16 +102,15 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
         }
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file getAllPublication fct", response?.data);
-        return response.data.map((resp: any) => ({
-            id: resp.id,
-            author: resp.user.username,
-            location: resp.data.user.location ?? "",
-            content: resp.libelePub ?? "",
-            imageUrl: resp.data.imagePub ?? "",
-            likes: resp.favories ?? "",
-            comments: resp.commentaires ?? "",
-            timeAgo: resp.datePub ?? "",
+        return response?.data?.map((resp: any) => ({
+            id: resp?.idPub,
+            author: resp?.username ?? "NO NAME",
+            location: resp?.location ?? "Anonymous",
+            content: resp?.libelePub ?? "No Content Yet",
+            imageUrl: resp?.imagePub,
+            likes: resp?.favories ?? "",
+            comments: resp?.commentaires ?? [],
+            timeAgo: resp?.datePub ?? "",
         }))
 
     } catch (error: any) {
@@ -62,18 +119,41 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
     }
 }
 
-// pull latest videos
-export const getSinglePub = async (pub_id: string) => {
+// update pub
+export const updateResource = async <T>(resource: string, id: number, data: Partial<T>): Promise<T> => {
 
-    console.log("inside getProjectById fct", pub_id);
+    try {
+
+        const options = {
+            method: 'PUT',
+            url: `${API_URL}/"${resource}"/${id}`,
+            headers: {
+                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+        }
+
+        const response = await axios.request(options);
+        return response?.data
+    } catch (error: any) {
+        console.error(`from api file. Error updating resource "${resource}" with id ${id} : ${error}`);
+        throw new AppError(error.message);
+    }
+}
+
+// pull latest videos
+export const getSingleResource = async (resource: string, id: string) => {
+
+    console.log("inside getProjectById fct", id);
 
     // const token = await tokenCache.getToken("token");
-    console.log("from api file API_URL: ", `${API_URL}/projects/${pub_id}`);
+    console.log("from api file API_URL: ", `${API_URL}/projects/${id}`);
     try {
 
         const options = {
             method: 'GET',
-            url: `${API_URL}/projects/${pub_id}`,
+            url: `${API_URL}/"${resource}"/${id}`,
             headers: {
                 // 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -84,18 +164,20 @@ export const getSinglePub = async (pub_id: string) => {
         const response = await axios.request(options);
         console.log("form api file getProjectById fct:", response?.data);
 
-        return {
+        if (resource.toLocaleLowerCase().includes('publication')) return {
             id: response?.data.id,
             author: response?.data.user.username,
-            location: response?.data.data.user.location ?? "",
+            location: response?.data.user.location ?? "",
             content: response?.data.libelePub ?? "",
-            imageUrl: response?.data.data.imagePub ?? "",
+            imageUrl: response?.data.imagePub ?? "",
             likes: response?.data.favories ?? "",
             comments: response?.data.commentaires ?? "",
             timeAgo: response?.data.datePub ?? "",
         };
+        else return response?.data;
+
     } catch (error: any) {
-        console.error(`from api file. Error fetching project data : ${error}`);
+        console.error(`failed fetching resouce "${resource}" with id: ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -133,7 +215,9 @@ export const getAllCategories = async () => {
 }
 
 // store the file and get the url from the bucket.
-export const uploadPubData = async (dataValues: Publication) => {
+export const uploadResourceData = async <T>(
+    dataValues: T, resource: string
+): Promise<T | null> => {
 
     // const token = await tokenCache.getToken("token");
 
@@ -141,7 +225,7 @@ export const uploadPubData = async (dataValues: Publication) => {
 
         const options = {
             method: 'POST',
-            url: `${API_URL}/Categorie`,
+            url: `${API_URL}/"${resource}"`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
@@ -152,10 +236,10 @@ export const uploadPubData = async (dataValues: Publication) => {
 
         const response = await axios.request(options);
         console.log("\n\nfrom api file uploadPubData fct", response?.data);
-        return response.data.data;
+        return response.data;
 
     } catch (error: any) {
-        console.error(`from api file. Error creating Publication data : ${error}`);
+        console.error(`from api file. failed creating resource "${resource}" : ${error}`);
         throw new AppError(error.message);
     }
 }

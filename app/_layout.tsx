@@ -1,13 +1,13 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 // import 'react-native-reanimated';
 import React from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { StatusBar } from 'expo-status-bar';
-import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { Slot } from 'expo-router';
 import { tokenCache } from "@/store/persist-token-cache";
 
@@ -20,10 +20,20 @@ function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
+    // if (isSignedIn) {
+    //   setTimeout(() => {
+    //     console.log("is signed in");
+    //     router.push('/accueil');
+    //   }, 1000)
+    // }
+
   }, [loaded]);
 
   if (!loaded) {

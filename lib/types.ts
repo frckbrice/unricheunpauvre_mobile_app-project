@@ -4,8 +4,8 @@ export type Post = {
     location: string;
     content: string;
     imageUrl: string;
-    likes: number;
-    comments: number;
+    likes?: number;
+    comments: Comment[];
     timeAgo: string;
 };
 
@@ -49,4 +49,31 @@ export type Publication = {
     videoPub?: string | any;
     montantEstime: number;
     documentUrl: string | any;
+}
+
+
+export type Jaime = {
+    idJaime?: number,
+    idPub: number,
+    idUser: number,
+    libleJaime: string,
+    dateJaime: string
+}
+
+export type Comment = {
+    idCom: number,
+    idPub: number,
+    idUser: number,
+    etatCom: boolean,
+    libeleCom: string,
+    dateCom: string
+}
+
+export type User = {
+    idUser?: number,
+    nomUser: string,
+    mdpUser: string,
+    username: string,
+    etatUser: boolean,
+    docUser: string
 }
