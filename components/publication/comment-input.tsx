@@ -1,24 +1,45 @@
 import { View, Text, TextInput, TouchableOpacity } from 'react-native'
-import React from 'react';
+import React, { memo, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 const CommentInput = ({ currentCom, setCurrentCom, handleAddComment }: {
     currentCom: string,
     setCurrentCom: React.Dispatch<React.SetStateAction<string>>,
     handleAddComment: () => void
 }) => {
+
+    const [start, setStart] = useState(false);
+    const inputRef = useRef<TouchableOpacity | null>(null);
+
+
+
+    const toggleStartMessage = () => {
+        setStart(!start)
+    }
+
     return (
-        <View className="w-full p-2 bg-gray-100">
+        <View className="w-full px-2 py-1 mt-1 bg-gray-300 flex-row rounded-lg">
             {/* Add Comment Input */}
             <TextInput
-                className={`bg-gray-800 text-white p-2 rounded-lg flex-1`}
-                placeholder="Add a comment"
-                placeholderTextColor="gray"
+                className={` text-black-200 text-xs p-2  flex-1`}
+                placeholder="Ecrire un commentaire ..."
+                placeholderTextColor="black"
                 value={currentCom}
-                onChangeText={setCurrentCom}
+                onChangeText={(text) => setCurrentCom(text)}
+                onFocus={() => {
+                    if (inputRef && inputRef.current && inputRef.current) {
+
+                    }
+                }}
+                // onBlur={toggleStartMessage}/
+                onEndEditing={toggleStartMessage}
             />
 
-            <TouchableOpacity onPress={handleAddComment} className='w-fit p-2'>
-                <Text>Add Comment</Text>
+            <TouchableOpacity
+                ref={inputRef}
+                onPress={handleAddComment}
+                className='w-fit p-2 rounded-full bg-gray-200' >
+                {start ? <Text className='text-blue-500'>🛩️</Text> : <Ionicons name='paper-plane' size={25} color={'blue'} className='m-1' />}
             </TouchableOpacity>
 
         </View>
@@ -26,4 +47,4 @@ const CommentInput = ({ currentCom, setCurrentCom, handleAddComment }: {
     )
 }
 
-export default CommentInput;
+export default memo(CommentInput);

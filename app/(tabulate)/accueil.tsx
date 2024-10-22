@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, RefreshControl, FlatList, ActivityIndicator, } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, RefreshControl, FlatList, ActivityIndicator, } from 'react-native';
+
 import EmptyState from '@/components/empty-state';
-import { posts } from "@/constants/mock-data"
 import { Post } from '@/lib/types';
 import useApiOps from '@/hooks/use-api';
 import { getAllPublications } from '@/lib/api';
@@ -24,11 +23,21 @@ const HomeScreen: React.FC = () => {
 
     const onRefresh = () => {
         refetchPosts();
+
     }
+
+    // if (isLoadingPosts) {
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    //             <ActivityIndicator size="large" color={'gray'} />
+    //         </View>
+    //     )
+    // }
+
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 ">
-            <View className="px-4">
+            <View className="">
                 <FlatList
                     data={posts as Post[]}
                     keyExtractor={(post) => String(post.id)}

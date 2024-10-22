@@ -74,7 +74,7 @@ export default function TabulateLayoutPage() {
             title: 'Poster',
             tabBarLabel: "Poster",
             tabBarIcon: ({ size, color, focused }: { size: number, color: string, focused: boolean }) => (
-              <Ionicons name="add-outline" size={size} color={color} />
+              <Ionicons name="add-outline" size={30} color={color} />
             ),
             header: () => <CustomHeader />,
             // headerTransparent: true

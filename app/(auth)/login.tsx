@@ -21,14 +21,15 @@ const LoginScreen: React.FC = () => {
         console.log("nomUser", username, "mdpUser", password, "isSubmitting", isSubmitting,)
         try {
             const newUser = await createUserAccount(
-                username,
                 password,
+                username,
                 'Auth/login',
             );
 
-            if (newUser) {
-                tokenCache.saveToken('token', newUser.token);
-                Alert.alert('Success', 'account created successfully');
+            if (typeof newUser != 'undefined') {
+                tokenCache.saveToken('currentUser', newUser?.token);
+                Alert.alert('Success', `${newUser?.message}`);
+                console.log("from register: ", newUser)
                 router.replace('/accueil')
             }
         } catch (err: any) {
@@ -58,7 +59,7 @@ const LoginScreen: React.FC = () => {
                     <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
                         <Ionicons name="mail" size={24} color="#2563eb" />
                         <TextInput
-                            className="flex-1 ml-2 placeholder:text-gray-200"
+                            className="flex-1 ml-2 placeholder:text-gray-200 text-black-200"
                             placeholder="Entrer votre adresse username"
                             value={username}
                             onChangeText={(text) => setUsername(text)}
@@ -70,11 +71,11 @@ const LoginScreen: React.FC = () => {
                 <View className="mb-4">
                     <Text className="mb-2 text-gray-700">Mot de passe</Text>
                     <FormField
-                        title={"Password"}
+                        title={"Mot de pass"}
                         value={password}
                         placeholder="Enter your password"
                         handleChangeText={(e: string) => setPassword(e)}
-                        inputStyle=" placeholder:text-gray-400"
+                        inputStyle=" placeholder:text-gray-400 text-black-200"
                     />
                 </View>
 

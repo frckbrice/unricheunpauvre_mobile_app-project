@@ -7,6 +7,9 @@ export type Post = {
     likes?: number;
     comments: Comment[];
     timeAgo: string;
+    idUser: number | undefined;
+    statePub: boolean;
+    category: string;
 };
 
 export interface IUser {
@@ -70,10 +73,20 @@ export type Comment = {
 }
 
 export type User = {
-    idUser?: number,
-    nomUser: string,
-    mdpUser: string,
-    username: string,
-    etatUser: boolean,
-    docUser: string
+    idUser?: number;
+    nomUser: string;
+    mdpUser: string;
+    username: string;
+    etatUser: boolean;
+    docUser: string;
+}
+
+
+export type Don = {
+    idDons: number;
+    idPub: number;
+    idUser: number;
+    nomDons: string;
+    montantDons: number;
+    dateDons: string;
 }

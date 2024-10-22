@@ -5,3 +5,4 @@
 import SignUpScreen from "./(auth)/login";
 
 export default SignUpScreen;
+

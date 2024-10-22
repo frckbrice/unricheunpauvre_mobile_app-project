@@ -40,7 +40,7 @@ const CreatePostScreen: React.FC = () => {
     } = useApiOps<Category[]>(getAllCategories);
 
     useEffect(() => {
-        if (!categories.length)
+        if (!categories?.length)
             refetchCategories();
     }, []);
 

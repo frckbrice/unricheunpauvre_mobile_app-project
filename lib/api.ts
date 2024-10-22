@@ -4,7 +4,7 @@
 
 // import the client library
 import { AppError } from '@/utils/error-class';
-import { API_URL } from '@/constants/mock-data';
+import { API_URL } from '@/constants/constants';
 // import { tokenCache } from '@/store/persist-token-cache';
 import axios from 'axios';
 import { Jaime, Post, Publication, User } from '@/lib/types';
@@ -35,9 +35,8 @@ export const createUserAccount
                 password: mdpUser,
             }
         }
-
         resouce = endPoint;
-        // const resouce = endPoint.toString().toLowerCase().includes('User') ? 'User' : 'Auth/login';
+        console.log("\n\ndata object: ", dataObj, { username, mdpUser }, "resource: ", resouce)
         try {
 
             const options = {
@@ -55,7 +54,7 @@ export const createUserAccount
             console.log("\n\nfrom api file connect fct", response?.data);
             return response?.data
         } catch (error: any) {
-            console.error("Failed to connect to app: ", error);
+            console.error("Failed to connect to app : ", error);
             throw new AppError(error.message);
         }
     }
@@ -67,7 +66,7 @@ export const getAllResourcesById = async (resource: string, id: number): Promise
 
         const options = {
             method: 'GET',
-            url: `${API_URL}/"${resource}"/${id}`,
+            url: `${API_URL}/${resource}/${id}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
@@ -80,7 +79,7 @@ export const getAllResourcesById = async (resource: string, id: number): Promise
         return response?.data
 
     } catch (error: any) {
-        console.error(`from api file. Error fetching all resources ""${resource}"" by id ${id} : ${error}`);
+        console.error(`from api file. Error fetching all resources "${resource}" by id ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -111,6 +110,9 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
             likes: resp?.favories ?? "",
             comments: resp?.commentaires ?? [],
             timeAgo: resp?.datePub ?? "",
+            idUser: resp?.idUser,
+            idCat: resp?.idCat,
+            statePub: resp?.etat
         }))
 
     } catch (error: any) {
@@ -120,40 +122,41 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
 }
 
 // update pub
-export const updateResource = async <T>(resource: string, id: number, data: Partial<T>): Promise<T> => {
+export const updateResource = async <T>(resource: string, id: number, value: Partial<T>): Promise<T> => {
 
     try {
 
         const options = {
             method: 'PUT',
-            url: `${API_URL}/"${resource}"/${id}`,
+            url: `${API_URL}/${resource}/${id}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             },
+            data: JSON.stringify(value)
         }
 
         const response = await axios.request(options);
         return response?.data
     } catch (error: any) {
-        console.error(`from api file. Error updating resource "${resource}" with id ${id} : ${error}`);
+        console.error(`from api file. Error updating resource ${resource} with id ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
 
 // pull latest videos
-export const getSingleResource = async (resource: string, id: string) => {
+export const getSingleResource = async (resource: string, id: number) => {
 
     console.log("inside getProjectById fct", id);
 
     // const token = await tokenCache.getToken("token");
-    console.log("from api file API_URL: ", `${API_URL}/projects/${id}`);
+    console.log("from api file API_URL: ", `${API_URL}/${resource}/${id}`);
     try {
 
         const options = {
             method: 'GET',
-            url: `${API_URL}/"${resource}"/${id}`,
+            url: `${API_URL}/${resource}/${id}`,
             headers: {
                 // 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -174,10 +177,16 @@ export const getSingleResource = async (resource: string, id: string) => {
             comments: response?.data.commentaires ?? "",
             timeAgo: response?.data.datePub ?? "",
         };
+        else if (resource.toLocaleLowerCase().includes('categorie'))
+            return response.data.map((cat: any) => ({
+                id: cat.idCat,
+                author: cat.nomCat,
+                type: cat.typeCat,
+            }))
         else return response?.data;
 
     } catch (error: any) {
-        console.error(`failed fetching resouce "${resource}" with id: ${id} : ${error}`);
+        console.error(`failed fetching resouce ${resource} with id: ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -203,9 +212,10 @@ export const getAllCategories = async () => {
         const response = await axios.request(options);
         console.log("\n\nfrom api file getAllCategories fct", response?.data);
         return response.data.map((cat: any) => ({
-            id: cat.idCat,
-            author: cat.nomCat,
-            type: cat.typeCat,
+            id: cat?.idCat,
+            idUser: cat?.idUser,
+            name: cat?.nomCat,
+            type: cat?.typeCat,
         }))
 
     } catch (error: any) {
@@ -225,7 +235,7 @@ export const uploadResourceData = async <T>(
 
         const options = {
             method: 'POST',
-            url: `${API_URL}/"${resource}"`,
+            url: `${API_URL}/${resource}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
@@ -239,7 +249,7 @@ export const uploadResourceData = async <T>(
         return response.data;
 
     } catch (error: any) {
-        console.error(`from api file. failed creating resource "${resource}" : ${error}`);
+        console.error(`from api file. failed creating resource ${resource} : ${error}`);
         throw new AppError(error.message);
     }
 }

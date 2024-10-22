@@ -1,15 +1,21 @@
 import {
     View, Text,
-    TouchableOpacity, Alert, FlatList
+    TouchableOpacity, ScrollView, Alert, FlatList
 } from 'react-native'
-import React, { useState } from 'react';
-import { Jaime, Post } from '@/lib/types';
+import React, { memo, useEffect, useState } from 'react';
+import { Comment, Jaime, Post } from '@/lib/types';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getAllResourcesById, updateResource, uploadResourceData } from '@/lib/api';
 import { useUser } from '@clerk/clerk-expo';
 import useApiOps from '@/hooks/use-api';
 import CommentPost from './publication/comment';
+import CommentInput from './publication/comment-input';
+import useUserGlobal from '@/hooks/use-user-hook';
+import { AppError } from '@/utils/error-class';
+import { comments } from '@/constants/constants';
+import { useRouter } from 'expo-router';
+import { tokenCache } from '@/store/persist-token-cache';
 
 type TPost = {
     post: Post;
@@ -25,26 +31,33 @@ const PublicationPost = ({ post }: TPost) => {
         'Jaime', post?.id) as Promise<Jaime[]>);
     const [isFavorite, setIsFavorite] = useState(false);
     const [isliked, setIsliked] = useState(false);
-    const [likes, setLikes] = useState(initialLikes?.length);
+    const [likes, setLikes] = useState(initialLikes?.length ?? 0);
+    const [currentCom, setCurrentCom] = useState("");
+    const [startComment, setStartComment] = useState<boolean>(false);
 
-    const { user } = useUser();
+    const { currentUser } = useUserGlobal();
+    const router = useRouter();
+
+    useEffect(() => {
+        tokenCache.saveToken('post', JSON.stringify(post));
+    }, [post?.id])
     // write a logic to like a post
     const likePost = async () => {
-        // no post, no like
 
         // Optimistically update the UI
         const newLikedState = !isliked;
         setIsliked(newLikedState);
         setLikes(likes + (newLikedState ? 1 : -1));
 
-        if (!post.id || !isliked) return console.log("post must be liked or there should be a post for a like");
+        // no post, no like
+        if (!post.id || !isliked || !currentUser) return console.log("post must be liked or there should be a post for a like");
         const likeObj = {
             idPub: post?.id,
-            idUser: Number(user?.id),
-            libleJaime: "like this post",
+            idUser: Number(currentUser?.IdUser),
+            libleJaime: "I like this post",
             dateJaime: new Date(Date.now()).toISOString(),
         }
-
+        console.log("post a like: ", likeObj)
         try {
             const newLike = await uploadResourceData<Jaime>(likeObj, 'Jaime')
             if (newLike)
@@ -59,34 +72,21 @@ const PublicationPost = ({ post }: TPost) => {
     const favoritePost = async () => {
         // no post, no like
         setIsFavorite(!isFavorite);
-        if (!post.id || !isFavorite) return console.log("post must be favorite");
+        if (!post.id || !isFavorite || !currentUser) return console.log("post must be favorite");
 
         const pubObj = {
             idPub: post.id,
-            idUser: Number(user?.id),
+            idUser: Number(currentUser?.IdUser),
             favories: isFavorite
         }
 
         try {
             const newLike = await updateResource('Publication', post?.id, pubObj)
-            if (newLike)
-                Alert.alert('Sucess', 'Post favored');
+            if (typeof newLike != 'undefined')
+                refetch();
             else return console.error("fail to set post favorite.")
         } catch (error) {
             console.error("error liking post: ", error)
-        }
-    }
-
-    // comment a post
-    const commentPost = async () => {
-        // no post , no comment
-        if (!post?.id) return console.log("there is no pub for this comment.");
-        const commentObj = {
-            idPub: post.id,
-            idUser: Number(user?.id),
-            etatCom: false,
-            libeleCom: "comment this post",
-            dateCom: new Date(Date.now()).toISOString(),
         }
     }
 
@@ -100,11 +100,50 @@ const PublicationPost = ({ post }: TPost) => {
     const contributeToPub = async () => {
         // no post , no comment
         if (!post.id) return;
+        router.push(`/contribute/${post?.id}`)
+    }
+
+    // commnet a post
+    const handleAddComment = async () => {
+
+        // no post , no comment
+        if (!post?.id) return console.log("there is no pub for this comment.");
+
+        const newComment: Partial<Comment> = {
+            idCom: comments.length + 1, // set the comment id as the length of the comments array + 1.
+            idPub: post?.id,
+            idUser: currentUser?.IdUser as number,
+            dateCom: new Date(Date.now()).toISOString(),
+            etatCom: false,
+            libeleCom: currentCom, // set the current comment.
+        }
+
+        post?.comments.unshift(newComment as Comment);
+
+        console.log("post is about to run comment: ", newComment)
+        try {
+            // upload a resource to comment table
+            const newComt = await uploadResourceData(newComment, 'Commentaire');
+            if (typeof newComt != 'undefined') {
+                post?.comments.filter((com) => com.idCom !== post?.comments.length + 1)
+                post?.comments.unshift(newComt as Comment);
+            } else return console.error("fail to set post favorite.")
+
+        } catch (error) {
+            // console.error(` Failed to to comment the post with ID ${post?.id}: `, error);
+            throw new Error(`failed to comment on post with Id ${post?.id}`);
+        }
 
     }
-    console.log("isFavorite: ", isFavorite)
+
+
+    // enable comment list
+    const toggleComment = () => {
+        setStartComment(!startComment)
+    }
+
     return (
-        <>
+        <ScrollView className={'mb-5'}>
             <View className="flex-row items-center mb-1 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
                 <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                     className="w-10 h-10 rounded-full mr-2"
@@ -113,23 +152,23 @@ const PublicationPost = ({ post }: TPost) => {
                     <Text className="text-white font-medium">{post.author}</Text>
                     <Text className="text-gray-400 text-xs">{post.location}</Text>
                 </View>
-                <Text className="text-gray-400 text-sm ml-auto">{post.timeAgo}</Text>
+                <Text className="text-gray-400 text-sm ml-auto">{new Date(post.timeAgo).toDateString()}</Text>
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 
-                <Text className="text-white mb-2">
+                <Text className="text-white mb-2 text-[13px]">
                     {post.content}
                 </Text>
                 <Image source={post.imageUrl ? { uri: post.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" />
-                <View className="flex-row justify-between">
-                    <TouchableOpacity
+                <View className="flex-row justify-end">
+                    {/* <TouchableOpacity
                         className="bg-gray-900 px-4 py-1 rounded-3xl
                          border-blue-400 border-2"
                         onPress={realisePub}
                     >
 
                         <Text className="text-white text-[12px]">Réaliser</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <TouchableOpacity
                         className="bg-gray-900 px-4 py-1 rounded-3xl
                          border-blue-400 border-2"
@@ -141,7 +180,7 @@ const PublicationPost = ({ post }: TPost) => {
                 <View className="flex-row items-center mt-2 px-2 py-1 bg-white rounded-2xl justify-between">
                     <View className="flex-row items-center gap-2">
                         <TouchableOpacity
-                            onPress={commentPost}
+                            onPress={toggleComment}
                             className="flex flex-row items-center
                              bg-gray-300 p-2 py-1 rounded-full justify-center"
                         >
@@ -168,18 +207,32 @@ const PublicationPost = ({ post }: TPost) => {
                             <Ionicons name="heart" size={22} color="white" />}
                     </TouchableOpacity>
                 </View>
-                <FlatList
-                    data={post?.comments}
-                    renderItem={({ item: comment }) => (
-                        <CommentPost comment={comment} />
-                    )}
-                    keyExtractor={(item) => item?.idCom.toString()}
+                {!!startComment && <View>
+                    <CommentInput
+                        currentCom={currentCom}
+                        setCurrentCom={setCurrentCom}
+                        handleAddComment={handleAddComment} />
+                    <FlatList
+                        initialNumToRender={3}
 
-                />
+                        className='mt-1 overflow-scroll bg-red-400'
+                        data={post?.comments}
+                        renderItem={({ item: comment }) => (
+                            <View className='bg-gray-800 space-y-2'>
+                                <CommentPost comment={comment} />
+
+                            </View>
+                        )}
+                        keyExtractor={(item) => item?.idCom.toString()}
+
+                    />
+                </View>}
+
+
             </View>
-        </>
+        </ScrollView>
 
     )
 }
 
-export default PublicationPost;
+export default memo(PublicationPost);

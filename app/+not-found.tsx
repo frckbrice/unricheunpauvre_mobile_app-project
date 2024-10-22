@@ -14,9 +14,9 @@ export default function NotFoundScreen() {
         <TouchableOpacity
           onPress={() => router.push('/accueil')}
           style={styles.link}
-          className="bg-blue-600 rounded-lg p-2 mb-4 w-full text-white flex items-center">
+          className="bg-gray-900 rounded-lg p-2 mb-4 w-full text-white flex items-center">
 
-          <Text className=' text-white text-center text-xl'>Go to home screen!</Text>
+          <Text className=' text-white text-center text-sm'>Go to home screen!</Text>
         </TouchableOpacity>
       </ThemedView>
     </>

@@ -33,14 +33,14 @@ export default function SignUpScreen() {
         )
         try {
             const newUser = await createUserAccount(
-                nomUser,
                 mdpUser,
                 username,
-                'User'
+                'User',
+                nomUser,
             );
 
-            if (newUser) {
-                tokenCache.saveToken('token', newUser.token);
+            if (typeof newUser != 'undefined') {
+                tokenCache.saveToken('currentUser', newUser);
                 Alert.alert('Success', 'account created successfully');
                 console.log("from register: ", newUser)
                 router.replace('/accueil')

@@ -19,55 +19,34 @@ const SearchScreen: React.FC = () => {
         data: categories,
         refetch: refetchCategories,
         isLoading
-    } = useApiOps<Category[]>(getAllCategories);
+    } = useApiOps<Category>(getAllCategories);
     const { query } = useLocalSearchParams();
 
-    const listCat = categories.length ? categories.map((category: Category) => category.name) : categoriesP;
+    const listCat = categories?.length ? categories?.map((category: Category) => category.name) : categoriesP;
 
     return (
-        <SafeAreaView className="h-full bg-gray-900 p-4 py-10">
-            {/* <View className="flex-row items-center mb-6">
-                <TouchableOpacity>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <View className="flex-1 ml-4 bg-gray-800 rounded-lg p-2 flex-row items-center">
-                    <Ionicons name="search" size={20} color="gray" />
-                    <TextInput
-                        className="flex-1 ml-2 text-white"
-                        placeholder="search publications ..."
-                        placeholderTextColor="gray"
-                    />
-                </View>
-            </View>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="mb-6 h-10"
-            >
-                {listCat.map((category: string, index: number) => (
-                    <TouchableOpacity key={index} className="bg-white rounded-2xl px-4 py-2 mr-2 h-10">
-                        <Text>{category}</Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-            <Text className="text-white text-xl mb-4">00 Resultat trouvé</Text> */}
+        <SafeAreaView className="h-full bg-gray-900 p-4 ">
+
             {/* Add your search results here */}
             <FlatList
                 data={pubs} //
                 keyExtractor={(item) => String(item.id)} // tells RN how we'd like to render our list.
                 renderItem={({ item }) => <PublicationPost post={item} />}
                 ListHeaderComponent={() => (
-                    <View className="my-6 mt-2 px-4 ">
+                    <View className=" mt-2 px-4 ">
 
-                        <View className="my-6 mb-8">
+                        <View className="mb-8">
                             {/* search input */}
                             <SearchInput initialQuery={query} placeholder={"Search query"} />
                         </View>
-                        {listCat.map((category: string, index: number) => (
-                            <TouchableOpacity key={index} className="bg-white rounded-2xl px-4 py-2 mr-2 h-10">
-                                <Text>{category}</Text>
-                            </TouchableOpacity>
-                        ))}
+                        <View className='space-y-1'>
+                            {listCat.map((category: string, index: number) => (
+                                <TouchableOpacity key={index} className="bg-white/90 rounded-lg px-4 py-2 mr-2 h-10">
+                                    <Text className="text-black-100">{category}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
                     </View>
                 )}
                 // this property displays in case the list of data above is empty. it behave like a fallback.
