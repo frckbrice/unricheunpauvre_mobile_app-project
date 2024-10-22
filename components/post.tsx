@@ -16,6 +16,7 @@ import { AppError } from '@/utils/error-class';
 import { comments } from '@/constants/constants';
 import { useRouter } from 'expo-router';
 import { tokenCache } from '@/store/persist-token-cache';
+import useAuthorAndPubGlobal from '@/hooks/current-post-author';
 
 type TPost = {
     post: Post;
@@ -37,8 +38,12 @@ const PublicationPost = ({ post }: TPost) => {
 
     const { currentUser } = useUserGlobal();
     const router = useRouter();
+    const { postAuthor, } = useAuthorAndPubGlobal();
+
+    console.log("currrent post author: ", postAuthor);
 
     useEffect(() => {
+        // store the cuurent post ro the local store
         tokenCache.saveToken('post', JSON.stringify(post));
     }, [post?.id])
     // write a logic to like a post
@@ -144,15 +149,16 @@ const PublicationPost = ({ post }: TPost) => {
 
     return (
         <ScrollView className={'mb-5'}>
-            <View className="flex-row items-center mb-1 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
+            <View className="flex-row items-center 
+            mb-1 bg-gray-800 p-2  rounded-tl-xl rounded-tr-xl">
                 <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                     className="w-10 h-10 rounded-full mr-2"
                 />
                 <View className='flex justify-center items-center'>
-                    <Text className="text-white font-medium">{post.author}</Text>
+                    <Text className="text-white font-medium">{postAuthor?.nomUser}</Text>
                     <Text className="text-gray-400 text-xs">{post.location}</Text>
                 </View>
-                <Text className="text-gray-400 text-sm ml-auto">{new Date(post.timeAgo).toDateString()}</Text>
+                <Text className="text-gray-400 text-xs ml-auto mr-2">{new Date(post.timeAgo).toDateString()}</Text>
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 

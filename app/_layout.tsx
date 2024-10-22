@@ -37,7 +37,7 @@ function RootLayout() {
       if (typeof currentUser != "undefined") {
         setTimeout(() => {
           console.log("is signed in");
-          router.push('/accueil');
+          router.push('/poster');
         }, 1000)
       }
     }, 3000); // Adjust the time as needed

@@ -15,7 +15,7 @@ export function SelectItem({ options, setCurrentCat }: TPicker) {
         <SelectDropdown
             data={options}
             onSelect={(selectedItem, index) => {
-                console.log(selectedItem, index);
+                console.log("in select component: ", selectedItem, index);
                 setCurrentCat(selectedItem);
             }}
             renderButton={(selectedItem, isOpened) => {
@@ -25,15 +25,16 @@ export function SelectItem({ options, setCurrentCat }: TPicker) {
                             <Ionicons name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />
                         )} */}
                         <Text style={styles.dropdownButtonTxtStyle}>
-                            {(selectedItem && selectedItem.name) || 'Select your category'}
+                            {(selectedItem && selectedItem.name) || 'Selectionnez une categorie'}
                         </Text>
-                        <Ionicons name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                        <Text className='text-xs'>▼</Text>
+                        {/* <Ionicons name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} /> */}
                     </View>
                 );
             }}
             renderItem={(item, index, isSelected) => {
                 return (
-                    <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                    <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#6b7280' }) }}>
                         {/* <Ionicons name={item.icon} style={styles.dropdownItemIconStyle} /> */}
                         <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
                     </View>
@@ -49,20 +50,23 @@ export function SelectItem({ options, setCurrentCat }: TPicker) {
 
 const styles = StyleSheet.create({
     dropdownButtonStyle: {
-        width: 200,
-        height: 50,
-        backgroundColor: '#E9ECEF',
-        borderRadius: 12,
+        width: '100%',
+        height: 40,
+        backgroundColor: '#1f2937',
+        borderRadius: 8,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 12,
+        marginVertical: 10,
+        marginTop: 0,
+
     },
     dropdownButtonTxtStyle: {
         flex: 1,
-        fontSize: 18,
+        fontSize: 13,
         fontWeight: '500',
-        color: '#151E26',
+        color: '#fff',
     },
     dropdownButtonArrowStyle: {
         fontSize: 28,
@@ -74,6 +78,9 @@ const styles = StyleSheet.create({
     dropdownMenuStyle: {
         backgroundColor: '#E9ECEF',
         borderRadius: 8,
+        borderColor: '#6b7280',
+        borderWidth: 0.5,
+        marginTop: 0
     },
     dropdownItemStyle: {
         width: '100%',
@@ -82,12 +89,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 8,
+        backgroundColor: '#111827',
     },
     dropdownItemTxtStyle: {
         flex: 1,
-        fontSize: 18,
+        fontSize: 14.5,
         fontWeight: '500',
-        color: '#151E26',
+        color: '#fff',
     },
     dropdownItemIconStyle: {
         fontSize: 28,

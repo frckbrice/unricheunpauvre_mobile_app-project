@@ -103,8 +103,8 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
         const response = await axios.request(options);
         return response?.data?.map((resp: any) => ({
             id: resp?.idPub,
-            author: resp?.username ?? "NO NAME",
-            location: resp?.location ?? "Anonymous",
+            author: resp?.nomUser ?? "ANONYMOUS",
+            location: resp?.location ?? "No Location",
             content: resp?.libelePub ?? "No Content Yet",
             imageUrl: resp?.imagePub,
             likes: resp?.favories ?? "",

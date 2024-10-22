@@ -15,6 +15,7 @@ import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { tokenCache } from '@/store/persist-token-cache';
 import { Ionicons } from '@expo/vector-icons';
+import useAuthorAndPubGlobal from '@/hooks/current-post-author';
 
 
 
@@ -24,33 +25,16 @@ const Contribute: React.FC = () => {
         nomDons: '',
         montantDons: 0
     });
-    const [currentPub, setCurrentPub] = useState<Post>();
+
     const { control, handleSubmit } = useForm<Don>();
     const { currentUser } = useUserGlobal();
-    const [postAuthor, setPostAuthor] = useState<User>();
+
 
     const { idPub } = useLocalSearchParams();
     const router = useRouter();
 
-    // we get current post from the store, set from the post cmponent
-    const getCurrentPost = async () => {
-        const post = JSON.parse(await tokenCache.getToken('post') as string);
-        setCurrentPub(post);
-
-    }
-
-    // get the author of this publication fromthe API
-    const getPostAuthor = async () => {
-        const postAuth = await getSingleResource('User', currentPub?.idUser as number);
-        if (typeof postAuth != 'undefined') {
-            setPostAuthor(postAuth as User);
-        }
-    }
-
-    useEffect(() => {
-        getCurrentPost();
-        getPostAuthor();
-    }, []);
+    // get current post author and curretn post.
+    const { postAuthor, currentPub } = useAuthorAndPubGlobal();
 
     const onSubmit = async (data: Don) => {
         const formData = {
@@ -84,7 +68,7 @@ const Contribute: React.FC = () => {
                     <Text className="text-white text-xl font-bold mb-4">Contribuer a la publication </Text>
                 </View>
                 <Text className="text-white text-sm  mb-4 ">
-                    Auteur: {postAuthor?.nomUser}</Text>
+                    Auteur: {postAuthor?.nomUser ?? "Admin platform"}</Text>
                 <Text className="text-white text-sm  mb-4 ">
                     Poste le {new Date(currentPub?.timeAgo as string).toDateString()} a {new Date(currentPub?.timeAgo as string).toLocaleTimeString()}</Text>
                 <View className="flex-row items-center mb-4">
@@ -126,7 +110,7 @@ const Contribute: React.FC = () => {
                 </View>
 
                 <TouchableOpacity
-                    className="bg-black-200 p-3 rounded-sm shadow-lg w-full"
+                    className="bg-gray-600 p-3 rounded-sm shadow-lg w-full"
                     onPress={handleSubmit(onSubmit)}
                 >
                     <Text className="text-white text-center font-bold">PAYER</Text>

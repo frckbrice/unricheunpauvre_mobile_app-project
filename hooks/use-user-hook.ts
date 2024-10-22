@@ -5,11 +5,11 @@ import { tokenCache } from '@/store/persist-token-cache';
 import JWT from 'expo-jwt';
 import { Alert } from 'react-native';
 import { TOKEN_KEY } from '@/constants/constants';
-import { EncodingKey } from 'expo-jwt/dist/types/jwt';
+import { EncodingKey, JWTBody, JWTDefaultBody } from 'expo-jwt/dist/types/jwt';
 
 const useUserGlobal = () => {
 
-    const [currentUser, setCurrentUser] = useState<any | null>(null)
+    const [currentUser, setCurrentUser] = useState<JWTBody<JWTDefaultBody> | null>(null)
 
     const getToken = async () => {
         try {
