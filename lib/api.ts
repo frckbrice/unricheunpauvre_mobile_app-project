@@ -140,7 +140,7 @@ export const updateResource = async <T>(resource: string, id: number, value: Par
         const response = await axios.request(options);
         return response?.data
     } catch (error: any) {
-        console.error(`from api file. Error updating resource ${resource} with id ${id} : ${error}`);
+        console.error(`inside updateResource fct on api file. Error updating resource ${resource} with id ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -148,7 +148,7 @@ export const updateResource = async <T>(resource: string, id: number, value: Par
 // pull latest videos
 export const getSingleResource = async (resource: string, id: number) => {
 
-    console.log("inside getProjectById fct", id);
+
 
     // const token = await tokenCache.getToken("token");
     console.log("from api file API_URL: ", `${API_URL}/${resource}/${id}`);
@@ -165,7 +165,7 @@ export const getSingleResource = async (resource: string, id: number) => {
         }
 
         const response = await axios.request(options);
-        console.log("form api file getProjectById fct:", response?.data);
+        console.log("form api file getSingleResource fct:", response?.data);
 
         if (resource.toLocaleLowerCase().includes('publication')) return {
             id: response?.data.id,
@@ -186,7 +186,7 @@ export const getSingleResource = async (resource: string, id: number) => {
         else return response?.data;
 
     } catch (error: any) {
-        console.error(`failed fetching resouce ${resource} with id: ${id} : ${error}`);
+        console.error(`inside getSingleResource failed fetching resouce ${resource} with id: ${id} : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -219,7 +219,7 @@ export const getAllCategories = async () => {
         }))
 
     } catch (error: any) {
-        console.error(`from api file. Error fetching Publication data : ${error}`);
+        console.error(`from api file getAllCategories ftc. Error fetching Publication data : ${error}`);
         throw new AppError(error.message);
     }
 }
@@ -249,7 +249,7 @@ export const uploadResourceData = async <T>(
         return response.data;
 
     } catch (error: any) {
-        console.error(`from api file. failed creating resource ${resource} : ${error}`);
+        console.error(`from api file uploadPubData fct. failed creating resource ${resource} : ${error}`);
         throw new AppError(error.message);
     }
 }

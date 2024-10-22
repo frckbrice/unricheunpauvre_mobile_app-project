@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     View, Text, Image,
     TouchableOpacity, ScrollView, TextInput,
+    Alert,
 } from 'react-native';
 
 import { Category, Don, Post, Publication, User, } from '@/lib/types';
@@ -10,9 +11,10 @@ import { getSingleResource, uploadResourceData, } from '@/lib/api';
 import { useForm, Controller } from 'react-hook-form';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { tokenCache } from '@/store/persist-token-cache';
+import { Ionicons } from '@expo/vector-icons';
 
 
 
@@ -28,6 +30,7 @@ const Contribute: React.FC = () => {
     const [postAuthor, setPostAuthor] = useState<User>();
 
     const { idPub } = useLocalSearchParams();
+    const router = useRouter();
 
     // we get current post from the store, set from the post cmponent
     const getCurrentPost = async () => {
@@ -56,20 +59,30 @@ const Contribute: React.FC = () => {
             IdUser: currentUser?.IdUser,
         }
         console.log("don to send: ", formData)
-        // try {
-        //     console.log("from data: ", formData);
-        //     const result = await uploadResourceData(formData, "Don",);
-        //     console.log("from poster file result: ", result);
-        // } catch (error) {
-        //     console.error(`Error creating a donation: ${error}, Please try again`);
-        // }
+        try {
+            console.log("from data: ", formData);
+            const result = await uploadResourceData(formData, "Don",);
+            if (typeof result != 'undefined') {
+                Alert.alert('Success', 'Donation created successfully');
+                router.push('/accueil')
+            }
+
+            else return console.error("fail to create donation.");
+        } catch (error) {
+            console.error(`Error creating a donation: ${error}, Please try again`);
+        }
     };
 
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 ">
             <View className="p-4 justify-center ">
-                <Text className="text-white text-xl font-bold mb-4">Contribuer a la publication de :</Text>
+                <View className='flex-row items-center my-5'>
+                    <TouchableOpacity onPress={() => router.push('/accueil')} className='mr-2 p-2 rounded-full bg-slate-300 mb-2'>
+                        <Ionicons name="arrow-back" size={24} color="white" />
+                    </TouchableOpacity>
+                    <Text className="text-white text-xl font-bold mb-4">Contribuer a la publication </Text>
+                </View>
                 <Text className="text-white text-sm  mb-4 ">
                     Auteur: {postAuthor?.nomUser}</Text>
                 <Text className="text-white text-sm  mb-4 ">
@@ -80,7 +93,6 @@ const Contribute: React.FC = () => {
                 </View>
             </View>
             <View className="p-4 justify-center ">
-
 
                 {/* <Text className="text-white text-start mb-1">(optional)</Text> */}
                 <TextInput
@@ -112,8 +124,6 @@ const Contribute: React.FC = () => {
                     />
                     <Text className="text-white ml-2">€</Text>
                 </View>
-
-
 
                 <TouchableOpacity
                     className="bg-black-200 p-3 rounded-sm shadow-lg w-full"

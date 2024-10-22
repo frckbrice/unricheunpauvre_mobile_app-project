@@ -12,6 +12,7 @@ import { Slot } from 'expo-router';
 import { tokenCache } from "@/store/persist-token-cache";
 import SplashScreenComponent from '@/components/splash-screen';
 import useUserGlobal from '@/hooks/use-user-hook';
+import { Ionicons } from '@expo/vector-icons';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -60,7 +61,16 @@ function RootLayout() {
       <Stack.Screen name="(tabulate)" options={{ headerShown: false }} />
 
       <Stack.Screen name="+not-found" />
-      <Stack.Screen name="contribute/[idPub]" />
+      <Stack.Screen
+        name="contribute/[idPub]"
+        options={{
+          headerTitle: 'Contribute',
+          headerLeft: () => {
+            return (
+              <Ionicons name='arrow-back' size={24} color={'#fff'} />
+            );
+          }
+        }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
