@@ -18,7 +18,7 @@ export default function TabulateLayoutPage() {
       <Tabs
         initialRouteName="accueil"
         screenOptions={{
-          tabBarActiveTintColor: 'blue',
+          tabBarActiveTintColor: '#3b82f6',
           tabBarInactiveTintColor: 'gray',
 
           tabBarBackground: () => (

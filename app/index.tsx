@@ -2,7 +2,7 @@
 
 // export default SignUpScreen;
 
-import SignUpScreen from "./(auth)/login";
+import ConnectToApp from "./(auth)/login";
 
-export default SignUpScreen;
+export default ConnectToApp;
 

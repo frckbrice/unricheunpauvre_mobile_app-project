@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import useApiOps from '@/hooks/use-api';
 import { Category, Publication } from '@/lib/types';
-import { getAllCategories, uploadResourceData, } from '@/lib/api';
+import { getAllCategories, getCurrentUser, getFileUrlFromProvider, uploadFileToSupabase, uploadResourceData, } from '@/lib/api';
 import { SelectItem } from '@/components/picker';
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from 'react-hook-form';
@@ -14,6 +14,7 @@ import { icons } from '@/constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserGlobal from '@/hooks/use-user-hook';
+import Constants from "expo-constants";
 
 
 const initialFormState: Publication = {
@@ -35,27 +36,58 @@ const CreatePostScreen: React.FC = () => {
     const [currentCat, setCurrentCat] = useState<Category>();
     const { control, handleSubmit } = useForm<Publication>();
     const { currentUser } = useUserGlobal()
-
+    const mounted = useRef(false)
     const {
         data: categories,
         refetch: refetchCategories,
         isLoading
-    } = useApiOps<Category[]>(getAllCategories);
+    } = useApiOps<Category[]>(() => {
+        if (mounted.current)
+            return getAllCategories()
+        return Promise.resolve([]);
+    });
 
     useEffect(() => {
+        mounted.current = true;
         if (!categories?.length)
             refetchCategories();
     }, []);
 
+
+    useEffect(() => {
+        (async () => {
+            if (Constants.platform && Constants.platform.ios) {
+                const cameraRollStatus =
+                    await ImagePicker.requestMediaLibraryPermissionsAsync();
+                const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+                if (
+                    cameraRollStatus.status !== "granted" ||
+                    cameraStatus.status !== "granted"
+                ) {
+                    alert("Sorry, we need these permissions to make this work!");
+                }
+            }
+            await getCurrentUser()
+        })();
+
+
+    }, []);
+
     const onSubmit = async (data: Publication) => {
+
+        const imgUrl = await uploadFileToSupabase(form?.imagePub);
+
+        // const docUrl = await uploadFileToSupabase(form?.documentUrl);
         const formData = {
             ...form,
             idUser: currentUser?.IdUser,
             // videoPub: form.videoPub, // add video uri if exists.
             idCat: Number(currentCat?.id),
+            imagePub: imgUrl,
+            // docPub: docUrl,
         }
 
-        console.log("object to be uploaded: ", formData)
+        // console.log("object to be uploaded: ", docUrl,)
         try {
             console.log("from data: ", formData);
             const result = await uploadResourceData(formData, "Publication");
@@ -80,10 +112,10 @@ const CreatePostScreen: React.FC = () => {
         });
 
         if (!result.canceled) {
-            console.log("image uploaded: ", result.assets[0].uri)
+            console.log("image uploaded: ", result.assets[0])
             const base64 = `data:image/png;base64,${result.assets[0].base64}`;
             if (selectType === "image") {
-                setForm({ ...form, imagePub: base64 });
+                setForm({ ...form, imagePub: result.assets[0].uri });
             }
             // if (selectType === "video") {
             //     setForm({ ...form, videoPub: result.assets[0].uri });
@@ -92,21 +124,29 @@ const CreatePostScreen: React.FC = () => {
     };
 
     const handleDocumentUpload = async () => {
-        const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
+        const result = await DocumentPicker.getDocumentAsync({
+            type: 'application/pdf'
+        });
 
         if (!result.canceled) {
-            setForm(prev => ({ ...prev, documentUrl: result.assets[0].uri }));
+            const file = {
+                uri: result.assets[0].uri,
+                name: result.assets[0].name,
+                type: result.assets[0].mimeType || 'application/pdf',
+            };
+            console.log("document uploaded: ", file)
+            setForm(prev => ({ ...prev, documentUrl: file }));
         }
     };
-
 
     return (
         < >
             <ScrollView className=" flex-1 bg-gray-900 px-4 py-2">
+                <Text className="text-white text-xl font-bold mb-4">Créer une publication</Text>
+
                 <View className='mb-20'>
 
 
-                    {/* <Text className="text-white text-xl font-bold mb-4">Créer une publication</Text> */}
                     <View className="flex-row items-center mb-4">
                         <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-10 h-10 rounded-full mr-2" />
                         <Text className="text-white">{currentUser?.name}</Text>
@@ -151,6 +191,7 @@ const CreatePostScreen: React.FC = () => {
                         rounded-xl border-blue-400 border-0.5"
                         >
                             {form.imagePub ? (
+                                // <></>
                                 <Image
                                     source={{ uri: form.imagePub }} // uri is used for non local images.
                                     className="w-full h-36 rounded-xl mt-3"
@@ -190,7 +231,7 @@ const CreatePostScreen: React.FC = () => {
                         </View>
                     )}
                     <TouchableOpacity
-                        className="bg-gray-600 p-3 rounded"
+                        className="bg-blue-500 p-3 rounded"
                         onPress={handleSubmit(onSubmit)}
                     >
                         <Text className="text-white text-center font-bold">PUBLIER</Text>
@@ -201,5 +242,5 @@ const CreatePostScreen: React.FC = () => {
 
     );
 };
-
 export default CreatePostScreen;
+// frckbrice@484?

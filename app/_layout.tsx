@@ -1,57 +1,28 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-// import 'react-native-reanimated';
-import React from 'react';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { StatusBar } from 'expo-status-bar';
-import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
-import { Slot } from 'expo-router';
-import { tokenCache } from "@/store/persist-token-cache";
-import SplashScreenComponent from '@/components/splash-screen';
-import useUserGlobal from '@/hooks/use-user-hook';
+import React, { useEffect, } from 'react';
+
 import { Ionicons } from '@expo/vector-icons';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
+export default function RootLayout() {
+  // const colorScheme = useColorScheme();
+  // // If the fonts fail to load, your splash screen might remain visible indefinitely. Verify the font file path:
+  const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useUserGlobal()
-  const router = useRouter();
+
 
   useEffect(() => {
-
+    if (error) throw error;
     if (loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync(); // to hide splash screen on android only.
     }
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      if (typeof currentUser != "undefined") {
-        setTimeout(() => {
-          console.log("is signed in");
-          router.push('/poster');
-        }, 1000)
-      }
-    }, 3000); // Adjust the time as needed
-
-    return () => clearTimeout(timer);
-  }, [loaded]);
-
-  if (isLoading) {
-    return <SplashScreenComponent />;
-  }
-
-  if (!loaded) {
-    return null;
-  }
+  }, [loaded, error])
 
   return (
     // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -65,6 +36,7 @@ function RootLayout() {
         name="contribute/[idPub]"
         options={{
           headerTitle: 'Contribute',
+
           headerLeft: () => {
             return (
               <Ionicons name='arrow-back' size={24} color={'#fff'} />
@@ -74,22 +46,4 @@ function RootLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
-}
-
-export default function RootLayoutInit() {
-  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
-
-  if (!publishableKey) {
-    throw new Error(
-      'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
-    )
-  }
-
-  return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ClerkLoaded>
-        <RootLayout />
-      </ClerkLoaded>
-    </ClerkProvider>
-  )
 }

@@ -56,7 +56,7 @@ const Contribute: React.FC = () => {
             console.error(`Error creating a donation: ${error}, Please try again`);
         }
     };
-
+    console.log("postAuthor: ", postAuthor);
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 ">

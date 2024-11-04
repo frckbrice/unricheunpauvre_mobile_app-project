@@ -30,7 +30,7 @@ const FormField = ({
       <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
         {title === 'email' ? (
           <Ionicons name="mail" size={24} color="gray" />
-        ) : title === "Mot de pass" ? (
+        ) : title === "Mot de passe" ? (
           <Ionicons name="lock-closed" size={24} color="#2563eb" />
         ) : null}
 
@@ -42,7 +42,7 @@ const FormField = ({
           secureTextEntry={title === "Mot de pass" && !showPasswd}
           className={`flex-1 ml-2 text-black-200 `}
         />
-        {title === "Mot de pass" && (
+        {title === "Mot de passe" && (
           <TouchableOpacity
             // name={showPasswd ? "eye-off" : "eye"}
             // size={18}

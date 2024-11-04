@@ -2,12 +2,11 @@ import {
     View, Text,
     TouchableOpacity, ScrollView, Alert, FlatList
 } from 'react-native'
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { Comment, Jaime, Post } from '@/lib/types';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllResourcesById, updateResource, uploadResourceData } from '@/lib/api';
-import { useUser } from '@clerk/clerk-expo';
+import { getAllResourcesByTarget, updateResource, uploadResourceData } from '@/lib/api';
 import useApiOps from '@/hooks/use-api';
 import CommentPost from './publication/comment';
 import CommentInput from './publication/comment-input';
@@ -24,12 +23,17 @@ type TPost = {
 
 const PublicationPost = ({ post }: TPost) => {
 
+    const mounted = useRef(false);
     const {
         data: initialLikes, // get all the likes for this pub, by its ID
         refetch,
         isLoading
-    } = useApiOps<Jaime>(() => getAllResourcesById(
-        'Jaime', post?.id) as Promise<Jaime[]>);
+    } = useApiOps<Jaime>(() => {
+        if (mounted.current)
+            getAllResourcesByTarget(
+                'Jaime', post?.id, 'idPub') as Promise<Jaime[]>
+        return Promise.resolve([]);
+    });
     const [isFavorite, setIsFavorite] = useState(false);
     const [isliked, setIsliked] = useState(false);
     const [likes, setLikes] = useState(initialLikes?.length ?? 0);
@@ -41,7 +45,12 @@ const PublicationPost = ({ post }: TPost) => {
     const { postAuthor, } = useAuthorAndPubGlobal();
 
     console.log("currrent post author: ", postAuthor);
-
+    useEffect(() => {
+        mounted.current = true
+        return () => {
+            mounted.current = false
+        }
+    }, [])
     useEffect(() => {
         // store the cuurent post ro the local store
         tokenCache.saveToken('post', JSON.stringify(post));
@@ -146,7 +155,7 @@ const PublicationPost = ({ post }: TPost) => {
     const toggleComment = () => {
         setStartComment(!startComment)
     }
-
+    console.log("post postAuthor is: ", postAuthor)
     return (
         <ScrollView className={'mb-5'}>
             <View className="flex-row items-center 
@@ -156,16 +165,16 @@ const PublicationPost = ({ post }: TPost) => {
                 />
                 <View className='flex justify-center items-center'>
                     <Text className="text-white font-medium">{postAuthor?.nomUser}</Text>
-                    <Text className="text-gray-400 text-xs">{post.location}</Text>
+                    <Text className="text-gray-400 text-xs">{post?.location}</Text>
                 </View>
-                <Text className="text-gray-400 text-xs ml-auto mr-2">{new Date(post.timeAgo).toDateString()}</Text>
+                <Text className="text-gray-400 text-xs ml-auto mr-2">{new Date(post?.timeAgo).toDateString()}</Text>
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 
                 <Text className="text-white mb-2 text-[13px]">
-                    {post.content}
+                    {post?.content}
                 </Text>
-                <Image source={post.imageUrl ? { uri: post.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" />
+                <Image source={post.imageUrl ? { uri: post?.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" />
                 <View className="flex-row justify-end">
                     {/* <TouchableOpacity
                         className="bg-gray-900 px-4 py-1 rounded-3xl

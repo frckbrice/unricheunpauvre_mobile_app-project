@@ -15,12 +15,14 @@ type ESProps = {
   label: string;
   route?: string | (() => void);
   subtitleStyle?: string;
+  titleStyle?: string
 }
 
 function EmptyState({
   title,
   subtitle,
   label,
+  titleStyle,
   subtitleStyle,
   route }: ESProps) {
 
@@ -36,16 +38,16 @@ function EmptyState({
         className="w-[270px] h-[215px]"
       />
       <View className="mb-5 flex justify-center items-center gap-2">
-        <Text className="text-sm font-pmedium ">{title}</Text>
+        <Text className={"text-sm font-pmedium " + titleStyle}>{title}</Text>
         <Text className={subtitleStyle}>{subtitle}</Text>
       </View>
 
       {/* Add a button here */}
       <CustomButton
-        containerStyles="my-5 w-full ring border border-gray-500  bg-primary"
+        containerStyles="my-5 w-full ring border border-none  bg-blue-500 "
         title={label}
         handlePress={route as () => void}
-        textStyles="text-white"
+        textStyles="text-white font-bold"
       />
     </View>
   );

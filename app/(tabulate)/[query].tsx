@@ -55,6 +55,8 @@ const SearchScreen: React.FC = () => {
                         title="No Publication found"
                         subtitle="No Post yet found for this search query"
                         label='Search again'
+                        titleStyle='text-white'
+                        subtitleStyle='text-white'
                     />
                 )}
             />

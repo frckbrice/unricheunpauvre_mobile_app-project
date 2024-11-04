@@ -90,3 +90,12 @@ export type Don = {
     montantDons: number;
     dateDons: string;
 }
+
+export type DonationResponse = {
+    id: string;
+    status: string;
+    amount: {
+        value: string;
+        currency_code: string;
+    };
+};

@@ -20,7 +20,7 @@ const CustomHeader = () => {
 
                 className='flex-row  justify-between items-center h-[60px] gap-[10px] px-[20px] bg-transparent'
             >
-                <Link href={'/acceuil' as Href<string>} asChild>
+                <Link href={'/accueil' as Href<string>} asChild>
                     <TouchableOpacity
 
                         className='w-[40px] h-[40px] rounded-[20px] bg-[#626D77] justify-center items-center'
@@ -61,7 +61,7 @@ const CustomHeader = () => {
                         '
                     />
                 </View> */}
-                <TouchableOpacity onPress={() => router.push('/parameters')}
+                <TouchableOpacity onPress={() => router.push('/(settings)/parameters')}
 
                     className='w-[40px] h-[40px] rounded-[30px] bg-lightGray justify-center items-center'
 

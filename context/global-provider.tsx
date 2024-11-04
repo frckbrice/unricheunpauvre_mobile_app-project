@@ -1,41 +1,39 @@
-// import React, { createContext, useContext, useState, useEffect } from 'react';
-// import { getUserSession } from '../store/authStorage';
-// import { useUserStore } from '@/store/user-store';
-// import { TUser } from '@/lib/types';
+// libraries
+import React,
+{ createContext, useContext, useEffect, useState } from "react";
 
-// type AppStateContextType = {
-//     userType: TUser | null;
-//     setUserType: (type: TUser | null) => void;
-// };
+// local imports
+import { getCurrentUser } from "@/lib/api";
+import { Models } from "react-native-appwrite";
 
-// const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
+export const GlobalContext = createContext({});
+export const useGlobalContext = () => useContext(GlobalContext);
 
-// export const AppStateProvider = ({ children }: { children: React.ReactNode }) => {
-//     const [userType, setUserType] = useState<TUser | null>(null);
-//     // persist the logged in user
-//     const { getUserType } = useUserStore()
+const GlobalAppWriteProvider = ({ children }: { children: React.ReactNode }) => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<Models.Document | undefined | null>(null);
+    const [isLoading, setLoading] = useState(true);
+    // userID: frckbrice484065 pwd: +frckbrice@065484
+    useEffect(() => {
+        getCurrentUser()
+            .then((res) => {
+                if (res) {
+                    setIsLoggedIn(true);
+                    setUser(res);
+                } else {
+                    setIsLoggedIn(false);
+                    setUser(null);
+                }
+            })
+            .catch((error: any) => {
+                console.log(error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
 
-//     useEffect(() => {
-//         // Load user session when the app starts
-//         const loadUserSession = async () => {
-//             // const { userType } = await getUserSession();
-//             const userType = getUserType();
-//             setUserType((userType as TUser) || null);
-//         };
-//         loadUserSession();
-//     }, []);
+    return { user, isLoggedIn }
+};
 
-//     return (
-//         <AppStateContext.Provider value={{ userType, setUserType }}>
-//             {children}
-//         </AppStateContext.Provider>
-//     );
-// };
-
-// export const useAppState = () => {
-//     const context = useContext(AppStateContext);
-//     if (context === undefined) {
-//         throw new Error('useAppState must be used within an AppStateProvider');
-//     }
-//     return context;
-// };
+export default GlobalAppWriteProvider;

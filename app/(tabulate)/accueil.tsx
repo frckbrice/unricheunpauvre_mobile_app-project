@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, RefreshControl, FlatList, ActivityIndicator, } from 'react-native';
 
 import EmptyState from '@/components/empty-state';
@@ -13,26 +13,29 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const HomeScreen: React.FC = () => {
 
     const [refreshing, setRefreshing] = useState(false);
+    const mounted = useRef(false);
     const {
         data: posts,
         isLoading: isLoadingPosts,
         refetch: refetchPosts
-    } = useApiOps<Post[] | []>(getAllPublications);
+    } = useApiOps<Post>(() => {
+        if (mounted.current)
+            return getAllPublications();
+        return Promise.resolve([]);
+    });
     console.log("\n\nfrom HomeScreen component", posts);
 
+    useEffect(() => {
+        mounted.current = true;
+        return () => { mounted.current = false };
+    }, [])
 
-    const onRefresh = () => {
-        refetchPosts();
-
-    }
-
-    // if (isLoadingPosts) {
-    //     return (
-    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    //             <ActivityIndicator size="large" color={'gray'} />
-    //         </View>
-    //     )
-    // }
+    const onRefresh = React.useCallback(() => {
+        if (!isLoadingPosts) {
+            setRefreshing(true);
+            refetchPosts().finally(() => setRefreshing(false));
+        }
+    }, [isLoadingPosts, refetchPosts]);
 
 
     return (
@@ -41,7 +44,7 @@ const HomeScreen: React.FC = () => {
                 <FlatList
                     data={posts as Post[]}
                     keyExtractor={(post) => String(post.id)}
-                    renderItem={({ item: post }) => {
+                    renderItem={({ item }) => {
 
 
                         return (
@@ -50,7 +53,7 @@ const HomeScreen: React.FC = () => {
                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                         <ActivityIndicator size="large" color={'gray'} />
                                     </View>
-                                ) : <PublicationPost post={post} />}
+                                ) : <PublicationPost post={item} />}
                             </>
 
                         )
@@ -70,7 +73,8 @@ const HomeScreen: React.FC = () => {
                             title="No Post found"
                             subtitle="Start creating your post."
                             label="Create Post"
-                            subtitleStyle="text-[14px] text-center font-psemibold"
+                            titleStyle='text-white'
+                            subtitleStyle="text-[14px] text-center font-psemibold text-white"
                             route={'/poster'}
                         />
                     )}

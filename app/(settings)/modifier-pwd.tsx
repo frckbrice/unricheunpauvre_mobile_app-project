@@ -4,15 +4,42 @@ import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
+import { Colors } from '@/constants';
+import useUserGlobal from '@/hooks/use-user-hook';
+import { Alert } from 'react-native';
+import { updatedUser } from '@/lib/api';
 
 // Profile Edit Screen
 const ProfileAdressEditScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
-  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  const { currentUser } = useUserGlobal();
+
+  const router = useRouter();
+
+  console.log({
+    password, confirmPwd
+  })
+
+  const onSignInPress = React.useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      const newUser = await updatedUser(password, currentUser?.IdUser);
+      if (typeof newUser != 'undefined') {
+        Alert.alert('Success', `${newUser?.message}`);
+      }
+    } catch (err: any) {
+      console.error(JSON.stringify(err, null, 2));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [password]);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900 p-4">
+    <SafeAreaView className="flex-1 bg-gray-900 p-4 pt-5">
       <View className="flex-row items-center mb-6">
         <TouchableOpacity onPress={() => router.push("/parameters")}>
           <Ionicons name="arrow-back" size={24} color="white" />
@@ -50,8 +77,15 @@ const ProfileAdressEditScreen: React.FC = () => {
         </View>
 
       </ScrollView>
-      <TouchableOpacity className="bg-blue-600 rounded-lg p-3 mt-4">
-        <Text className="text-white text-center font-bold">Modifier</Text>
+      <TouchableOpacity
+        onPress={onSignInPress}
+        className="bg-blue-600 rounded-lg p-3 mt-4"
+      >
+
+        {isSubmitting ?
+          <ActivityIndicator size="large" color={Colors.primary} /> :
+
+          <Text className="text-white text-center font-bold">Modifier</Text>}
       </TouchableOpacity>
     </SafeAreaView>
   );

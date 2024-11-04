@@ -3,6 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Href, useRouter } from 'expo-router';
+import { tokenCache } from '@/store/persist-token-cache';
+import * as SecureStore from 'expo-secure-store'
 
 type SProps = {
     icon?: typeof Ionicons.defaultProps,
@@ -20,8 +22,19 @@ const SettingsItem = ({
 }: SProps) => {
 
     const router = useRouter();
+
+    const handleRouting = async () => {
+        if (route?.toLocaleLowerCase().includes('deconnexion')) {
+            await SecureStore.deleteItemAsync('token')
+            return router.push('/login');
+        } else
+            router.push(route as Href<string>)
+    }
+
     return (
-        <TouchableOpacity style={[styles.settingsItem, !isLast && styles.borderBottom]} onPress={() => router.push(route as Href<string>)}>
+        <TouchableOpacity
+            style={[styles.settingsItem, !isLast && styles.borderBottom]}
+            onPress={handleRouting}>
             <Ionicons name={icon} size={24} color="#fff" style={styles.icon} />
             <Text style={styles.settingsText}>{title}</Text>
             <View style={styles.rightContainer}>
@@ -36,7 +49,7 @@ const SentProjects = () => {
 
     const router = useRouter();
     return (
-        <SafeAreaView className=" h-full">
+        <SafeAreaView className=" h-full ">
             <View style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.push("/accueil")}>
@@ -72,7 +85,7 @@ const SentProjects = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
+        backgroundColor: '#111827',
     },
     header: {
         flexDirection: 'row',
@@ -80,6 +93,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#333',
+        backgroundColor: '#1f2937',
     },
     headerTitle: {
         color: '#fff',
@@ -89,7 +103,7 @@ const styles = StyleSheet.create({
     },
     section: {
         marginTop: 16,
-        backgroundColor: '#1E1E1E',
+        backgroundColor: '#1f2937',
         borderRadius: 8,
         marginHorizontal: 16,
         overflow: 'hidden',

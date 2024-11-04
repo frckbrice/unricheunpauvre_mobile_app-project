@@ -10,7 +10,7 @@ export default function App() {
 
             <Stack.Screen name="AccountIdentification" options={{ headerShown: false }} />
             <Stack.Screen name="modifier-pwd" options={{ headerShown: false }} />
-            <Stack.Screen name="ProfileEdit" options={{ headerShown: false }} />
+            <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
             <Stack.Screen name="parameters" options={{ headerShown: false }} />
         </Stack>
     );
