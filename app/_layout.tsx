@@ -1,9 +1,11 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect, } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Ionicons } from '@expo/vector-icons';
+import SplashScreenComponent from '@/components/splash-screen';
+import useUserGlobal from '@/hooks/use-user-hook';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -14,7 +16,11 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useUserGlobal();
+  const router = useRouter();
 
+  console.log("inside layout with currentUSer: ", currentUser)
 
   useEffect(() => {
     if (error) throw error;
@@ -23,6 +29,26 @@ export default function RootLayout() {
     }
 
   }, [loaded, error])
+
+  useEffect(() => {
+    if (currentUser?.IdUser) {
+      setTimeout(() => {
+        router.replace('/(tabulate)/accueil');
+      }, 1000)
+
+    } else {
+      setTimeout(() => {
+        router.replace('/');
+      }, 1000)
+
+    }
+    setIsLoading(false);
+  }, []);
+
+
+  if (isLoading) {
+    return <SplashScreenComponent />;
+  }
 
   return (
     // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

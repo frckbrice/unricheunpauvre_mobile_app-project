@@ -16,12 +16,13 @@ import useUserGlobal from '@/hooks/use-user-hook';
 import { tokenCache } from '@/store/persist-token-cache';
 import { Ionicons } from '@expo/vector-icons';
 import useAuthorAndPubGlobal from '@/hooks/current-post-author';
+import { DonationForm } from '@/components/don/components/donation-form';
 
 
 
 const Contribute: React.FC = () => {
 
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<{ nomDons: string, montantDons: number }>({
         nomDons: '',
         montantDons: 0
     });
@@ -34,24 +35,32 @@ const Contribute: React.FC = () => {
     const router = useRouter();
 
     // get current post author and curretn post.
-    const { postAuthor, currentPub } = useAuthorAndPubGlobal();
+    const { postAuthor, currentPub, refetch } = useAuthorAndPubGlobal();
+    useEffect(() => {
+        if (!postAuthor)
+            refetch();
+    }, [postAuthor]);
 
     const onSubmit = async (data: Don) => {
         const formData = {
             ...form,
             idPub: Number(idPub),
             IdUser: currentUser?.IdUser,
+            dateDons: new Date().toISOString(),
         }
         console.log("don to send: ", formData)
         try {
             console.log("from data: ", formData);
             const result = await uploadResourceData(formData, "Don",);
-            if (typeof result != 'undefined') {
+            if (typeof result != 'undefined' && result) {
                 Alert.alert('Success', 'Donation created successfully');
                 router.push('/accueil')
             }
 
-            else return console.error("fail to create donation.");
+            else {
+                console.error("fail to create donation.");
+                Alert.alert('Error', 'Failed to contribute.');
+            }
         } catch (error) {
             console.error(`Error creating a donation: ${error}, Please try again`);
         }
@@ -76,10 +85,10 @@ const Contribute: React.FC = () => {
                     <Text className="text-white">un riche un pauvre</Text>
                 </View>
             </View>
-            <View className="p-4 justify-center ">
+            <View className=" justify-center ">
 
                 {/* <Text className="text-white text-start mb-1">(optional)</Text> */}
-                <TextInput
+                {/* <TextInput
                     placeholder="Commentaire decrivant votre don..."
                     placeholderTextColor="#f1f1f1"
                     className="bg-gray-800
@@ -89,10 +98,10 @@ const Contribute: React.FC = () => {
                     multiline
                     value={form.nomDons}
                     onChangeText={(text) => setForm({ ...form, nomDons: text })}
-                />
-                <Text className="text-white text-start">Montant a donner</Text>
+                /> */}
+                {/* <Text className="text-white text-start">Montant a donner</Text> */}
 
-                <View className='flex-row w-full rounded
+                {/* <View className='flex-row w-full rounded
                 justify-between items-center
                  bg-gray-800 pr-2 my-2 '>
                     <TextInput
@@ -103,18 +112,20 @@ const Contribute: React.FC = () => {
                       text-white 
                      h-100"
                         keyboardType="numeric"
-                        value={form.montantDons?.toString()}
+                        value={String(form.montantDons)}
                         onChangeText={(text) => setForm({ ...form, montantDons: parseInt(text) })}
                     />
                     <Text className="text-white ml-2">€</Text>
-                </View>
+                </View> */}
 
-                <TouchableOpacity
+                <DonationForm />
+
+                {/* <TouchableOpacity
                     className="bg-gray-600 p-3 rounded-sm shadow-lg w-full"
                     onPress={handleSubmit(onSubmit)}
                 >
                     <Text className="text-white text-center font-bold">PAYER</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View >
         </SafeAreaView >
 

@@ -13,15 +13,12 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
+      "env": {
+        "EXPO_PUBLIC_PROD_API_URL": "https://rhysapi.iptvstreamerspro.com/api"
       }
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {

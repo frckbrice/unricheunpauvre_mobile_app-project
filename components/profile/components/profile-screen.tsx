@@ -22,9 +22,9 @@ const ProfileScreen: React.FC = () => {
         isLoading,
         refetch
     } = useApiOps<Publication>(() => {
-        if (mounted.current)
-            return getAllResourcesByTarget("Publication", currentUser?.IdUser);
-        return Promise.resolve([]);
+        // if (mounted.current)
+        return getAllResourcesByTarget("Publication", currentUser?.IdUser);
+        // return Promise.resolve([]);
     });
     const router = useRouter();
 
@@ -33,10 +33,10 @@ const ProfileScreen: React.FC = () => {
         refetch: refetchlikes,
         isLoading: islikeLoading
     } = useApiOps<Jaime>(() => {
-        if (mounted.current)
-            return getAllResourcesByTarget(
-                'Jaime', currentUser?.IdUser) as Promise<Jaime[]>;
-        return Promise.resolve([]);
+        // if (mounted.current)
+        return getAllResourcesByTarget(
+            'Jaime', currentUser?.IdUser) as Promise<Jaime[]>;
+        // return Promise.resolve([]);
     });
 
     useEffect(() => {
@@ -65,7 +65,7 @@ const ProfileScreen: React.FC = () => {
                 </View>
                 <View className="flex-row justify-around mb-4">
                     <View>
-                        <Text className="text-white text-center font-bold">{isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> : posts?.length ?? 0}</Text>
+                        <Text className="text-white text-center font-bold">{isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> : posts?.length || 0}</Text>
                         <Text className="text-gray-400">Publications</Text>
                     </View>
                     <View>

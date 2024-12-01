@@ -4,8 +4,11 @@ export const TOKEN_KEY = process.env.EXPO_PUBLIC_JWT_SECRET_KEY;
 
 export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
 
-export const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID
-export const PAYPAL_SECRET = process.env.PAYPAL_SECRET
+export const PAYPAL_CLIENT_ID = process.env.EXPO_PUBLIC_PAYPAL_CLIENT_ID
+export const PAYPAL_SECRET = process.env.EXPO_PUBLIC_PAYPAL_SECRET;
+
+console.log("PAYPAL_SECRET: ", PAYPAL_SECRET);
+console.log("PAYPAL_CLIENT_ID: ", PAYPAL_CLIENT_ID);
 
 export const comments = [{
     idCom: 5,

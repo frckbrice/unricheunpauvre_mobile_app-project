@@ -19,6 +19,9 @@ export interface IUser {
     username: string;
     etatUser: boolean;
     docUser: string;
+    idFront?: string;
+    idBack?: string;
+    passport?: string;
 }
 
 export interface TUser {
@@ -50,7 +53,7 @@ export type Publication = {
     favories: boolean;
     etat: boolean;
     videoPub?: string | any;
-    montantEstime: number;
+    montantEstime: number | string;
     documentUrl: string | any;
 }
 
@@ -63,14 +66,37 @@ export type Jaime = {
     dateJaime: string
 }
 
-export type Comment = {
-    idCom: number,
-    idPub: number,
-    idUser: number,
-    etatCom: boolean,
-    libeleCom: string,
-    dateCom: string
+export interface Comment {
+    idCom: number;
+    idPub: number;
+    idUser: number;
+    parentId?: number | null;  // Add this for nested replies
+    dateCom: string;
+    etatCom: boolean;
+    libeleCom: string;
+    userName?: string;
+    userAvatar?: string;
+    replies?: Comment[];
+    replyToUser?: string;
+    likes?: number; // the number of likes of this message
 }
+
+/**
+ *   const handleLike = () => {
+        setIsLiked(!isLiked);
+        Animated.sequence([
+            Animated.spring(scaleAnim, {
+                toValue: 1.2,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+            }),
+        ]).start();
+        onLike(comment?.idCom);
+    }
+ */
 
 export type User = {
     idUser?: number;
@@ -79,6 +105,10 @@ export type User = {
     username: string;
     etatUser: boolean;
     docUser: string;
+    idFront?: string; // front id card
+    idBack?: string;  // back id card
+    passport?: string;
+    userAvatar?: string;
 }
 
 

@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, TouchableOpacity } from 'react-native';
-import { PayPalButton } from './paypal-button';
+import PayPalDonationButton from './paypal-button';
 import { DonationResponse } from '@/lib/types';
+import * as WebBrowser from 'expo-web-browser';
 
 export const DonationForm: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [showPayPal, setShowPayPal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const PAYPAL_BUSINESS_ID = 'sb-9uyi529618727@business.example.com';
+  const CURRENCY = 'EUR';
 
   const handleDonationSuccess = (details: DonationResponse) => {
     Alert.alert(
@@ -26,56 +31,65 @@ export const DonationForm: React.FC = () => {
     setShowPayPal(false);
   };
 
-  const handleAmountSubmit = () => {
+  const handleAmountSubmit = async () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid donation amount.');
       return;
     }
     setShowPayPal(true);
+    setIsLoading(true);
+
+    try {
+      // Construct PayPal donation URL
+      const donationUrl = `https://www.paypal.com/donate?business=${encodeURIComponent(PAYPAL_BUSINESS_ID!)}` +
+        `&amount=${amount}` +
+        `&currency_code=${CURRENCY}`;
+
+      // Open in system browser
+      const result = await WebBrowser.openBrowserAsync(donationUrl);
+
+      // Handle browser result
+      if (result.type === 'cancel') {
+        Alert.alert('Donation Cancelled', 'Thank you for considering a donation.');
+      }
+    } catch (error) {
+      console.error('Donation Error:', error);
+      Alert.alert('Donation Error', 'Unable to process donation. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <View className="p-4">
-      <Text className="text-xl font-bold mb-4">Make a Donation</Text>
-      {!showPayPal ? (
-        <View>
+    <View className="p-4 w-full">
+      <Text className="text-xl font-bold mb-4 text-gray-300">Faire un Don</Text>
+      <View>
+        <View className='flex-row w-full rounded
+                justify-between items-center
+                 bg-gray-800 pr-2 my-2 '>
           <TextInput
-            className="border border-gray-300 rounded-lg p-3 mb-4"
-            placeholder="Enter donation amount"
+            className="bg-transparent
+              p-2 rounded w-[80%]
+               text-white 
+              h-100"
+            placeholder="Veuillez entrer le montant du don"
             keyboardType="decimal-pad"
             value={amount}
             onChangeText={setAmount}
+            placeholderTextColor={"#404757"}
           />
-          <TouchableOpacity
-            className="bg-blue-500 rounded-lg p-4"
-            onPress={handleAmountSubmit}
-          >
-            <Text className="text-white text-center font-semibold">
-              Proceed to Donate
-            </Text>
-          </TouchableOpacity>
+          <Text className="text-white ml-2">€</Text>
         </View>
-      ) : (
-        <View>
-          <Text className="text-lg mb-4">
-            Donation Amount: ${amount}
+
+        <TouchableOpacity
+          className="bg-blue-500 rounded-lg p-3"
+          onPress={handleAmountSubmit}
+        >
+          <Text className="text-white text-center font-semibold">
+            Donner
           </Text>
-          <PayPalButton
-            amount={Number(amount)}
-            onSuccess={handleDonationSuccess}
-            onError={handleDonationError}
-            currency={'€'}
-          />
-          <TouchableOpacity
-            className="mt-4 p-2"
-            onPress={() => setShowPayPal(false)}
-          >
-            <Text className="text-blue-500 text-center">
-              Cancel
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

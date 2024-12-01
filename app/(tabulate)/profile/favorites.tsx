@@ -20,7 +20,7 @@ const Favorites = () => {
         data: posts, // get all the post for this current user, by its ID
         refetch,
         isLoading
-    } = useApiOps<Post>(() => getAllResourcesByTarget<Publication>(
+    } = useApiOps<Post>(() => getAllResourcesByTarget(
         'Favories', currentUser?.id, 'idUser', 'idPub', currentPub?.idUser as number));
 
     console.log("current user posts: ", posts)

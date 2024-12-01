@@ -14,34 +14,46 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bricefrkc.unrichcom"
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to upload photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library for image uploads.",
+        "NSLocationWhenInUseUsageDescription": "Allow the app to use your location.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.bricefrkc.unrichcom"
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.unricheunpauvre"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "a669ecc2-3482-464e-b74a-1282b50b12d4"
-      }
-    },
     "plugins": [
-      "expo-secure-store",
+      "expo-router",
+      "expo-asset",
       [
-        "expo-build-properties",
+        "expo-image-picker",
         {
-          "android": {
-            "usesCleartextTraffic": true
-          }
+          "photosPermission": "The app needs access to your photos to upload identification documents."
         }
       ]
-    ]
-  },
-  "jsEngine": "hermes"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "37bcd1b9-c4ee-47d5-9791-bb0ce7c482e0"
+      }
+    }
+  }
 }

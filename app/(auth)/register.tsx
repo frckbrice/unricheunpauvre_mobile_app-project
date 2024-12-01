@@ -335,17 +335,27 @@ const LoginScreen: React.FC = () => {
             "isSubmitting", isSubmitting
         )
         try {
-            const newUser = await createUserAccount(
-                mdpUser,
-                username,
-                'User',
-                nomUser,
-            );
+            // const newUser = await createUserAccount(
+            //     mdpUser,
+            //     username,
+            //     'User',
+            //     nomUser,
+            // );
+            const res = await fetch(`https://rhysapi.iptvstreamerspro.com/api/User`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mdpUser,
+                    username,
+                    nomUser,
+                }),
+            });
+            const newUser = await res.json();
 
             if (typeof newUser != 'undefined') {
-                tokenCache.saveToken('currentUser', newUser);
-
-                Alert.alert('Success', 'account created successfully');
+                Alert.alert('Success', 'Compte cree. Veuillez vous connecter');
 
                 console.log("from register: ", newUser)
                 setTimeout(() => {
@@ -354,6 +364,7 @@ const LoginScreen: React.FC = () => {
             }
         } catch (err: any) {
             console.error(JSON.stringify(err, null, 2))
+            Alert.alert("Echec de connection", "veuillez reessayer avec les bons indentifiants");
         } finally {
             setIsSubmitting(false);
         }
@@ -364,7 +375,7 @@ const LoginScreen: React.FC = () => {
             style={{ flex: 1 }}
         >
             <SafeAreaView className="h-full">
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, marginTop: 20 }}>
                     <View className="px-4 justify-center flex-1">
                         <View className="items-center mb-5 ">
                             <Image
@@ -414,31 +425,48 @@ const LoginScreen: React.FC = () => {
                                 inputStyle="placeholder:text-gray-400 text-black-200"
                             />
                         </View>
-                        <TouchableOpacity className="mt-3">
+                        {/* <TouchableOpacity className="mt-3">
                             <Text className=" text-blue-600 mb-4 text-center font-semibold">Mot de passe oublié ?</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                     <View className='w-full h-80 rounded-tr-[40px] rounded-tl-[40px]'>
-                        <Image source={require('../../assets/images/logo_image.png')}
+                        {/* <Image source={require('../../assets/images/logo_image.png')}
                             resizeMode='cover' className="w-[100%] h-80 rounded-tr-[40px] rounded-tl-[40px]" />
                         <View
                             className='bg-transparent justify-center'
-                            style={{ position: 'absolute', top: 50, left: 80 }}
+                            style={{ position: 'absolute', top: 50, left: 60 }}
                         >
                             <TouchableOpacity
                                 className="bg-blue-600 rounded-lg p-3 my-4"
                                 onPress={onSignUpPress}
                             >
-                                {isSubmitting ? <ActivityIndicator size="large" color={Colors.primary} /> : <Text className="text-white text-center font-bold">CONNEXION</Text>}
+                                {isSubmitting ? <ActivityIndicator size="large" color={Colors.primary} /> : <Text className="text-white text-center font-bold">CREER SON COMPTE</Text>}
                             </TouchableOpacity>
                             <View className="flex-row justify-center items-center mt-2">
-                                <Text className=" text-primaryMuted font-extrabold">Vous n'avez pas de compte ? </Text>
-                                <TouchableOpacity onPress={() => router.replace('/register')}>
+                                <Text className=" text-primaryMuted font-extrabold">Vous avez deja un compte ? </Text>
+                                <TouchableOpacity onPress={() => router.replace('/login')}>
                                     <Text className="text-lg text-blue-600 font-extrabold">S'inscrire</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View> */}
+                        <View
+                            className='bg-transparent justify-center'
+                        >
+                            <TouchableOpacity
+                                className="bg-blue-600 rounded-lg p-3 my-4 mx-5"
+                                onPress={onSignUpPress}
+                            >
+                                {isSubmitting ? <ActivityIndicator size="large" color={Colors.primary} /> : <Text className="text-white text-center font-bold">CREER SON COMPTE</Text>}
+                            </TouchableOpacity>
+                            <View className="flex-row justify-center items-center mt-2">
+                                <Text className=" text-gray-400 font-extrabold">Vous avez deja un compte ? </Text>
+                                <TouchableOpacity onPress={() => router.replace('/login')}>
+                                    <Text className="text-lg text-blue-600 font-extrabold">Se connecter</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </View>
+
                 </ScrollView>
             </SafeAreaView>
         </KeyboardAvoidingView>

@@ -7,6 +7,7 @@ import useApiOps from '@/hooks/use-api';
 import { getAllPublications } from '@/lib/api';
 import PublicationPost from '@/components/post';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useAuthorAndPubGlobal from '@/hooks/current-post-author';
 
 
 
@@ -19,16 +20,17 @@ const HomeScreen: React.FC = () => {
         isLoading: isLoadingPosts,
         refetch: refetchPosts
     } = useApiOps<Post>(() => {
-        if (mounted.current)
-            return getAllPublications();
-        return Promise.resolve([]);
+        // if (mounted.current)
+        return getAllPublications();
+        // return Promise.resolve([]);
     });
     console.log("\n\nfrom HomeScreen component", posts);
 
-    useEffect(() => {
-        mounted.current = true;
-        return () => { mounted.current = false };
-    }, [])
+
+    // useEffect(() => {
+    //     mounted.current = true;
+    //     return () => { mounted.current = false };
+    // }, [posts])
 
     const onRefresh = React.useCallback(() => {
         if (!isLoadingPosts) {
@@ -81,6 +83,8 @@ const HomeScreen: React.FC = () => {
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
                 />
             </View>
         </SafeAreaView>

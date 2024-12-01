@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import useApiOps from '@/hooks/use-api';
 import { Category, Publication } from '@/lib/types';
-import { getAllCategories, getCurrentUser, getFileUrlFromProvider, uploadFileToSupabase, uploadResourceData, } from '@/lib/api';
+import { getAllCategories, getCurrentUser, getFileUrlFromProvider, uploadResourceData, } from '@/lib/api';
 import { SelectItem } from '@/components/picker';
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from 'react-hook-form';
@@ -75,29 +75,36 @@ const CreatePostScreen: React.FC = () => {
 
     const onSubmit = async (data: Publication) => {
 
-        const imgUrl = await uploadFileToSupabase(form?.imagePub);
-
+        const imgUrl = await getFileUrlFromProvider(form?.imagePub);
+        const { videoPub, documentUrl, ...res } = form;
         // const docUrl = await uploadFileToSupabase(form?.documentUrl);
         const formData = {
-            ...form,
+            ...res,
             idUser: currentUser?.IdUser,
             // videoPub: form.videoPub, // add video uri if exists.
             idCat: Number(currentCat?.id),
             imagePub: imgUrl,
             // docPub: docUrl,
+            datePub: new Date().toISOString(),
+            favories: true,
+            etat: false,
         }
 
-        // console.log("object to be uploaded: ", docUrl,)
-        try {
-            console.log("from data: ", formData);
-            const result = await uploadResourceData(formData, "Publication");
-            if (typeof result != 'undefined')
-                console.log("from poster file result: ", result);
-        } catch (error) {
-            console.error("upload publication  error: ", error);
-        }
+        console.log("object to be uploaded: ", imgUrl,)
+        // try {
+        //     console.log("form data: ", formData);
+        //     const result = await uploadResourceData(formData, "Publication");
+        //     if (typeof result != 'undefined')
+        //         console.log("from poster file result: ", result);
+        // } catch (error) {
+        //     console.error("upload publication  error: ", error);
+        // }
+        const result = await uploadResourceData(formData, "Publication");
+        // if (typeof result != 'undefined')
+        //     console.log("from poster file result: ", result);
+        Alert.alert('Success', `publication creee avec success!`);
     };
-
+    0
     const onPicker = async (selectType: string) => {
         // you can select multiple images and videos
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -115,7 +122,7 @@ const CreatePostScreen: React.FC = () => {
             console.log("image uploaded: ", result.assets[0])
             const base64 = `data:image/png;base64,${result.assets[0].base64}`;
             if (selectType === "image") {
-                setForm({ ...form, imagePub: result.assets[0].uri });
+                setForm({ ...form, imagePub: result.assets[0] });
             }
             // if (selectType === "video") {
             //     setForm({ ...form, videoPub: result.assets[0].uri });
@@ -170,14 +177,14 @@ const CreatePostScreen: React.FC = () => {
                 justify-between items-center
                  bg-gray-800 pr-2 my-2 '>
                         <TextInput
-                            placeholder="Commentaire decrivant votre don..."
+                            placeholder="estimation..."
                             placeholderTextColor="#f1f1f1"
                             className="bg-transparent
                      p-2 rounded w-[80%]
                       text-white 
                      h-100"
                             keyboardType="numeric"
-                            value={form.montantEstime?.toString()}
+                            value={form.montantEstime as string}
                             onChangeText={(text) => setForm({ ...form, montantEstime: parseInt(text) })}
                         />
                         <Text className="text-white ml-2">€</Text>
@@ -193,7 +200,7 @@ const CreatePostScreen: React.FC = () => {
                             {form.imagePub ? (
                                 // <></>
                                 <Image
-                                    source={{ uri: form.imagePub }} // uri is used for non local images.
+                                    source={{ uri: form.imagePub.uri }} // uri is used for non local images.
                                     className="w-full h-36 rounded-xl mt-3"
                                     resizeMode="cover"
                                 />
@@ -216,11 +223,12 @@ const CreatePostScreen: React.FC = () => {
                         </TouchableOpacity>
 
                     </View>
-                    <TouchableOpacity className="bg-gray-800 p-2 rounded mb-4 flex-row gap-2 items-center " onPress={handleDocumentUpload} >
+                    {/* <TouchableOpacity className="bg-gray-800 p-2 rounded mb-4 flex-row gap-2 items-center "
+                        onPress={handleDocumentUpload} >
 
                         <Ionicons name="add-circle-outline" size={30} color="white" />
                         <Text className="text-white/70" > Insérer un document</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     {form.documentUrl && (
                         <View className='flex-row items-center gap-1 my-2'>
                             <Text className="text-white/70 text-sm mb-1">

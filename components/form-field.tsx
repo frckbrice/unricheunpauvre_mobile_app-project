@@ -39,7 +39,7 @@ const FormField = ({
           value={value}
           onChangeText={handleChangeText}
           placeholderTextColor={"#404757"}
-          secureTextEntry={title === "Mot de pass" && !showPasswd}
+          secureTextEntry={title === "Mot de passe" && !showPasswd}
           className={`flex-1 ml-2 text-black-200 `}
         />
         {title === "Mot de passe" && (

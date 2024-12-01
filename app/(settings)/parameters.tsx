@@ -73,7 +73,7 @@ const SentProjects = () => {
                         <SettingsItem icon="help-circle-outline" title="Centre d'aide" />
                         <SettingsItem icon="shield-outline" title="Politique de confidentialité" />
                         <SettingsItem icon="person-add-outline" title="Invité un ami" />
-                        <SettingsItem icon="log-out-outline" title="Déconnexion" isLast />
+                        <SettingsItem icon="log-out-outline" title="Déconnexion" isLast route='deconnexion' />
                     </View>
                 </ScrollView>
             </View>

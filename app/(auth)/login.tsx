@@ -19,14 +19,30 @@ const LoginScreen: React.FC = () => {
     const onSignInPress = React.useCallback(async () => {
         setIsSubmitting(true);
         try {
-            const newUser = await createUserAccount(password, username, 'Auth/login');
-            if (typeof newUser != 'undefined') {
-                tokenCache.saveToken('currentUser', newUser?.token);
-                Alert.alert('Success', `${newUser?.message}`);
+            // const data = await createUserAccount(password, username, 'Auth/login');
+            const res = await fetch(`https://rhysapi.iptvstreamerspro.com/api/Auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
+            });
+            if (!res.ok) {
+                throw new Error('Failed to login user');
+            }
+            const data = await res.json();
+            if (data?.token) {
+                tokenCache.saveToken('currentUser', data?.token);
+                Alert.alert('Success', `${data?.message}`);
                 router.replace('/accueil');
             }
         } catch (err: any) {
             console.error(JSON.stringify(err, null, 2));
+            console.log(err);
+            Alert.alert("Echec de connection", "votre connexion au reseau est instable. veuillez reessayer");
         } finally {
             setIsSubmitting(false);
         }
@@ -35,10 +51,10 @@ const LoginScreen: React.FC = () => {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
+            style={{ flex: 1, }}
         >
-            <SafeAreaView className="h-full">
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <SafeAreaView className="h-full ">
+                <ScrollView contentContainerStyle={{ justifyContent: 'center', alignItems: 'center', marginTop: 60 }}>
                     <View className="px-4 justify-center flex-1">
                         <View className="items-center mb-5 ">
                             <Image
@@ -69,32 +85,29 @@ const LoginScreen: React.FC = () => {
                             <FormField
                                 title={"Mot de passe"}
                                 value={password}
-                                placeholder="Enter your password"
+                                placeholder="Entrer votre mot de pass..."
                                 handleChangeText={(e: string) => setPassword(e)}
-                                inputStyle="placeholder:text-gray-400 text-black-200"
+                                inputStyle="placeholder:text-gray-200 text-black-200"
                             />
                         </View>
-                        <TouchableOpacity className="mt-3">
+                        {/* <TouchableOpacity className="mt-3">
                             <Text className=" text-blue-600 mb-4 text-center font-semibold">Mot de passe oublié ?</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
-                    <View className='w-full h-80 rounded-tr-[40px] rounded-tl-[40px]'>
-                        <Image source={require('../../assets/images/logo_image.png')}
-                            resizeMode='cover' className="w-[100%] h-80 rounded-tr-[40px] rounded-tl-[40px]" />
+                    <View className='w-full '>
                         <View
                             className='bg-transparent justify-center'
-                            style={{ position: 'absolute', top: 50, left: 80 }}
                         >
                             <TouchableOpacity
-                                className="bg-blue-600 rounded-lg p-3 my-4"
+                                className="bg-blue-600 rounded-lg p-3 my-4 mx-5"
                                 onPress={onSignInPress}
                             >
                                 {isSubmitting ? <ActivityIndicator size="large" color={Colors.primary} /> : <Text className="text-white text-center font-bold">CONNEXION</Text>}
                             </TouchableOpacity>
                             <View className="flex-row justify-center items-center mt-2">
-                                <Text className=" text-primaryMuted font-extrabold">Vous n'avez pas de compte ? </Text>
+                                <Text className=" text-gray-500 font-extrabold">Vous n'avez pas de compte ? </Text>
                                 <TouchableOpacity onPress={() => router.replace('/register')}>
-                                    <Text className="text-lg text-blue-600 font-extrabold">S'inscrire</Text>
+                                    <Text className="text-lg text-blue-600 font-extrabold">creer son compte</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

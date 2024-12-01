@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -27,19 +27,24 @@ const ProfileEditScreen: React.FC = () => {
         setEdit(true);
         const dataObj = {
             idUser: currentUser?.IdUser,
-            name,
-            username,
-            location,
-            description,
-            imagePub,
+            nomUser: name,
+            username: username,
+            // location,
+            // description,
+            // imagePub,
         };
 
         try {
-            await uploadResourceData(
+            const result = await uploadResourceData(
                 dataObj,
                 'User'
             );
+            if (result) {
+                Alert.alert('Success', 'Profile updated successfully');
+                router.push('/(tabulate)/profile');
+            }
             setEdit(false);
+
         } catch (error) {
             console.error(error);
         } finally {

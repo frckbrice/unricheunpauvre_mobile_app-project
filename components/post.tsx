@@ -1,12 +1,13 @@
 import {
     View, Text,
-    TouchableOpacity, ScrollView, Alert, FlatList
+    TouchableOpacity, ScrollView, Alert, FlatList,
+    ActivityIndicator
 } from 'react-native'
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { Comment, Jaime, Post } from '@/lib/types';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Comment, Jaime, Post, User } from '@/lib/types';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllResourcesByTarget, updateResource, uploadResourceData } from '@/lib/api';
+import { getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
 import useApiOps from '@/hooks/use-api';
 import CommentPost from './publication/comment';
 import CommentInput from './publication/comment-input';
@@ -14,11 +15,14 @@ import useUserGlobal from '@/hooks/use-user-hook';
 import { AppError } from '@/utils/error-class';
 import { comments } from '@/constants/constants';
 import { useRouter } from 'expo-router';
-import { tokenCache } from '@/store/persist-token-cache';
-import useAuthorAndPubGlobal from '@/hooks/current-post-author';
+
+import * as SecureStore from 'expo-secure-store'
+import { Colors } from '@/constants';
+import { EnhancedCommentSection } from './custom-comment-components';
 
 type TPost = {
     post: Post;
+    postAuthor?: User | null;
 }
 
 const PublicationPost = ({ post }: TPost) => {
@@ -26,14 +30,22 @@ const PublicationPost = ({ post }: TPost) => {
     const mounted = useRef(false);
     const {
         data: initialLikes, // get all the likes for this pub, by its ID
-        refetch,
+        refetch: refetchLikes,
         isLoading
     } = useApiOps<Jaime>(() => {
-        if (mounted.current)
-            getAllResourcesByTarget(
-                'Jaime', post?.id, 'idPub') as Promise<Jaime[]>
-        return Promise.resolve([]);
+        return getAllResourcesByTarget(
+            'Jaime', post?.id, 'idPub') as Promise<Jaime[]>
+
     });
+
+    const {
+        data: postAuthor,
+        isLoading: isLoadingPostAuthor,
+        refetch: refetchPostAuthor
+    } = useApiOps<User>(() => {
+        return getSingleResource('User', post?.idUser as number);
+    });
+
     const [isFavorite, setIsFavorite] = useState(false);
     const [isliked, setIsliked] = useState(false);
     const [likes, setLikes] = useState(initialLikes?.length ?? 0);
@@ -42,21 +54,24 @@ const PublicationPost = ({ post }: TPost) => {
 
     const { currentUser } = useUserGlobal();
     const router = useRouter();
-    const { postAuthor, } = useAuthorAndPubGlobal();
+
+
+
 
     console.log("currrent post author: ", postAuthor);
+
     useEffect(() => {
-        mounted.current = true
-        return () => {
-            mounted.current = false
-        }
-    }, [])
-    useEffect(() => {
-        // store the cuurent post ro the local store
-        tokenCache.saveToken('post', JSON.stringify(post));
-    }, [post?.id])
+        if (!postAuthor)
+            refetchPostAuthor();
+        // store the cuurent post to the local store
+        SecureStore.setItemAsync('post', JSON.stringify(post));
+
+        // store the post author to local store
+        SecureStore.setItemAsync('postAuthor', JSON.stringify(postAuthor));
+    }, [post]);
+
     // write a logic to like a post
-    const likePost = async () => {
+    const likePost = useCallback(async () => {
 
         // Optimistically update the UI
         const newLikedState = !isliked;
@@ -80,10 +95,10 @@ const PublicationPost = ({ post }: TPost) => {
         } catch (error) {
             console.error("error liking post: ", error)
         }
-    }
+    }, [uploadResourceData, post?.id, isliked, currentUser])
 
     // set ths pub as favorite
-    const favoritePost = async () => {
+    const favoritePost = useCallback(async () => {
         // no post, no like
         setIsFavorite(!isFavorite);
         if (!post.id || !isFavorite || !currentUser) return console.log("post must be favorite");
@@ -97,28 +112,24 @@ const PublicationPost = ({ post }: TPost) => {
         try {
             const newLike = await updateResource('Publication', post?.id, pubObj)
             if (typeof newLike != 'undefined')
-                refetch();
+                refetchLikes();
             else return console.error("fail to set post favorite.")
         } catch (error) {
             console.error("error liking post: ", error)
         }
-    }
+    }, [updateResource, post, isFavorite, currentUser]
+    )
 
-    // realise a pub, through a pop-pup communication presentation
-    const realisePub = async () => {
-        // no post , no comment
-        if (!post.id) return;
-
-    }
     // contribute to a post, open a paypal payment SDK
     const contributeToPub = async () => {
         // no post , no comment
-        if (!post.id) return;
-        router.push(`/contribute/${post?.id}`)
+        if (!post.id)
+            return Alert.alert("there is no pub for this contribution.");
+        else return router.push(`/contribute/${post?.id}`)
     }
 
     // commnet a post
-    const handleAddComment = async () => {
+    const handleAddComment = useCallback(async () => {
 
         // no post , no comment
         if (!post?.id) return console.log("there is no pub for this comment.");
@@ -148,14 +159,14 @@ const PublicationPost = ({ post }: TPost) => {
             throw new Error(`failed to comment on post with Id ${post?.id}`);
         }
 
-    }
+    }, [post?.comments, uploadResourceData, post?.id, currentCom, currentUser?.IdUser])
 
 
     // enable comment list
     const toggleComment = () => {
         setStartComment(!startComment)
     }
-    console.log("post postAuthor is: ", postAuthor)
+
     return (
         <ScrollView className={'mb-5'}>
             <View className="flex-row items-center 
@@ -164,7 +175,11 @@ const PublicationPost = ({ post }: TPost) => {
                     className="w-10 h-10 rounded-full mr-2"
                 />
                 <View className='flex justify-center items-center'>
-                    <Text className="text-white font-medium">{postAuthor?.nomUser}</Text>
+                    <Text className="text-white font-medium">
+                        {isLoadingPostAuthor ?
+                            <ActivityIndicator size="large" color={Colors.primary} />
+                            : postAuthor?.nomUser}
+                    </Text>
                     <Text className="text-gray-400 text-xs">{post?.location}</Text>
                 </View>
                 <Text className="text-gray-400 text-xs ml-auto mr-2">{new Date(post?.timeAgo).toDateString()}</Text>
@@ -176,14 +191,7 @@ const PublicationPost = ({ post }: TPost) => {
                 </Text>
                 <Image source={post.imageUrl ? { uri: post?.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" />
                 <View className="flex-row justify-end">
-                    {/* <TouchableOpacity
-                        className="bg-gray-900 px-4 py-1 rounded-3xl
-                         border-blue-400 border-2"
-                        onPress={realisePub}
-                    >
 
-                        <Text className="text-white text-[12px]">Réaliser</Text>
-                    </TouchableOpacity> */}
                     <TouchableOpacity
                         className="bg-gray-900 px-4 py-1 rounded-3xl
                          border-blue-400 border-2"
@@ -222,7 +230,7 @@ const PublicationPost = ({ post }: TPost) => {
                             <Ionicons name="heart" size={22} color="white" />}
                     </TouchableOpacity>
                 </View>
-                {!!startComment && <View>
+                {/* {!!startComment && <View>
                     <CommentInput
                         currentCom={currentCom}
                         setCurrentCom={setCurrentCom}
@@ -241,8 +249,68 @@ const PublicationPost = ({ post }: TPost) => {
                         keyExtractor={(item) => item?.idCom.toString()}
 
                     />
-                </View>}
+                </View>} */}
+                {/* {!!startComment && (
+                    <EnhancedCommentSection
+                        post={post}
+                        currentUser={currentUser}
+                        onAddComment={async (newComment: Partial<Comment>) => {
+                            try {
+                                const result = await uploadResourceData(newComment, 'Commentaire');
+                                if (result)
+                                    return result;
+                            } catch (error) {
+                                console.error('Error adding comment:', error);
+                                throw error;
+                            }
+                        }}
+                    />
+                )} */}
 
+                {!!startComment && (
+                    <EnhancedCommentSection
+                        post={post}
+                        currentUser={currentUser}
+                        onAddComment={async (newComment) => {
+                            try {
+                                const result = await uploadResourceData(newComment, 'Commentaire');
+                                if (result) {
+                                    // increase the number of comments by 1 (new created comment.)
+                                    post?.comments?.unshift({
+                                        idCom: comments.length + 1, // set the comment id as the length of the comments array + 1.
+                                        idPub: result?.idPub as number,
+                                        idUser: result?.idUser as number,
+                                        dateCom: result?.dateCom as string,
+                                        etatCom: result?.etatCom as boolean,
+                                        libeleCom: result?.libeleCom as string, //   
+                                    });
+                                    return result;
+                                }
+                                return null;
+                            } catch (error) {
+                                console.error('Error adding comment:', error);
+                                throw error;
+                            }
+                        }}
+                        onAddReply={async (parentId, text) => {
+                            try {
+                                const replyData = {
+                                    idPub: post.id,
+                                    idUser: currentUser?.IdUser,
+                                    parentId: parentId,
+                                    libeleCom: text,
+                                    dateCom: new Date().toISOString(),
+                                    etatCom: false,
+                                };
+                                const result = await uploadResourceData(replyData, 'Commentaire');
+                                return result;
+                            } catch (error) {
+                                console.error('Error adding reply:', error);
+                                throw error;
+                            }
+                        }}
+                    />
+                )}
 
             </View>
         </ScrollView>

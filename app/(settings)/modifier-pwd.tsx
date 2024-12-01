@@ -8,7 +8,7 @@ import { ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { Alert } from 'react-native';
-import { updatedUser } from '@/lib/api';
+import { updatedUserPwd } from '@/lib/api';
 
 // Profile Edit Screen
 const ProfileAdressEditScreen: React.FC = () => {
@@ -27,7 +27,7 @@ const ProfileAdressEditScreen: React.FC = () => {
   const onSignInPress = React.useCallback(async () => {
     setIsSubmitting(true);
     try {
-      const newUser = await updatedUser(password, currentUser?.IdUser);
+      const newUser = await updatedUserPwd(password, currentUser?.IdUser);
       if (typeof newUser != 'undefined') {
         Alert.alert('Success', `${newUser?.message}`);
       }

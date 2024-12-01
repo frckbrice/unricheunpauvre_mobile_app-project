@@ -1,17 +1,18 @@
 import { View, Text } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Post, User } from '@/lib/types'
 import { tokenCache } from '@/store/persist-token-cache';
-import JWT from 'expo-jwt';
-import { Alert } from 'react-native';
-import { TOKEN_KEY } from '@/constants/constants';
-import { EncodingKey, JWTBody, JWTDefaultBody } from 'expo-jwt/dist/types/jwt';
-import { getSingleResource } from '@/lib/api';
+import { PAYPAL_CLIENT_ID, PAYPAL_SECRET, TOKEN_KEY } from '@/constants/constants';
+import { getResourceByItsId, getSingleResource } from '@/lib/api';
 
 const useAuthorAndPubGlobal = () => {
 
+    console.log("PAYPAL_SECRET post author: ", PAYPAL_SECRET);
+    console.log("PAYPAL_CLIENT_ID from post author file: ", PAYPAL_CLIENT_ID);
+
     const [postAuthor, setPostAuthor] = useState<User | null>(null);
     const [currentPub, setCurrentPub] = useState<Post>();
+    const [user, setUser] = useState(false)
 
     const getCurrentPost = async () => {
         const post = JSON.parse(await tokenCache.getToken('post') as string);
@@ -19,20 +20,24 @@ const useAuthorAndPubGlobal = () => {
     }
 
     // get the author of this publication fromthe API
-    const getPostAuthor = async () => {
-        if (!currentPub?.idUser) return console.error("No author id supplied for this post");
-        const postAuth = await getSingleResource('User', currentPub?.idUser as number);
-        if (typeof postAuth != 'undefined') {
-            setPostAuthor(postAuth as User);
+    const getPostAuthor = useCallback(async () => {
+        const post = JSON.parse(await tokenCache.getToken('post') as string);
+        const postAuthor = await getResourceByItsId(post?.idUser as number, "User");
+        if (postAuthor) {
+            setPostAuthor(postAuthor);
         }
-    }
+    }, [getSingleResource, setPostAuthor, currentPub]);
 
     useEffect(() => {
         getCurrentPost();
         getPostAuthor();
     }, []);
 
-    return { postAuthor, currentPub };
+    const refetch = () => {
+        getPostAuthor();
+    }
+
+    return { postAuthor, currentPub, refetch };
 }
 
 export default useAuthorAndPubGlobal;

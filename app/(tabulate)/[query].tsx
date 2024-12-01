@@ -20,9 +20,11 @@ const SearchScreen: React.FC = () => {
         refetch: refetchCategories,
         isLoading
     } = useApiOps<Category>(getAllCategories);
-    const { query } = useLocalSearchParams();
+    const { query } = useLocalSearchParams<{ query: string }>();
 
     const listCat = categories?.length ? categories?.map((category: Category) => category.name) : categoriesP;
+
+    // TODO: implement search query logic here
 
     return (
         <SafeAreaView className="h-full bg-gray-900 p-4 ">
@@ -37,11 +39,14 @@ const SearchScreen: React.FC = () => {
 
                         <View className="mb-8">
                             {/* search input */}
-                            <SearchInput initialQuery={query} placeholder={"Search query"} />
+                            <SearchInput initialQuery={query} placeholder={"Rechercher..."} />
                         </View>
                         <View className='space-y-1'>
                             {listCat.map((category: string, index: number) => (
-                                <TouchableOpacity key={index} className="bg-white/90 rounded-lg px-4 py-2 mr-2 h-10">
+                                <TouchableOpacity
+                                    key={index}
+                                    className="bg-white/90 rounded-lg px-4 py-2 mr-2 h-10"
+                                >
                                     <Text className="text-black-100">{category}</Text>
                                 </TouchableOpacity>
                             ))}
@@ -52,9 +57,9 @@ const SearchScreen: React.FC = () => {
                 // this property displays in case the list of data above is empty. it behave like a fallback.
                 ListEmptyComponent={() => (
                     <EmptyState
-                        title="No Publication found"
-                        subtitle="No Post yet found for this search query"
-                        label='Search again'
+                        title="Pas de publications."
+                        subtitle="Aucune publication pour ces categories."
+                        label='Relancer la recherche'
                         titleStyle='text-white'
                         subtitleStyle='text-white'
                     />
