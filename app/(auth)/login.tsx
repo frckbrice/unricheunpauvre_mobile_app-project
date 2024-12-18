@@ -31,6 +31,8 @@ const LoginScreen: React.FC = () => {
                 }),
             });
             if (!res.ok) {
+
+                Alert.alert("Echec de connection", "votre connexion au reseau est instable. veuillez reessayer");
                 throw new Error('Failed to login user');
             }
             const data = await res.json();

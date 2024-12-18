@@ -8,7 +8,7 @@ import SplashScreenComponent from '@/components/splash-screen';
 import useUserGlobal from '@/hooks/use-user-hook';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   // const colorScheme = useColorScheme();
@@ -17,34 +17,14 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useUserGlobal();
-  const router = useRouter();
-
-  console.log("inside layout with currentUSer: ", currentUser)
 
   useEffect(() => {
     if (error) throw error;
     if (loaded) {
-      SplashScreen.hideAsync(); // to hide splash screen on android only.
+      // SplashScreen.hideAsync(); // to hide splash screen on android only.
+      setIsLoading(false);
     }
-
   }, [loaded, error])
-
-  useEffect(() => {
-    if (currentUser?.IdUser) {
-      setTimeout(() => {
-        router.replace('/(tabulate)/accueil');
-      }, 1000)
-
-    } else {
-      setTimeout(() => {
-        router.replace('/');
-      }, 1000)
-
-    }
-    setIsLoading(false);
-  }, []);
-
 
   if (isLoading) {
     return <SplashScreenComponent />;

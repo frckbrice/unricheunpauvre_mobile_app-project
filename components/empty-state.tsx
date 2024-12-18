@@ -44,7 +44,7 @@ function EmptyState({
 
       {/* Add a button here */}
       <CustomButton
-        containerStyles="my-5 w-full ring border border-none  bg-blue-500 "
+        containerStyles="my-4 w-full ring border border-none  bg-blue-500 "
         title={label}
         handlePress={route as () => void}
         textStyles="text-white font-bold"

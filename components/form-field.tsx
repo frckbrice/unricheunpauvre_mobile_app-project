@@ -27,10 +27,10 @@ const FormField = ({
     <View className="space-y-2">
       {/* <Text className="text-base  font-semibold">{title}</Text> */}
 
-      <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
+      <View className="flex-row items-center border border-gray-300 rounded-lg p-2 ">
         {title === 'email' ? (
           <Ionicons name="mail" size={24} color="gray" />
-        ) : title === "Mot de passe" ? (
+        ) : (title === "Mot de passe" || title === "Confirmer Mot de passe") ? (
           <Ionicons name="lock-closed" size={24} color="#2563eb" />
         ) : null}
 
@@ -39,10 +39,10 @@ const FormField = ({
           value={value}
           onChangeText={handleChangeText}
           placeholderTextColor={"#404757"}
-          secureTextEntry={title === "Mot de passe" && !showPasswd}
-          className={`flex-1 ml-2 text-black-200 `}
+          secureTextEntry={(title === "Mot de passe" || title === "Confirmer Mot de passe") && !showPasswd}
+          className={`flex-1 ml-2 text-black-200 ${inputStyle}`}
         />
-        {title === "Mot de passe" && (
+        {(title === "Mot de passe" || title === "Confirmer Mot de passe") && (
           <TouchableOpacity
             // name={showPasswd ? "eye-off" : "eye"}
             // size={18}

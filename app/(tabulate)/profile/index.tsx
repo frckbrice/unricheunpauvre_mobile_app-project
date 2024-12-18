@@ -7,6 +7,7 @@ import useUserGlobal from '@/hooks/use-user-hook';
 import { getAllResourcesByTarget } from '@/lib/api';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 import { Colors } from '@/constants';
+import EmptyState from '@/components/empty-state';
 
 
 const SocialFeedScreen = () => {
@@ -20,24 +21,12 @@ const SocialFeedScreen = () => {
         refetch,
         isLoading
     } = useApiOps<Post>(() => {
-        // if (mounted.current) {
         return getAllResourcesByTarget(
-            'Publication', currentUser?.IdUser, 'idUser');
-        // }
-        // return Promise.resolve([]);
+            'UserPublications', currentUser?.IdUser);
+
     });
 
-    console.log("current user posts: ", posts)
-
-    // useEffect(() => {
-    //     mounted.current = true;
-    //     return () => { mounted.current = false };
-    // }, [])
-
-    useEffect(() => {
-        if (posts && !posts.length) refetch();
-    }, [])
-
+    console.log("\n\n from profile indec file, personal posts: ", posts)
     const onRefresh = React.useCallback(() => {
         if (!isLoading) {
             setRefreshing(true);
@@ -45,18 +34,18 @@ const SocialFeedScreen = () => {
         }
     }, [isLoading, refetch]);
 
-    if (isLoading)
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 40 }}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
-        );
+    // if (isLoading)
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 40 }}>
+    //             <ActivityIndicator size="small" color={Colors.primary} />
+    //         </View>
+    //     );
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 px-4 mb-6">
             <FlatList
                 data={posts}
-                keyExtractor={(post) => String(post?.id) + Date.now()}
+                keyExtractor={(post) => String(post?.id)}
                 renderItem={({ item: post }) => {
                     console.log("current user posts: ", post)
                     return <PostCard
@@ -70,9 +59,18 @@ const SocialFeedScreen = () => {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
+                ListEmptyComponent={() => (
+                    <EmptyState
+                        title="Aucune Publication personnelle"
+                        subtitle="Commencer par publier."
+                        label="Creer une Publication"
+                        titleStyle='text-white font-bold text-[16px]'
+                        subtitleStyle="text-[13px] text-center font-psemibold text-white"
+                        route={'/poster'}
+                    />
+                )}
             />
         </SafeAreaView>
     );
 };
-// ?? 'https://media.istockphoto.com/id/1162529718/photo/fealing-generous-becous-of-helping-to-other.jpg?s=612x612&w=0&k=20&c=Rq9YrcVlT13KsKolfG-fWjlx3mJVCWhIt1a2AB2m1CU='
 export default SocialFeedScreen;

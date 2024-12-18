@@ -1,18 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useApiOps from '@/hooks/use-api';
 import { Category, Publication } from '@/lib/types';
 import { getAllCategories, getCurrentUser, getFileUrlFromProvider, uploadResourceData, } from '@/lib/api';
 import { SelectItem } from '@/components/picker';
 import * as ImagePicker from "expo-image-picker";
-import { useForm, Controller } from 'react-hook-form';
-import { Video, ResizeMode } from "expo-av";
+import { useForm } from 'react-hook-form';
+// import { Video, ResizeMode } from "expo-av";
 import { icons } from '@/constants';
 import * as DocumentPicker from 'expo-document-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserGlobal from '@/hooks/use-user-hook';
 import Constants from "expo-constants";
 
@@ -36,6 +33,7 @@ const CreatePostScreen: React.FC = () => {
     const [currentCat, setCurrentCat] = useState<Category>();
     const { control, handleSubmit } = useForm<Publication>();
     const { currentUser } = useUserGlobal()
+    const [uploading, setUploading] = useState(false);
     const mounted = useRef(false)
     const {
         data: categories,
@@ -47,14 +45,12 @@ const CreatePostScreen: React.FC = () => {
         return Promise.resolve([]);
     });
 
+
     useEffect(() => {
         mounted.current = true;
         if (!categories?.length)
             refetchCategories();
-    }, []);
 
-
-    useEffect(() => {
         (async () => {
             if (Constants.platform && Constants.platform.ios) {
                 const cameraRollStatus =
@@ -73,24 +69,26 @@ const CreatePostScreen: React.FC = () => {
 
     }, []);
 
-    const onSubmit = async (data: Publication) => {
+    console.log("\n\n current cat: ", currentCat);
 
+    const onSubmit = async (data: Publication) => {
+        setUploading(true);
         const imgUrl = await getFileUrlFromProvider(form?.imagePub);
+        console.log("imgUrl uploaded: ", imgUrl,)
         const { videoPub, documentUrl, ...res } = form;
         // const docUrl = await uploadFileToSupabase(form?.documentUrl);
         const formData = {
-            ...res,
-            idUser: currentUser?.IdUser,
-            // videoPub: form.videoPub, // add video uri if exists.
-            idCat: Number(currentCat?.id),
+            // ...res,
+            idUser: Number(currentUser?.IdUser),
+            idCat: currentCat?.id,
             imagePub: imgUrl,
-            // docPub: docUrl,
             datePub: new Date().toISOString(),
-            favories: true,
+            libelePub: res.libelePub,
             etat: false,
+
         }
 
-        console.log("object to be uploaded: ", imgUrl,)
+        console.log("object to be uploaded: ", formData,)
         // try {
         //     console.log("form data: ", formData);
         //     const result = await uploadResourceData(formData, "Publication");
@@ -98,11 +96,13 @@ const CreatePostScreen: React.FC = () => {
         //         console.log("from poster file result: ", result);
         // } catch (error) {
         //     console.error("upload publication  error: ", error);
+        // } finally {
+        //     setUploading(false);
         // }
         const result = await uploadResourceData(formData, "Publication");
-        // if (typeof result != 'undefined')
-        //     console.log("from poster file result: ", result);
+
         Alert.alert('Success', `publication creee avec success!`);
+        setUploading(false);
     };
     0
     const onPicker = async (selectType: string) => {
@@ -242,7 +242,7 @@ const CreatePostScreen: React.FC = () => {
                         className="bg-blue-500 p-3 rounded"
                         onPress={handleSubmit(onSubmit)}
                     >
-                        <Text className="text-white text-center font-bold">PUBLIER</Text>
+                        {uploading ? <ActivityIndicator size="small" color="white" /> : <Text className="text-white text-center font-bold">PUBLIER</Text>}
                     </TouchableOpacity>
                 </View>
             </ScrollView>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAllResourcesByTarget } from '@/lib/api';
@@ -17,41 +17,49 @@ const ProfileScreen: React.FC = () => {
 
     const { currentUser } = useUserGlobal();
     const mounted = useRef(false);
-    const {
-        data: posts,
-        isLoading,
-        refetch
-    } = useApiOps<Publication>(() => {
-        // if (mounted.current)
-        return getAllResourcesByTarget("Publication", currentUser?.IdUser);
-        // return Promise.resolve([]);
-    });
-    const router = useRouter();
 
-    const {
-        data: likes, // get all the likes for this pub, by its ID
-        refetch: refetchlikes,
-        isLoading: islikeLoading
-    } = useApiOps<Jaime>(() => {
-        // if (mounted.current)
-        return getAllResourcesByTarget(
-            'Jaime', currentUser?.IdUser) as Promise<Jaime[]>;
-        // return Promise.resolve([]);
-    });
+    const router = useRouter();
+    const [likes, setLikes] = useState(0);
+    const [islikeLoading, setIsLikeLoading] = useState(false);
+    const [posts, setPosts] = useState(0);
+    const [isPostsLoading, setIsPostsLoading] = useState(false);
+
+    const getAllLikes = useCallback(async () => {
+        setIsLikeLoading(true);
+        try {
+            const allLikes = await getAllResourcesByTarget(
+                'Jaime', currentUser?.IdUser, 'idPub') as Jaime[];
+            console.log("all likes: ", allLikes);
+            setLikes(allLikes.length);
+        } catch (error) {
+            console.error('Failed to get all likes:', error);
+        } finally {
+            setIsLikeLoading(false);
+        }
+    }, [getAllResourcesByTarget, setLikes, setIsLikeLoading]);
+
+    const getAllUserPublications = useCallback(async () => {
+        setIsPostsLoading(true);
+        try {
+            const posts = await getAllResourcesByTarget(
+                'UserPublications', currentUser?.IdUser);
+            console.log("all posts: ", posts);
+            setPosts(posts.length);
+        } catch (error) {
+            console.error('Failed to get all posts:', error);
+        } finally {
+            setIsPostsLoading(false);
+        }
+    }, [getAllResourcesByTarget, setPosts, setIsPostsLoading])
 
     useEffect(() => {
-        mounted.current = true;
-        return () => {
-            mounted.current = false;
-        }
-    }, [])
+        console.log("\n\n from profile screen file currentUser: ", currentUser)
+        getAllLikes();
+        getAllUserPublications();
+    }, []);
 
-    if (isLoading)
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 40 }}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
-        );
+    console.log("\n\n from profile file:  the likes are: ", likes)
+
 
     return (
         <>
@@ -65,36 +73,28 @@ const ProfileScreen: React.FC = () => {
                 </View>
                 <View className="flex-row justify-around mb-4">
                     <View>
-                        <Text className="text-white text-center font-bold">{isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> : posts?.length || 0}</Text>
+                        <Text className="text-white text-center font-bold">
+                            {isPostsLoading ? <ActivityIndicator size="large" color={Colors.primary} />
+                                : posts || 0}
+                        </Text>
                         <Text className="text-gray-400">Publications</Text>
                     </View>
                     <View>
                         <Text className="text-white text-center font-bold">
                             {islikeLoading ? (
                                 <ActivityIndicator size="large" color={Colors.primary} />
-                            ) : likes?.length ?? 0}
+                            ) : likes ?? 0}
                         </Text>
                         <Text className="text-gray-400">J'aime</Text>
                     </View>
                 </View>
                 <TouchableOpacity
-                    className="bg-blue-500 p-2 rounded-xl mb-1 w-full"
+                    className="bg-blue-500 p-2 ml-4 rounded-xl mb-1 w-[90%]"
                     onPress={() => router.push("/(settings)/edit-profile")}
                 >
                     <Text className="text-white text-center">Éditer profil</Text>
                 </TouchableOpacity>
-                {/* <View className="flex-row justify-around mb-4">
-                    <TouchableOpacity className="border-b-2 border-blue-500 pb-2" >
-                        <Text className="text-white">Publication</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push("/(settings)/edit-profile")}>
-                        <Text className="text-gray-400">A propos de moi</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text className="text-gray-400">Favoris</Text>
-                    </TouchableOpacity>
-                </View> */}
-                {/* Add profile posts here, similar to HomeScreen */}
+
             </View>
         </>
     );

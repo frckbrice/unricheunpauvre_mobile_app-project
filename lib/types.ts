@@ -18,10 +18,13 @@ export interface IUser {
     mdpUser: string;
     username: string;
     etatUser: boolean;
-    docUser: string;
-    idFront?: string;
-    idBack?: string;
-    passport?: string;
+    localisation: string;
+    docUser?: string;
+    photoUser?: string;
+    pieceIdf?: string;
+    pieceIdb?: string;
+    dateCrea?: string;
+    dateNaiss?: string
 }
 
 export interface TUser {
@@ -38,13 +41,15 @@ export interface TokenCache {
 
 
 export type Category = {
-    id: number;
-    name: string;
-    type: string;
+    idCat: number;
+    idUser: number;
+    typeCat: number;
+    nullable: boolean;
+    nomCat: string;
 }
 
 export type Publication = {
-    idPub?: number | undefined;
+    idPub?: number
     idUser: number | undefined;
     idCat: number | undefined;
     libelePub: string;
@@ -70,13 +75,14 @@ export interface Comment {
     idCom: number;
     idPub: number;
     idUser: number;
-    parentId?: number | null;  // Add this for nested replies
+    idParent?: number | null;  // Add this for nested replies
     dateCom: string;
     etatCom: boolean;
     libeleCom: string;
     userName?: string;
     userAvatar?: string;
     replies?: Comment[];
+
     replyToUser?: string;
     likes?: number; // the number of likes of this message
 }
@@ -104,11 +110,13 @@ export type User = {
     mdpUser: string;
     username: string;
     etatUser: boolean;
-    docUser: string;
-    idFront?: string; // front id card
-    idBack?: string;  // back id card
-    passport?: string;
-    userAvatar?: string;
+    localisation: string;
+    docUser?: string;
+    photoUser?: string;
+    pieceIdf?: string;
+    pieceIdb?: string;
+    dateCrea?: string;
+    dateNaiss?: string
 }
 
 

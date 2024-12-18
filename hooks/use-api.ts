@@ -15,10 +15,9 @@ const useApiOps = <T>(fn: () => Promise<T | T[]>,): T | T[] | any => {
         setIsLoading(true);
         fn()
             .then((res: any) => {
-                console.log("\n\n from use api ops", res)
+                console.log("\n\n from use api ops", res);
                 if (res)
                     return setData(res);
-                console.log("from upapiops: no data")
             })
             .catch((err: any) => {
                 if (err.name !== 'AbortError') {

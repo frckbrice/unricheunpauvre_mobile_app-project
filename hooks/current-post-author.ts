@@ -7,35 +7,35 @@ import { getResourceByItsId, getSingleResource } from '@/lib/api';
 
 const useAuthorAndPubGlobal = () => {
 
-    console.log("PAYPAL_SECRET post author: ", PAYPAL_SECRET);
-    console.log("PAYPAL_CLIENT_ID from post author file: ", PAYPAL_CLIENT_ID);
-
     const [postAuthor, setPostAuthor] = useState<User | null>(null);
     const [currentPub, setCurrentPub] = useState<Post>();
-    const [user, setUser] = useState(false)
 
     const getCurrentPost = async () => {
-        const post = JSON.parse(await tokenCache.getToken('post') as string);
-        setCurrentPub(post);
-    }
+        return JSON.parse(await tokenCache.getToken('post') as string);
+    };
 
     // get the author of this publication fromthe API
-    const getPostAuthor = useCallback(async () => {
-        const post = JSON.parse(await tokenCache.getToken('post') as string);
-        const postAuthor = await getResourceByItsId(post?.idUser as number, "User");
-        if (postAuthor) {
+    const getPostAuthor = useCallback(async (idUser: number) => {
+        try {
+            console.log("\n\n current Post user ID ", idUser);
+            const postAuthor = await getResourceByItsId(idUser as number, "User");
             setPostAuthor(postAuthor);
+        } catch (error: any) {
+            console.error(` failed to fetch a user by its id ${idUser} : ${error}`);
+            throw Error(error);
         }
-    }, [getSingleResource, setPostAuthor, currentPub]);
+    }, [getResourceByItsId, setPostAuthor]);
 
     useEffect(() => {
-        getCurrentPost();
-        getPostAuthor();
+        getCurrentPost().then((post: Post) => {
+            setCurrentPub(post);
+            getPostAuthor(post?.idUser as number)
+        });
     }, []);
 
     const refetch = () => {
-        getPostAuthor();
-    }
+        getPostAuthor(currentPub?.idUser as number);
+    };
 
     return { postAuthor, currentPub, refetch };
 }

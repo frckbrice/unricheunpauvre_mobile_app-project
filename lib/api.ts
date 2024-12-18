@@ -104,12 +104,16 @@ export const getFilePreview = async (fileId: string, type: string) => {
 export const uploadFile = async (file: any, type: string) => {
     if (!file) return;
 
+
+
     const asset = {
         name: file.fileName,
         type: file.mimeType,
         size: file.fileSize,
         uri: file.uri ?? await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 }),
     }; // to format it in a format understood by appwrite
+
+    console.log(` asset :`, file);
 
     try {
         // ID.unique() assigns a unique Id to this file
@@ -182,7 +186,7 @@ export const getFileUrlFromProvider = async (asset: {
 // };
 
 
-console.log("\n\ndata object: ", {
+console.log("\n\n API_URL: ", {
     API_URL
 },)
 
@@ -280,40 +284,75 @@ export const getAllResourcesByTarget = async <T>(
     target1?: string,
     target2?: string,
     value?: boolean | number
-): Promise<T[]> => {
-    try {
+): Promise<T[] | any> => {
 
-        const options = {
-            method: 'GET',
-            // url: `${API_URL}/${resource}?${target1}=${id}&${target2}=${value}`,
-            headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
+
+    try {
+        if (!id || !resource) {
+            console.error(` from api file Resource ${resource} not found or resource ${id} is missing`);
+            return [];
         }
 
-        // const response = await axios.request(options);
-        // console.log("\n\nfrom api file getAllResourcesByTarget fct", response?.data);
-        const data = await fetch(`${API_URL}/${resource}?${target1}=${id}&${target2}=${value}`, options);
-        const response = await data.json();
-        return response;
+        let query: string = "";
+        if (target1)
+            query += `${target1}=${id}`;
+        if (target2)
+            query += `&${target2}=${value}`;
+        if (target1 && target2)
+            query += `${target1}=${id}&${target2}=${value}`;
 
+
+
+        const url = `${API_URL}/${resource}?` + query;
+
+        console.log("\n\n url: ", { url, resource, query });
+
+        const options: RequestInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        const response = await fetch(url, options);
+
+        // Check if response is OK
+        if (!response.ok) {
+            console.error(
+                `Error: HTTP status ${response.status} (${response.statusText}) for resource "${resource}"`
+            );
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Safely parse JSON
+        try {
+            const data = await response.json();
+            console.log("from api file on getAllResourcesByTarget fct and resource " + resource, "data is:", data);
+            return data;
+        } catch (jsonError) {
+            console.error("Error parsing JSON:", jsonError);
+            throw new Error("Failed to parse JSON response");
+        }
     } catch (error: any) {
-        console.error(`from api file getAllResourcesByTarget fct. Error fetching all resources "${resource}" by id ${id} : ${error}`);
-        throw new Error(error);
+        console.error(
+            `from api file getAllResourcesByTarget fct. Error fetching all resources "${resource}" by id ${id} : ${error.message}`
+        );
+        throw error;
     }
 }
 
 // pull all videos
-export const getAllPublications = async (): Promise<Post[] | any> => {
+export const getAllPublications = async (page?: number, pageSize?: number): Promise<Post[] | any> => {
 
     // const token = await tokenCache.getToken("token");
     try {
 
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
+
         const options = {
             method: 'GET',
-            url: `${API_URL}/Publication`,
+            url: `${API_URL}/Publication?page=${page}&pageSize=${pageSize}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
@@ -322,13 +361,14 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
         }
 
         const response = await axios.request(options);
+        console.log("\n\nfrom api file getAllPublications fct", response?.data);
+
         return response?.data?.map((resp: any) => ({
             id: resp?.idPub,
-            author: resp?.nomUser ?? "ANONYMOUS",
+            // author: resp?.nomUser ?? "ANONYMOUS",
             location: resp?.location ?? "No Location",
             content: resp?.libelePub ?? "No Content Yet",
             imageUrl: resp?.imagePub,
-            likes: resp?.favories ?? "",
             comments: resp?.commentaires ?? [],
             timeAgo: resp?.datePub ?? "",
             idUser: resp?.idUser,
@@ -343,9 +383,11 @@ export const getAllPublications = async (): Promise<Post[] | any> => {
 }
 
 // update pub
-export const updateResource = async <T>(resource: string, id: number, value: Partial<T>): Promise<T> => {
+export const updateResource = async <T>(resource: string, id: number, value: Partial<T>): Promise<T | any> => {
 
     try {
+        if (!id || !resource)
+            return console.error("\n\n No user Id or resource provided!")
 
         const options = {
             method: 'PUT',
@@ -427,7 +469,6 @@ export const getAllCategories = async () => {
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
-                Accept: 'application/json'
             },
         }
 
@@ -458,25 +499,26 @@ export const uploadResourceData = async <T>(
 
     try {
 
+        console.log("\n\n from api file url ", `${API_URL}/${resource}`);
         const options = {
             method: 'POST',
             url: `${API_URL}/${resource}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
-                Accept: 'application/json'
+                // Accept: 'application/json'
             },
-            data: JSON.stringify(dataValues)
+            data: dataValues
         }
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file uploadPubData fct", response?.data);
+        console.log(`\n\nfrom api file uploadResourceData fct, and resource: ${resource}`, response?.data);
         if (response.data)
             return response.data;
         return null;
 
     } catch (error: any) {
-        console.error(`from api file uploadPubData fct. failed creating resource ${resource} : ${error}`);
+        console.error(`from api file uploadResourceData fct. failed creating resource ${resource} : ${error}`);
         throw Error(error);
     }
 }
@@ -484,18 +526,20 @@ export const uploadResourceData = async <T>(
 // get a resource by its id
 export const getResourceByItsId = async (res_id: number, resource: string) => {
 
-    try {
+    console.log("\n\n from api file getResourceByItsId fct", { res_id, resource });
 
+    if (!res_id || !resource)
+        return console.error(`Resource ${resource} not found or resource id is missing`);
+
+    try {
         const options = {
             method: 'GET',
             url: `${API_URL}/${resource}/${res_id}`,
             headers: {
                 // 'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
-                Accept: 'application/json'
             },
-
-        }
+        };
 
         const response = await axios.request(options);
         console.log("\n\nfrom api file getResourceByItsId fct", response?.data);

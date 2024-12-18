@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import PayPalDonationButton from './paypal-button';
 import { DonationResponse } from '@/lib/types';
 import * as WebBrowser from 'expo-web-browser';
@@ -33,7 +33,7 @@ export const DonationForm: React.FC = () => {
 
   const handleAmountSubmit = async () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid donation amount.');
+      Alert.alert('Montant Invalid', 'Veuillez entrer un montant valid!');
       return;
     }
     setShowPayPal(true);
@@ -50,11 +50,11 @@ export const DonationForm: React.FC = () => {
 
       // Handle browser result
       if (result.type === 'cancel') {
-        Alert.alert('Donation Cancelled', 'Thank you for considering a donation.');
+        Alert.alert('Donation annulee', 'Merci d\'avoir voulu a faire un don');
       }
     } catch (error) {
       console.error('Donation Error:', error);
-      Alert.alert('Donation Error', 'Unable to process donation. Please try again.');
+      Alert.alert('Erreur', 'Impossible de proceder. Veuiller reessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +75,7 @@ export const DonationForm: React.FC = () => {
             placeholder="Veuillez entrer le montant du don"
             keyboardType="decimal-pad"
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={(amount) => setAmount(amount)}
             placeholderTextColor={"#404757"}
           />
           <Text className="text-white ml-2">€</Text>
@@ -85,9 +85,9 @@ export const DonationForm: React.FC = () => {
           className="bg-blue-500 rounded-lg p-3"
           onPress={handleAmountSubmit}
         >
-          <Text className="text-white text-center font-semibold">
-            Donner
-          </Text>
+          {isLoading ? <ActivityIndicator size={"small"} color={"gray"} /> : <Text className="text-white text-center font-semibold">
+            Faite un don
+          </Text>}
         </TouchableOpacity>
       </View>
     </View>

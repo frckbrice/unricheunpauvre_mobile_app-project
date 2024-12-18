@@ -1,54 +1,174 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { icons } from '@/constants';
-import { uploadResourceData } from '@/lib/api';
+import { getFileUrlFromProvider, updateResource, uploadResourceData } from '@/lib/api';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AccountIdentificationScreen from './AccountIdentification';
+import AddIdAccount from '../../components/profile/components/identification';
 
-
+// Define User interface to match the backend model
 // Profile Edit Screen
 const ProfileEditScreen: React.FC = () => {
-    const [imagePub, setImagePub] = useState("");
+    const [imagePub, setImagePub] = useState<any>();
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [city, setCity] = useState('Paris');
-    const [street, setStreet] = useState('Roisi');
-    const [description, setDescription] = useState('See the impact of your donations. Our app provides transparency into how your contributions are used, so you can feel confident in your support.');
+    const [ville, setVille] = useState('');
 
-    const [edit, setEdit] = useState(false);
+    // State for date picker
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [birthDate, setBirthDate] = useState('');
+    const [mdpUser, setMdpUser] = useState();
+    const [userImg, setUserImg] = useState("");
+    const [motPwd, setMotPwd] = useState("");
+    const [dateNaiss, setDateNaiss] = useState("");
+    const [etatuser, setEtatuser] = useState(false);
+
+
+    const [registering, setRegistering] = useState(false);
     const router = useRouter();
+    const [idF, setIdf] = useState("");
+    const [idB, setIdB] = useState("");
+
+    // state of the id card
+    const [pieceIdf, setPieceIdf] = useState<any>();
+    const [pieceIdb, setPieceIdb] = useState<any>();
+    const [passport, setPassport] = useState<any>();
 
     const { currentUser } = useUserGlobal();
+
+    const getTheCurrentUserData = useCallback(async (user_id: string) => {
+        try {
+            const user = await fetch(`https://rhysapi.iptvstreamerspro.com/api/User/${user_id}`, {
+                headers: {
+                    "content-type": "application/json"
+                },
+            });
+            if (!user.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            const userData = await user.json();
+            // console.log("\n\n curent user data: ", userData);
+            setName(userData.nomUser);
+            setUsername(userData.username);
+            setCity(userData.localisation);
+            setMdpUser(userData?.mdpUser);
+            setUserImg(userData?.photoUser);
+            setMotPwd(userData?.mdpUser);
+            setDateNaiss(userData?.dateNaiss);
+            setEtatuser(userData?.etatUser);
+            setIdf(userData?.pieceIdf);
+            setIdB(userData?.pieceIdb);
+
+            // Parse and set birth date if exists
+            if (userData.dateNaiss) {
+                const parsedDate = new Date(userData.dateNaiss);
+                setDate(parsedDate);
+                setBirthDate(formatDate(parsedDate));
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    }, [setImagePub, setBirthDate, setCity, setUsername, setName]);
+
+    // get date from child component.
+    const getIdData = (data: any, fileType: 'idFront' | 'idBack' | 'passport') => {
+
+        console.log("\n\n getIdData fct: ", data, fileType)
+        if (fileType === "idFront")
+            setPieceIdf(data);
+        else if (fileType === "idBack")
+            setPieceIdb(data);
+        else setPassport(data);
+    }
+
+    useEffect(() => {
+        if (currentUser?.IdUser) {
+            getTheCurrentUserData(currentUser?.IdUser)
+        }
+    }, [currentUser]);
+
+    // Utility function to format date
+    const formatDate = (date: Date): string => {
+        // return date.toLocaleDateString('fr-FR', {
+        //     day: '2-digit',
+        //     month: '2-digit',
+        //     year: 'numeric'
+        // });
+        return date.toISOString();
+    };
+
+    // Handle date change
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        const currentDate = selectedDate || date;
+
+        // Hide picker on both platforms
+        setShowDatePicker(Platform.OS === 'ios');
+
+        // Update date state
+        setDate(currentDate);
+
+        // Format and set birth date
+        setBirthDate(formatDate(currentDate));
+    };
+
+    // Open date picker
+    const showDatepicker = () => {
+        setShowDatePicker(true);
+    };
+
     // save user
     const onSaveUser = async () => {
-        setEdit(true);
-        const dataObj = {
-            idUser: currentUser?.IdUser,
-            nomUser: name,
-            username: username,
-            // location,
-            // description,
-            // imagePub,
-        };
+        setRegistering(true);
+        console.log("\n\n imagePub : ", imagePub);
+        let pieceIdfUrl, pieceIdbUrl, passportUrl;
 
         try {
-            const result = await uploadResourceData(
+            const imgUrl = await getFileUrlFromProvider(imagePub);
+            if (pieceIdf?.uri)
+                pieceIdfUrl = await getFileUrlFromProvider(pieceIdf) as URL;
+            if (pieceIdb?.uri)
+                pieceIdbUrl = await getFileUrlFromProvider(pieceIdf) as URL;
+            if (passport && !(pieceIdf?.uri && pieceIdb?.uri))
+                passportUrl = await getFileUrlFromProvider(passport) as URL;
+
+
+            const dataObj = {
+                idUser: currentUser?.IdUser,
+                nomUser: name ?? currentUser?.name,
+                username: username,
+                localisation: city ?? ville,
+                pieceIdf: !(pieceIdf?.uri && pieceIdb?.uri) ? passportUrl : pieceIdf?.uri ? pieceIdfUrl : idF,
+                pieceIdb: pieceIdb?.uri ? pieceIdbUrl : idB,
+                etatUser: etatuser || false,
+                dateNaiss: birthDate ?? dateNaiss,
+                photoUser: imgUrl ?? userImg,
+                mdpUser: mdpUser ?? motPwd,
+                dateCrea: new Date(Date.now()).toISOString(),
+
+            };
+
+            console.log("\n\n object to upload: ", dataObj);
+
+            const result = await updateResource(
+                'User',
+                currentUser?.IdUser,
                 dataObj,
-                'User'
             );
-            if (result) {
-                Alert.alert('Success', 'Profile updated successfully');
-                router.push('/(tabulate)/profile');
-            }
-            setEdit(false);
+            Alert.alert('Success', 'Profile updated successfully');
+            router.push('/(tabulate)/profile');
 
         } catch (error) {
             console.error(error);
         } finally {
-            setEdit(false);
+            setRegistering(false);
         }
     };
 
@@ -61,10 +181,10 @@ const ProfileEditScreen: React.FC = () => {
             base64: true, //<--- important
         });
 
+
         if (!result.canceled) {
-            const base64 = `data:image/png;base64,${result.assets[0].base64}`;
-            console.log(base64);
-            setImagePub(base64);
+            // const base64 = `data:image/png;base64,${result.assets[0].base64}`;
+            setImagePub(result.assets[0]);
         }
     };
 
@@ -83,7 +203,7 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={currentUser?.name ?? ""}
+                            value={currentUser?.name as string}
                             onChangeText={(text) => setUsername(text)}
                         />
                     </View>
@@ -94,8 +214,8 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={currentUser?.username as string ?? ""}
-                            onChangeText={(text) => setName(text)}
+                            value={username as string}
+                            onChangeText={(text) => setUsername(text)}
                         />
                     </View>
                 </View>
@@ -105,45 +225,47 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="location-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={currentUser?.location ?? ""}
+                            value={city}
                             onChangeText={(text) => setCity(text)}
                         />
                     </View>
                 </View>
-
-                {/* <View className="mb-4">
-                    <Text className="text-white mb-2">Rue</Text>
-                    <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
-                        <Ionicons name="location-outline" size={24} color="gray" />
-                        <TextInput
-                            className="flex-1 ml-2 text-white"
-                            value={street}
-                            onChangeText={(text) => setStreet(text)}
-                        />
-                    </View>
-                </View> */}
                 <View className="mb-4">
-                    <Text className="text-white mb-2">Description</Text>
-                    <TextInput
+                    <Text className="text-white mb-2">Date de naissance</Text>
+                    <TouchableOpacity
+                        onPress={showDatepicker}
+                        className="bg-gray-800 rounded-lg p-3 flex-row items-center"
+                    >
+                        <Ionicons name="calendar-outline" size={24} color="gray" />
+                        <Text className="flex-1 ml-2 text-white">
+                            {birthDate || 'Sélectionner une date'}
+                        </Text>
+                    </TouchableOpacity>
 
-                        className="bg-gray-800 rounded-lg p-3 text-white"
-                        multiline
-                        numberOfLines={6}
-                        value={currentUser?.description ?? ""}
-                        onChangeText={(text) => setDescription(text)}
-                    />
+                    {/* Date Picker */}
+                    {showDatePicker && (
+                        <DateTimePicker
+                            testID="dateTimePicker"
+                            value={date}
+                            mode="date"
+                            is24Hour={true}
+                            display="default"
+                            onChange={onDateChange}
+                            maximumDate={new Date()} // Prevent future dates
+                        />
+                    )}
                 </View>
-                <View className="flex mb-6 gap-3">
+
+                <View className="flex mb-2 gap-3">
 
                     <TouchableOpacity
                         onPress={() => onCaptureImage()}
                         className="bg-gray-900 p-4 
                         rounded-xl border-blue-400 border-0.5"
                     >
-                        {imagePub ? (
-                            // <></>
+                        {(imagePub || userImg) ? (
                             <Image
-                                source={{ uri: imagePub }} // uri is used for non local images.
+                                source={{ uri: imagePub?.uri ?? userImg }} // uri is used for non local images.
                                 className="w-full h-36 rounded-xl mt-3"
                                 resizeMode="cover"
                             />
@@ -162,14 +284,15 @@ const ProfileEditScreen: React.FC = () => {
                                 </Text>
                             </View>
                         )}
-                        <Text className="text-white">Images</Text>
+                        <Text className="text-white">Photo de profile</Text>
                     </TouchableOpacity>
-
                 </View>
+
+                <AddIdAccount getIdData={getIdData} />
                 <TouchableOpacity
-                    className="bg-blue-500 rounded-lg p-3 mt-3"
+                    className="bg-blue-500 rounded-lg p-3 my-3"
                     onPress={onSaveUser}
-                >{edit ? (
+                >{registering ? (
                     <ActivityIndicator size="small" color="white" />
                 ) :
                     <Text className="text-white text-[16px] text-center font-bold">
