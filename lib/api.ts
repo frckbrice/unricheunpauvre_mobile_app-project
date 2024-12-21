@@ -366,8 +366,8 @@ export const getAllPublications = async (page?: number, pageSize?: number): Prom
         return response?.data?.map((resp: any) => ({
             id: resp?.idPub,
             // author: resp?.nomUser ?? "ANONYMOUS",
-            location: resp?.location ?? "No Location",
-            content: resp?.libelePub ?? "No Content Yet",
+            location: resp?.location ?? "origine inconnue",
+            content: resp?.libelePub ?? "pas de contenu",
             imageUrl: resp?.imagePub,
             comments: resp?.commentaires ?? [],
             timeAgo: resp?.datePub ?? "",

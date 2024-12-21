@@ -540,7 +540,7 @@ const EnhancedCommentSection = memo(({
                     <TextInput
                         value={commentText}
                         onChangeText={setCommentText}
-                        placeholder={replyingTo ? `Reply to ${replyingTo.userName || 'comment'}...` : "Write a comment..."}
+                        placeholder={replyingTo ? `Repondre a ${replyingTo.userName || 'commentaire'}...` : "Ecrire un commentaire..."}
                         placeholderTextColor="#9CA3AF"
                         multiline
                         className="flex-1 text-white text-sm mr-2"
@@ -568,7 +568,7 @@ const EnhancedCommentSection = memo(({
             ) : comments.length === 0 ? (
                 <View className="items-center justify-center py-4">
                     <Text className="text-gray-400 text-center">
-                        No comments yet. Be the first to comment!
+                        Pas de commentaire. Ecrire un commentaire!
                     </Text>
                 </View>
             ) : (

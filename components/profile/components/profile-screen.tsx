@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAllResourcesByTarget } from '@/lib/api';
-import useApiOps from '@/hooks/use-api';
 import { Jaime, Publication } from '@/lib/types';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { Colors } from '@/constants';
@@ -10,7 +9,6 @@ import { Colors } from '@/constants';
 type TProfileScreen = {
     pubNumber: number;
     likesNumber: number;
-
 }
 
 const ProfileScreen: React.FC = () => {
@@ -92,9 +90,8 @@ const ProfileScreen: React.FC = () => {
                     className="bg-blue-500 p-2 ml-4 rounded-xl mb-1 w-[90%]"
                     onPress={() => router.push("/(settings)/edit-profile")}
                 >
-                    <Text className="text-white text-center">Éditer profil</Text>
+                    <Text className="text-white text-center">Éditer profile</Text>
                 </TouchableOpacity>
-
             </View>
         </>
     );

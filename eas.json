@@ -16,7 +16,8 @@
       "env": {
         "EXPO_PUBLIC_PROD_API_URL": "https://rhysapi.iptvstreamerspro.com/api",
         "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "ATVerDHCbOIA-jAWuo1qpp2cPeeVlNld2LPuJt_czuSoYpHMqjcT5NRzHuXS9ft3eagWbRCEEUGO33-V",
-        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt"
+        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt",
+        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "XRXMACRT4J6KA"
       }
     },
     "production": {
@@ -24,7 +25,8 @@
       "env": {
         "EXPO_PUBLIC_PROD_API_URL": "https://rhysapi.iptvstreamerspro.com/api",
         "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "ATVerDHCbOIA-jAWuo1qpp2cPeeVlNld2LPuJt_czuSoYpHMqjcT5NRzHuXS9ft3eagWbRCEEUGO33-V",
-        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt"
+        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt",
+        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "XRXMACRT4J6KA"
       }
     }
   },

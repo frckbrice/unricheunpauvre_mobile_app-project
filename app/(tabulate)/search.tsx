@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import useApiOps from '@/hooks/use-api';
 import { Category, Post } from '@/lib/types';
 import { getAllCategories } from '@/lib/api';
@@ -16,14 +15,16 @@ import { API_URL } from '@/constants/constants';
 const SearchScreen: React.FC = () => {
     const categoriesP = ['Santé', 'Éducation', 'Logement', 'Alimentation'];
     const [posts, setPosts] = useState<Post[]>([]);
+    const [categoryId, setCategoryId] = useState(0);
+    const [uploading, setUploading] = useState<boolean>(false);
     const {
         data: categories,
-        refetch: refetchCategories,
-        isLoading
     } = useApiOps<Category>(() => getAllCategories());
-    const { query } = useLocalSearchParams<{ query: string }>();
+    // const { query } = useLocalSearchParams<{ query: string }>();
 
     const getAllPubs = async (id: number) => {
+
+        setUploading(true);
         const url = `${API_URL}/Publication/${id}`;
         const option = {
             method: 'GET',
@@ -41,12 +42,13 @@ const SearchScreen: React.FC = () => {
             }
         } catch (error) {
             console.error('Error fetching Publication data :', error);
+        } finally {
+            setUploading(false);
         }
     };
 
-    const getCurrentUser = (catId: number) => {
-        getAllPubs(catId);
-    };
+
+    console.log("\n\n posts: ", posts);
 
     return (
         <SafeAreaView className="h-full bg-gray-900 p-4 ">
@@ -62,21 +64,34 @@ const SearchScreen: React.FC = () => {
                     <View className=" mt-2 px-4 ">
                         <View className="mb-8">
                             {/* search input */}
-                            <SearchInput initialQuery={query} placeholder={"Rechercher..."} />
+                            <SearchInput placeholder={"Rechercher..."} />
                         </View>
+                        {/* categories lists */}
                         <View className='space-y-1'>
-                            {categories.length ? categories?.map((category: Category, index: number) => (
-                                <TouchableOpacity
-                                    key={index}
-                                    onPress={() => getCurrentUser(category?.idCat)}
-                                    className="bg-white/90 rounded-lg px-4 py-2 mr-2 h-10"
-                                >
-                                    <Text className="text-black-100">{category?.nomCat}
-                                    </Text>
-                                </TouchableOpacity>
-                            )) : <Text className="text-white">Pas de categoies actuellement</Text>}
+                            {
+                                !!categories?.length && categories?.map((category: Category, index: number) => {
+                                    setCategoryId(category?.id);
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            onPress={() => getAllPubs(category?.id)}
+                                            className="bg-white/90 rounded-lg px-4 py-2 mr-2 h-10"
+                                        >
+                                            <View className='flex-row justify-between '>
+                                                <Text className="text-black-100">
+                                                    {category?.name}
+                                                </Text>
+                                                <View>
+                                                    <Text>
+                                                        {(uploading && category?.id === categoryId) && <ActivityIndicator size="small" color="black" animating={uploading} />}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </TouchableOpacity>
+                                    )
+                                })
+                            }
                         </View>
-
                     </View>
                 )}
                 // this property displays in case the list of data above is empty. it behave like a fallback.
@@ -89,7 +104,7 @@ const SearchScreen: React.FC = () => {
                         subtitleStyle='text-white'
                     />
                 )}
-            />;
+            />
         </SafeAreaView>
     );
 };

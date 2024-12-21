@@ -50,7 +50,7 @@ const SocialFeedScreen = () => {
                     console.log("current user posts: ", post)
                     return <PostCard
                         name={currentUser?.name}
-                        location={currentUser?.location ?? 'anonymous'}
+                        location={currentUser?.location ?? 'anonyme'}
                         time={post?.datePub}
                         content={post?.libelePub}
                         imageUrl={post?.imagePub}

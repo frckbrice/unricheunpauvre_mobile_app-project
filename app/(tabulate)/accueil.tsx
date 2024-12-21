@@ -38,7 +38,7 @@ const HomeScreen: React.FC = () => {
     const uniquePosts = useMemo(() => {
         if (!posts?.length) return [];
         return posts?.reduce((unique: Post[], post: Post) => {
-            if (!unique.find((p: Post) => p.id === post.id)) {
+            if (!unique.find((p: Post) => p.comments === post.comments)) {
                 unique.push(post);
             }
             return unique;
@@ -46,6 +46,8 @@ const HomeScreen: React.FC = () => {
     }, [posts]);
 
     console.log("\n\n list of posts: ", posts);
+    // reverse the array of posts
+    const reversedPosts = uniquePosts?.reverse();
 
 
     return (
@@ -56,7 +58,7 @@ const HomeScreen: React.FC = () => {
         <SafeAreaView className="flex-1 bg-gray-900 ">
             <View className="">
                 <FlatList
-                    data={uniquePosts?.reverse() || [] as Post[]}
+                    data={reversedPosts || [] as Post[]}
                     keyExtractor={(post) => String(post.id)}
                     renderItem={({ item }) => {
                         return (
@@ -89,20 +91,20 @@ const HomeScreen: React.FC = () => {
                             route={'/poster'}
                         />
                     )}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
+                    // refreshControl={
+                    //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    // }
                     initialNumToRender={10}
                     maxToRenderPerBatch={10}
                     onEndReached={loadMore}
                     onEndReachedThreshold={0.5}
-                    ListFooterComponent={() => (
-                        isLoadingPosts ? (
-                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <ActivityIndicator size="large" color={'gray'} />
-                            </View>
-                        ) : null
-                    )}
+                // ListFooterComponent={() => (
+                //     isLoadingPosts ? (
+                //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                //             <ActivityIndicator size="large" color={'gray'} />
+                //         </View>
+                //     ) : null
+                // )}
                 />
             </View>
         </SafeAreaView>

@@ -1,7 +1,7 @@
 import {
     View, Text,
-    TouchableOpacity, ScrollView, Alert, FlatList,
-    ActivityIndicator
+    TouchableOpacity, ScrollView, Alert,
+    ActivityIndicator, Modal
 } from 'react-native'
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Comment, Jaime, Post, User } from '@/lib/types';
@@ -10,12 +10,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
 import useApiOps from '@/hooks/use-api';
 import useUserGlobal from '@/hooks/use-user-hook';
-import { comments } from '@/constants/constants';
+
 import { useRouter } from 'expo-router';
 
 import * as SecureStore from 'expo-secure-store'
 import { Colors } from '@/constants';
 import { EnhancedCommentSection, ExtendedComment } from './custom-comment-components';
+
+import Share from 'react-native-share';
 
 type TPost = {
     post: Post;
@@ -25,6 +27,7 @@ type TPost = {
 const PublicationPost = ({ post }: TPost) => {
 
     const mounted = useRef(false);
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     const {
         data: postAuthor,
@@ -33,7 +36,8 @@ const PublicationPost = ({ post }: TPost) => {
     } = useApiOps<User>(() => {
         return getSingleResource('User', post?.idUser as number);
     });
-
+    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
+    const menuButtonRef = useRef(null);
     const [isFavorite, setIsFavorite] = useState(false);
     const [isliked, setIsliked] = useState(false);
     const [likes, setLikes] = useState(0);
@@ -97,7 +101,9 @@ const PublicationPost = ({ post }: TPost) => {
         const fetchComments = async () => {
             try {
                 const fetchedComments = await getALlCommentsForthisPub();
-                setComments(fetchedComments);
+                console.log("\n\n root comments", fetchedComments);
+                const filterCommentForCurrentPost = fetchedComments?.filter((c) => c.idPub === post?.id);
+                setComments(filterCommentForCurrentPost || []);
             } catch (error) {
                 console.error('Error fetching comments:', error);
             }
@@ -111,7 +117,7 @@ const PublicationPost = ({ post }: TPost) => {
 
         // Store the current post to local store
         SecureStore.setItemAsync('post', JSON.stringify(post));
-    }, [post, getALlCommentsForthisPub]);
+    }, [post]);
 
 
     const getAllLikes = useCallback(async () => {
@@ -119,7 +125,8 @@ const PublicationPost = ({ post }: TPost) => {
             const allLikes = await getAllResourcesByTarget(
                 'Jaime', post?.id, 'idPub') as Jaime[];
             console.log("all likes: ", allLikes);
-            setLikes(allLikes.length);
+            const filterLikesForCurrentPost = allLikes?.filter((l) => l.idPub === post?.id);
+            setLikes(filterLikesForCurrentPost?.length);
         } catch (error) {
             console.error('Failed to get all likes:', error);
         }
@@ -166,9 +173,9 @@ const PublicationPost = ({ post }: TPost) => {
     const favoritePost = useCallback(async () => {
         // no post, no like
         setIsFavorite(prev => !prev);
-        if (!isFavorite) {
-            return console.error("is Favorite", { isFavorite });
-        }
+        // if (!isFavorite) {
+        //     return console.error("The post should be favorite", { isFavorite });
+        // }
 
         if (!post.id || !currentUser)
             return console.error("Post must exist or there should be a current user");
@@ -203,16 +210,78 @@ const PublicationPost = ({ post }: TPost) => {
         return router.push(`/contribute/${post?.id}`)
     }
 
+    // Add menu toggle function
+    const toggleMenu = () => {
+        setIsMenuVisible(!isMenuVisible);
+    };
 
     // enable comment list
     const toggleComment = () => {
         setStartComment(!startComment)
-    }
+    };
+
+    // format date en french in the format of "il ya 10min", "il ya 1 heure"
+    const formatTimeAgo = (date: Date): string => {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+        // Moins d'une minute
+        if (diffInSeconds < 60) {
+            return `il y a ${diffInSeconds} seconde${diffInSeconds === 1 ? '' : 's'}`;
+        }
+
+        // Minutes (moins d'une heure)
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+            return `il y a ${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'}`;
+        }
+
+        // Heures (moins d'un jour)
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+            return `il y a ${diffInHours} heure${diffInHours === 1 ? '' : 's'}`;
+        }
+
+        // Jours (moins d'un mois)
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 30) {
+            return `il y a ${diffInDays} jour${diffInDays === 1 ? '' : 's'}`;
+        }
+
+        // Mois (moins d'un an)
+        const diffInMonths = Math.floor(diffInDays / 30);
+        if (diffInMonths < 12) {
+            return `il y a ${diffInMonths} mois`;
+        }
+
+        // Années
+        const diffInYears = Math.floor(diffInMonths / 12);
+        return `il y a ${diffInYears} an${diffInYears === 1 ? '' : 's'}`;
+    };
+
+
+    // handle share function
+    const handleShare = async () => {
+        const shareOptions = {
+            title: 'Partager cette publication',
+            message: `${postAuthor?.nomUser} a partagé: ${post.content.substring(0, 50)}...`,
+            url: post.imageUrl,
+            type: 'image/*'
+        };
+
+        try {
+            const result = await Share.open(shareOptions);
+            console.log("\n\n result: " + result);
+        } catch (error) {
+            console.error('Error sharing:', error);
+        } finally {
+            setIsMenuVisible(false); // Close menu after sharing
+        }
+    };
 
     return (
         <ScrollView className={'mb-5'}>
-            <View className="flex-row items-center 
-            mb-1 bg-gray-800 p-2  rounded-tl-xl rounded-tr-xl">
+            <View className="flex-row items-center mb-1 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
                 <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                     className="w-10 h-10 rounded-full mr-2"
                 />
@@ -225,12 +294,45 @@ const PublicationPost = ({ post }: TPost) => {
                                 : postAuthor?.nomUser}
                     </Text>
                     <Text className="text-gray-400 text-xs">
+                        {formatTimeAgo(new Date(post?.timeAgo))}
+                    </Text>
+                    <Text className="text-gray-400 text-xs">
                         {post?.location}
                     </Text>
                 </View>
-                <Text className="text-gray-400 text-xs ml-auto mr-2">
-                    {new Date(post?.timeAgo).toDateString()}
-                </Text>
+                <View className="ml-auto mr-2">
+                    <TouchableOpacity
+                        onPress={toggleMenu}
+                        className="p-2"
+                    >
+                        <Ionicons name="ellipsis-vertical" size={24} color="white" />
+                    </TouchableOpacity>
+
+                    {/* Dropdown Menu Modal */}
+                    <Modal
+                        visible={isMenuVisible}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose={() => setIsMenuVisible(false)}
+                    >
+                        <TouchableOpacity
+                            className="flex-1"
+                            activeOpacity={1}
+                            onPress={() => setIsMenuVisible(false)}
+                        >
+                            <View className="absolute top-12 right-4 bg-white rounded-lg shadow-lg">
+                                <TouchableOpacity
+                                    onPress={handleShare}
+                                    className="flex-row items-center px-4 py-3"
+                                >
+                                    <Ionicons name="share-social-outline" size={20} color="black" />
+                                    <Text className="ml-2 text-black">Partager</Text>
+                                </TouchableOpacity>
+                                {/* Add more menu items here if needed */}
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
+                </View>
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 
@@ -272,7 +374,7 @@ const PublicationPost = ({ post }: TPost) => {
                         className="flex bg-blue-300 rounded-full p-1 justify-center items-center"
                         onPress={favoritePost}
                     >
-                        {isFavorite ?
+                        {!isFavorite ?
                             <Ionicons name="heart" size={22} color="white" />
                             : <Image source={require('../assets/images/heart.png')} className="w-7 h-7" />
                         }
