@@ -132,7 +132,6 @@ const PublicationPost = ({ post }: TPost) => {
         }
     }, [getAllResourcesByTarget, setLikes]);
 
-
     console.log("\n\n initialLikes: ", likes);
 
     // write a logic to like a post
@@ -192,15 +191,15 @@ const PublicationPost = ({ post }: TPost) => {
             const newLike = await uploadResourceData(pubObj, 'Favorie')
             if (typeof newLike != 'undefined')
                 console.log("\n\n post set as favorite: ", newLike);
-            else return console.error("fail to set post favorite.")
+            else
+                return console.error("fail to set post favorite.");
         } catch (error) {
             console.error("error liking post: ", error)
         } finally {
             setIsFavorite(false);
         }
-
     }, [updateResource, post, isFavorite, currentUser]
-    )
+    );
 
     // contribute to a post, open a paypal payment SDK
     const contributeToPub = async () => {
