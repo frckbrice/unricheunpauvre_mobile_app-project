@@ -194,7 +194,7 @@ const ProfileEditScreen: React.FC = () => {
                 <TouchableOpacity onPress={() => router.push('/(tabulate)/profile')}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text className="text-white text-xl font-bold ml-4">Modification profil</Text>
+                <Text className="text-white text-xl font-bold ml-4">Modifier votre profil</Text>
             </View>
             <ScrollView>
                 <View className="mb-4">

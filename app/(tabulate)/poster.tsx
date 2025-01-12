@@ -272,7 +272,7 @@ const initialFormState: Publication = {
 const CreatePostScreen: React.FC = () => {
     const [form, setForm] = useState(initialFormState);
     const [currentCat, setCurrentCat] = useState<Category>();
-    const { currentUser } = useUserGlobal();
+    const { currentUser, currentUserObj } = useUserGlobal();
     const [uploading, setUploading] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const mounted = useRef(false);
@@ -291,6 +291,8 @@ const CreatePostScreen: React.FC = () => {
             return getAllCategories()
         return Promise.resolve([]);
     });
+
+    const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
     useEffect(() => {
         mounted.current = true;
@@ -311,6 +313,8 @@ const CreatePostScreen: React.FC = () => {
             await getCurrentUser()
         })();
     }, []);
+
+
 
     const onSubmit = async (data: Publication) => {
         if (!currentCat?.id || !data.imagePub) {
@@ -415,15 +419,17 @@ const CreatePostScreen: React.FC = () => {
         }
     };
 
+    console.log("\n\n on post file current user", currentUser)
+
     return (
         <>
             <ScrollView className="flex-1 bg-gray-900 px-4 py-2">
-                <Text className="text-white text-xl font-bold mb-4">Créer une publication</Text>
+                <Text className="text-white text-xl font-bold mb-4">Poster un rêve</Text>
 
                 <View className='mb-20'>
                     <View className="flex-row items-center mb-4">
                         <Image
-                            source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
+                            source={{ uri: currentUserObj?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                             className="w-10 h-10 rounded-full mr-2"
                         />
                         <Text className="text-white">{currentUser?.name}</Text>

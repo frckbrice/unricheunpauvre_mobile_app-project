@@ -36,7 +36,7 @@ export default function RootLayout() {
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(settings)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabulate)" options={{ headerShown: false }} />
-
+      <Stack.Screen name="post/[idUser]" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
       <Stack.Screen
         name="contribute/[idPub]"
@@ -50,6 +50,7 @@ export default function RootLayout() {
           }
         }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
+
     </Stack>
   );
 }

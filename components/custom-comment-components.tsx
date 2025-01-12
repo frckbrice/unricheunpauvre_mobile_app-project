@@ -61,7 +61,7 @@ const CommentItem = memo(({
 
     const { // fetch the author of parent comment.
         data: commentDoneUser
-    } = useApiOps(() => getResourceByItsId(commentDone?.idUser as number, "User"));
+    } = useApiOps(() => getResourceByItsId(commentDone?.idUser as number, "User", "CommentItem"));
 
     useEffect(() => {
         if (commentDoneUser) {
@@ -99,7 +99,7 @@ const CommentItem = memo(({
             setIsReplying(false);
             setShowReplies(true);
         } catch (error) {
-            Alert.alert('Error', 'Failed to add reply');
+            Alert.alert('Erreur', 'Failed to add reply');
         } finally {
             setIsSubmitting(false);
         }
@@ -119,7 +119,7 @@ const CommentItem = memo(({
                     </Text>
                     {comment?.replyToUser && (
                         <Text className="text-blue-400 text-xs mb-1">
-                            Replying to @{commentAuthor?.nomUser ?? 'comment-author'}
+                            Répondre à @{commentAuthor?.nomUser ?? 'comment-author'}
                         </Text>
                     )}
                     <Text className="text-white text-sm mt-1">{comment?.libeleCom}</Text>
@@ -148,7 +148,7 @@ const CommentItem = memo(({
                             className="flex-row items-center space-x-1"
                         >
                             <Ionicons name="chatbubble-outline" size={16} color="#9CA3AF" />
-                            <Text className="text-xs text-gray-400">Reply</Text>
+                            <Text className="text-xs text-gray-400">Répondre</Text>
                         </TouchableOpacity>
                     )}
                     <Text className="text-xs text-gray-500">
@@ -163,7 +163,7 @@ const CommentItem = memo(({
                             <TextInput
                                 value={replyText}
                                 onChangeText={setReplyText}
-                                placeholder={`Repondre a ${comment?.userName}...`}
+                                placeholder={`Répondre à${comment?.userName}...`}
                                 placeholderTextColor="#9CA3AF"
                                 className="flex-1 text-white text-sm"
                             />
@@ -196,7 +196,7 @@ const CommentItem = memo(({
                             >
                                 <View className="w-8 h-0.5 bg-gray-600" />
                                 <Text className="text-blue-400 text-sm ml-2">
-                                    View {comment?.replies?.length} replies
+                                    Voir {comment?.replies?.length} réponses
                                 </Text>
                             </TouchableOpacity>
                         ) : (
@@ -230,183 +230,6 @@ const CommentItem = memo(({
     );
 });
 
-// Enhanced Comment Section with Nested Replies
-// const EnhancedCommentSection = memo(({
-//     post,
-//     currentUser,
-//     onAddComment,
-//     onAddReply
-// }: {
-//     post: any;
-//     currentUser: JWTBody<JWTDefaultBody> | null;
-//     onAddComment: (comment: Partial<ExtendedComment>) => Promise<Partial<ExtendedComment> | null>;
-//     onAddReply: (idParent: number, text: string) => Promise<{ idPub: number; idUser: any; idParent: number; libeleCom: string; dateCom: string; etatCom: boolean; } | null>;
-// }) => {
-//     const [comments, setComments] = useState<ExtendedComment[] | []>([]);
-//     const [isLoading, setIsLoading] = useState(false);
-//     const [replyingTo, setReplyingTo] = useState<ExtendedComment | null>(null);
-//     const [commentText, setCommentText] = useState('');
-//     const [isSubmitting, setIsSubmitting] = useState(false);
-//     const [commentDone, setCommentDone] = useState<Partial<ExtendedComment> | null>(null);
-
-//     const {
-//         data: user,
-//         refetch
-//     } = useApiOps(() => getResourceByItsId(currentUser?.IdUser as number, "User"));
-
-//     useEffect(() => {
-//         const loadComments = async () => {
-//             setIsLoading(true);
-//             try {
-
-//                 // Retrieve comments specifically for this publication from local storage
-//                 const storedComments = await SecureStore.getItemAsync(`comments-${post.id}`);
-//                 if (storedComments) {
-//                     const parsedComments = JSON.parse(storedComments);
-//                     setComments(parsedComments);
-//                 }
-//             } catch (error) {
-//                 console.error('Error loading comments:', error);
-//             } finally {
-//                 setIsLoading(false);
-//             }
-//         };
-
-//         loadComments();
-//     }, [post]);
-
-//     const handleAddComment = useCallback(async () => {
-//         if (!commentText.trim() || isSubmitting) return;
-
-//         setIsSubmitting(true);
-//         const newComment: Partial<ExtendedComment> = {
-//             idPub: post?.id,
-//             idUser: currentUser?.IdUser as number,
-//             etatCom: false,
-//             libeleCom: commentText,
-//             dateCom: new Date(Date.now()).toISOString(),
-//             idParent: replyingTo?.idCom || null,
-//             isReplied: !!replyingTo
-//         };
-
-//         try {
-//             const comment = await onAddComment(newComment);
-
-//             if (comment) {
-//                 // If it's a reply
-//                 if (replyingTo) {
-//                     const updatedComments = comments.map(rootComment => {
-//                         if (rootComment.idCom === replyingTo.idCom) {
-//                             return {
-//                                 ...rootComment,
-//                                 replies: [
-//                                     ...(rootComment.replies || []),
-//                                     comment as ExtendedComment
-//                                 ]
-//                             };
-//                         }
-//                         return rootComment;
-//                     });
-
-//                     setComments(updatedComments);
-//                 } else {
-//                     // If it's a new root comment
-//                     const updatedComments = [comment as ExtendedComment, ...comments];
-//                     setComments(updatedComments);
-//                 }
-
-//                 // Update local storage with publication-specific comments
-//                 await SecureStore.setItemAsync(`comments-${post.id}`, JSON.stringify(comments));
-//             }
-
-//             setCommentText('');
-//             setReplyingTo(null);
-//         } catch (error) {
-//             Alert.alert('Error', 'Failed to add comment');
-//         } finally {
-//             setIsSubmitting(false);
-//         }
-//     }, [commentText, post?.id, currentUser, replyingTo, comments]);
-
-//     const handleReply = useCallback((comment: ExtendedComment) => {
-//         setReplyingTo(comment);
-//     }, []);
-
-//     const handleLike = useCallback((commentId: number) => {
-//         const updatedComments = comments.map(comment => {
-//             if (comment.idCom === commentId) {
-//                 return {
-//                     ...comment,
-//                     likes: (comment.likes || 0) + 1
-//                 };
-//             }
-//             return comment;
-//         });
-
-//         setComments(updatedComments);
-//         // Optionally update local storage
-//         SecureStore.setItemAsync(`comments-${post.id}`, JSON.stringify(updatedComments));
-//     }, [comments, post.id]);
-
-
-//     return (
-//         <View className="bg-gray-800 rounded-lg p-2">
-//             {/* Main Comment Input */}
-//             <KeyboardAvoidingView
-//                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-//                 className="mb-4"
-//             >
-//                 <View className="flex-row items-center bg-gray-700 rounded-full px-4 py-2">
-//                     <Image
-//                         source={{ uri: user?.avatarUrl || 'https://via.placeholder.com/40' }}
-//                         className="w-8 h-8 rounded-full mr-2"
-//                     />
-//                     <TextInput
-//                         value={commentText}
-//                         onChangeText={setCommentText}
-//                         placeholder={replyingTo ? `Repondre au commentaire...` : "ecrire un commentaire..."}
-//                         placeholderTextColor="#9CA3AF"
-//                         multiline
-//                         className="flex-1 text-white text-sm mr-2"
-//                     />
-//                     {isSubmitting ? (
-//                         <ActivityIndicator size="small" color="#60A5FA" />
-//                     ) : (
-//                         <TouchableOpacity
-//                             onPress={handleAddComment}
-//                             disabled={!commentText?.trim() || isSubmitting}
-//                         >
-//                             <Ionicons
-//                                 name="send"
-//                                 size={24}
-//                                 color={commentText?.trim() && !isSubmitting ? '#60A5FA' : '#6B7280'}
-//                             />
-//                         </TouchableOpacity>
-//                     )}
-//                 </View>
-//             </KeyboardAvoidingView>
-
-//             {/* Comments List */}
-
-//             {isLoading ? (
-//                 <ActivityIndicator size="large" color="blue" />
-//             ) : (
-//                 comments.map((comment) => (
-//                     <CommentItem
-//                         key={comment.idCom}
-//                         comment={comment}
-//                         currentUser={currentUser}
-//                         onReply={handleReply}
-//                         onLike={handleLike}
-//                         onAddReply={onAddReply}
-//                         commentDone={commentDone}
-//                     />
-//                 ))
-//             )}
-//         </View>
-//     );
-// });
-
 
 const EnhancedCommentSection = memo(({
     post,
@@ -427,10 +250,12 @@ const EnhancedCommentSection = memo(({
     const [commentText, setCommentText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    console.log("\n\n from EnhancedCommentSection current User: ", currentUser);
+
     const {
         data: user,
         refetch
-    } = useApiOps(() => getResourceByItsId(currentUser?.IdUser as number, "User"));
+    } = useApiOps(() => getResourceByItsId(Number(currentUser?.IdUser) as number, "User", "EnhancedCommentSection"));
 
     useEffect(() => {
         const loadComments = async () => {

@@ -13,9 +13,12 @@ const useUserGlobal = () => {
 
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<JWTBody<JWTDefaultBody> | null>(null)
-    const [currentUserObj, setCurrentUserObj] = useState<User | null>(null)
+    const [currentUserObj, setCurrentUserObj] = useState<User | null>(null);
+
+
 
     const getToken = async () => {
+
         try {
             const token = await tokenCache.getToken('currentUser');
             console.log('current token: ', token)
@@ -23,12 +26,17 @@ const useUserGlobal = () => {
                 const decoded = JWT.decode(token, TOKEN_KEY as EncodingKey,);
                 console.log("new user decoded: ", decoded);
                 setCurrentUser(decoded);
-                if (decoded?.IdUser) setCurrentUserObj(await getResourceByItsId(decoded?.IdUser as number, "User"));
+
+                console.log("in useUSerGlobal file:  new user decoded: ", decoded);
+                // get the current user pofile
+                if (decoded?.IdUser) setCurrentUserObj(await getResourceByItsId(decoded?.IdUser as number, "User", "useUserGlobal"));
             } else return router.push('/login');
         } catch (error) {
             console.error('Failed to decode token:', error);
         }
     };
+
+
 
 
 

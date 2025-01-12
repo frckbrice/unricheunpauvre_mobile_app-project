@@ -327,7 +327,7 @@ export const getAllResourcesByTarget = async <T>(
         // Safely parse JSON
         try {
             const data = await response.json();
-            console.log("from api file on getAllResourcesByTarget fct and resource " + resource, "data is:", data);
+            // console.log("from api file on getAllResourcesByTarget fct and resource " + resource, "data is:", data);
             return data;
         } catch (jsonError) {
             console.error("Error parsing JSON:", jsonError);
@@ -425,18 +425,19 @@ export const getSingleResource = async (resource: string, id: number) => {
         }
 
         const response = await axios.request(options);
-        console.log("form api file getSingleResource fct:", response?.data);
+        console.log("from api file getSingleResource fct:", response?.data);
 
         if (resource.toLocaleLowerCase().includes('publication')) return {
             id: response?.data.id,
-            author: response?.data.user.username,
-            location: response?.data.user.location ?? "",
+            // author: response?.data.user.username,
+            // location: response?.data.user.location ?? "",
             content: response?.data.libelePub ?? "",
             imageUrl: response?.data.imagePub ?? "",
-            likes: response?.data.favories ?? "",
-            comments: response?.data.commentaires ?? "",
+            // likes: response?.data.favories ?? "",
+            comments: response?.data.commentaires ?? [],
             timeAgo: response?.data.datePub ?? "",
             idUser: response?.data.idUser,
+            idPub: response?.data.idPub,
             idCat: response?.data.idCat,
             statePub: response?.data.etat
         };
@@ -524,9 +525,10 @@ export const uploadResourceData = async <T>(
 }
 
 // get a resource by its id
-export const getResourceByItsId = async (res_id: number, resource: string) => {
+export const getResourceByItsId = async (res_id: number, resource: string, origine?: string) => {
 
     console.log("\n\n from api file getResourceByItsId fct", { res_id, resource });
+    // console.log("\n\n from api file getResourceByItsId origin: ", origin ? origine : "undefined");
 
     if (!res_id || !resource)
         return console.error(`Resource ${resource} not found or resource id is missing`);
@@ -553,3 +555,42 @@ export const getResourceByItsId = async (res_id: number, resource: string) => {
 /**
  * cm3om1qc10003c82uh2tbwuqd
  */
+
+// format date en french in the format of "il ya 10min", "il ya 1 heure"
+export const formatTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    // Moins d'une minute
+    if (diffInSeconds < 60) {
+        return `il y a ${diffInSeconds} seconde${diffInSeconds === 1 ? '' : 's'}`;
+    }
+
+    // Minutes (moins d'une heure)
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+        return `il y a ${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'}`;
+    }
+
+    // Heures (moins d'un jour)
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+        return `il y a ${diffInHours} heure${diffInHours === 1 ? '' : 's'}`;
+    }
+
+    // Jours (moins d'un mois)
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) {
+        return `il y a ${diffInDays} jour${diffInDays === 1 ? '' : 's'}`;
+    }
+
+    // Mois (moins d'un an)
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+        return `il y a ${diffInMonths} mois`;
+    }
+
+    // Années
+    const diffInYears = Math.floor(diffInMonths / 12);
+    return `il y a ${diffInYears} an${diffInYears === 1 ? '' : 's'}`;
+};

@@ -72,10 +72,11 @@ const ProfileScreen: React.FC = () => {
                 <View className="flex-row justify-around mb-4">
                     <View>
                         <Text className="text-white text-center font-bold">
-                            {isPostsLoading ? <ActivityIndicator size="large" color={Colors.primary} />
+                            {isPostsLoading
+                                ? <ActivityIndicator size="large" color={Colors.primary} />
                                 : posts || 0}
                         </Text>
-                        <Text className="text-gray-400">Publications</Text>
+                        <Text className="text-gray-400">Rêves</Text>
                     </View>
                     <View>
                         <Text className="text-white text-center font-bold">
@@ -90,7 +91,7 @@ const ProfileScreen: React.FC = () => {
                     className="bg-blue-500 p-2 ml-4 rounded-xl mb-1 w-[90%]"
                     onPress={() => router.push("/(settings)/edit-profile")}
                 >
-                    <Text className="text-white text-center">Éditer profile</Text>
+                    <Text className="text-white text-center">Éditer profil</Text>
                 </TouchableOpacity>
             </View>
         </>

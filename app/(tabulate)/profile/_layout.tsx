@@ -8,7 +8,7 @@ import {
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { withLayoutContext } from "expo-router";
 import { Header, ProfileScreen } from '@/components/profile';
-import { ScrollView } from 'react-native';
+
 
 const { Navigator } = createMaterialTopTabNavigator();
 
@@ -37,15 +37,15 @@ export default function TrainingLayout() {
                     tabBarStyle: {
                         width: "100%",
                         backgroundColor: '#111827',
-                        height: 45,
+                        height: 47,
                         marginBottom: 0,
                     }
 
                 }}
             >
-                <MaterialTopTabs.Screen name="index" options={{ title: 'Publications' }} />
-                <MaterialTopTabs.Screen name="about" options={{ title: 'A propos' }} />
-                <MaterialTopTabs.Screen name="favorites" options={{ title: 'Favories' }} />
+                <MaterialTopTabs.Screen name="index" options={{ title: 'Rêves' }} />
+                <MaterialTopTabs.Screen name="about" options={{ title: 'A propos de moi' }} />
+                <MaterialTopTabs.Screen name="favorites" options={{ title: 'Favoris' }} />
             </MaterialTopTabs>
         </>
 

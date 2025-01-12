@@ -51,10 +51,6 @@ const HomeScreen: React.FC = () => {
 
 
     return (
-        // <KeyboardAvoidingView
-        //     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        //     style={{ flex: 1 }}
-        // >
         <SafeAreaView className="flex-1 bg-gray-900 ">
             <View className="">
                 <FlatList
@@ -91,20 +87,12 @@ const HomeScreen: React.FC = () => {
                             route={'/poster'}
                         />
                     )}
-                    // refreshControl={
-                    //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    // }
+
                     initialNumToRender={10}
                     maxToRenderPerBatch={10}
                     onEndReached={loadMore}
                     onEndReachedThreshold={0.5}
-                // ListFooterComponent={() => (
-                //     isLoadingPosts ? (
-                //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                //             <ActivityIndicator size="large" color={'gray'} />
-                //         </View>
-                //     ) : null
-                // )}
+
                 />
             </View>
         </SafeAreaView>

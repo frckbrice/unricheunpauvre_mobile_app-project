@@ -7,7 +7,7 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Comment, Jaime, Post, User } from '@/lib/types';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
+import { formatTimeAgo, getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
 import useApiOps from '@/hooks/use-api';
 import useUserGlobal from '@/hooks/use-user-hook';
 
@@ -18,6 +18,8 @@ import { Colors } from '@/constants';
 import { EnhancedCommentSection, ExtendedComment } from './custom-comment-components';
 
 import Share from 'react-native-share';
+import { ProfileClickArea, ProfileModal } from './profile/components/profile-details';
+import { MenuOverlay } from './publication/menu-overlay';
 
 type TPost = {
     post: Post;
@@ -43,6 +45,8 @@ const PublicationPost = ({ post }: TPost) => {
     const [likes, setLikes] = useState(0);
     const [comments, setComments] = useState(post?.comments || []);
     const [startComment, setStartComment] = useState<boolean>(false);
+    const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+
 
     const { currentUser } = useUserGlobal();
     const router = useRouter();
@@ -124,7 +128,7 @@ const PublicationPost = ({ post }: TPost) => {
         try {
             const allLikes = await getAllResourcesByTarget(
                 'Jaime', post?.id, 'idPub') as Jaime[];
-            console.log("all likes: ", allLikes);
+            // console.log("all likes: ", allLikes);
             const filterLikesForCurrentPost = allLikes?.filter((l) => l.idPub === post?.id);
             setLikes(filterLikesForCurrentPost?.length);
         } catch (error) {
@@ -132,7 +136,7 @@ const PublicationPost = ({ post }: TPost) => {
         }
     }, [getAllResourcesByTarget, setLikes]);
 
-    console.log("\n\n initialLikes: ", likes);
+    // console.log("\n\n initialLikes: ", likes);
 
     // write a logic to like a post
     const likePost = useCallback(async () => {
@@ -219,44 +223,7 @@ const PublicationPost = ({ post }: TPost) => {
         setStartComment(!startComment)
     };
 
-    // format date en french in the format of "il ya 10min", "il ya 1 heure"
-    const formatTimeAgo = (date: Date): string => {
-        const now = new Date();
-        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-        // Moins d'une minute
-        if (diffInSeconds < 60) {
-            return `il y a ${diffInSeconds} seconde${diffInSeconds === 1 ? '' : 's'}`;
-        }
-
-        // Minutes (moins d'une heure)
-        const diffInMinutes = Math.floor(diffInSeconds / 60);
-        if (diffInMinutes < 60) {
-            return `il y a ${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'}`;
-        }
-
-        // Heures (moins d'un jour)
-        const diffInHours = Math.floor(diffInMinutes / 60);
-        if (diffInHours < 24) {
-            return `il y a ${diffInHours} heure${diffInHours === 1 ? '' : 's'}`;
-        }
-
-        // Jours (moins d'un mois)
-        const diffInDays = Math.floor(diffInHours / 24);
-        if (diffInDays < 30) {
-            return `il y a ${diffInDays} jour${diffInDays === 1 ? '' : 's'}`;
-        }
-
-        // Mois (moins d'un an)
-        const diffInMonths = Math.floor(diffInDays / 30);
-        if (diffInMonths < 12) {
-            return `il y a ${diffInMonths} mois`;
-        }
-
-        // Années
-        const diffInYears = Math.floor(diffInMonths / 12);
-        return `il y a ${diffInYears} an${diffInYears === 1 ? '' : 's'}`;
-    };
 
 
     // handle share function
@@ -278,10 +245,12 @@ const PublicationPost = ({ post }: TPost) => {
         }
     };
 
+    console.log("\n\n post", post)
+
     return (
         <ScrollView className={'mb-5'}>
             <View className="flex-row items-center mb-1 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
-                <Image source={{ uri: 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
+                {/* <Image source={{ uri: postAuthor?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                     className="w-10 h-10 rounded-full mr-2"
                 />
                 <View className='flex justify-center items-start'>
@@ -298,8 +267,12 @@ const PublicationPost = ({ post }: TPost) => {
                     <Text className="text-gray-400 text-xs">
                         {post?.location}
                     </Text>
-                </View>
-                <View className="ml-auto mr-2">
+                </View> */}
+                <ProfileClickArea
+                    user={postAuthor}
+                    onPress={() => setIsProfileModalVisible(true)}
+                />
+                {/* <View className="ml-auto mr-2">
                     <TouchableOpacity
                         onPress={toggleMenu}
                         className="p-2"
@@ -307,7 +280,7 @@ const PublicationPost = ({ post }: TPost) => {
                         <Ionicons name="ellipsis-vertical" size={24} color="white" />
                     </TouchableOpacity>
 
-                    {/* Dropdown Menu Modal */}
+                    
                     <Modal
                         visible={isMenuVisible}
                         transparent={true}
@@ -327,11 +300,33 @@ const PublicationPost = ({ post }: TPost) => {
                                     <Ionicons name="share-social-outline" size={20} color="black" />
                                     <Text className="ml-2 text-black">Partager</Text>
                                 </TouchableOpacity>
-                                {/* Add more menu items here if needed */}
+                               
                             </View>
                         </TouchableOpacity>
                     </Modal>
+                </View> */}
+                <View className="ml-auto mr-2">
+                    <TouchableOpacity
+                        onPress={toggleMenu}
+                        className="p-2"
+                    >
+                        <Ionicons name="ellipsis-vertical" size={24} color="white" />
+                    </TouchableOpacity>
+
+                    <MenuOverlay
+                        isVisible={isMenuVisible}
+                        onClose={() => setIsMenuVisible(false)}
+                        onShare={handleShare}
+                        onViewDetails={() => router.push(`/post/${post.id}`)}
+                        post={post}
+                    />
                 </View>
+
+                <ProfileModal
+                    isVisible={isProfileModalVisible}
+                    onClose={() => setIsProfileModalVisible(false)}
+                    user={postAuthor}
+                />
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 
@@ -379,52 +374,6 @@ const PublicationPost = ({ post }: TPost) => {
                         }
                     </TouchableOpacity>
                 </View>
-
-                {/* {!!startComment && (
-                    <EnhancedCommentSection
-                        post={post}
-                        currentUser={currentUser}
-                        onAddComment={async (newComment) => {
-                            try {
-                                const result = await uploadResourceData(newComment, 'Commentaire');
-                                if (result) {
-                                    // increase the number of comments by 1 (new created comment.)
-                                    post?.comments?.unshift({
-                                        idCom: result?.idCom as number, // set the comment id as the length of the comments array + 1.
-                                        idPub: result?.idPub as number,
-                                        idUser: result?.idUser as number,
-                                        dateCom: result?.dateCom as string,
-                                        etatCom: result?.etatCom as boolean,
-                                        libeleCom: result?.libeleCom as string, //   
-                                    });
-                                    return result;
-                                }
-                                return null;
-                            } catch (error) {
-                                console.error('Error adding comment:', error);
-                                throw error;
-                            }
-                        }}
-                        onAddReply={async (parentId, text) => {
-                            try {
-                                const replyData = {
-                                    idPub: post.id,
-                                    idUser: currentUser?.IdUser,
-                                    idParent: parentId,
-                                    libeleCom: text,
-                                    dateCom: new Date().toISOString(),
-                                    etatCom: false,
-                                    isReplied: true
-                                };
-                                const result = await uploadResourceData(replyData, 'Commentaire');
-                                return result;
-                            } catch (error) {
-                                console.error('Error adding reply:', error);
-                                throw error;
-                            }
-                        }}
-                    />
-                )} */}
                 {!!startComment && (
                     <EnhancedCommentSection
                         post={post}

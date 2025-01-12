@@ -33,8 +33,8 @@ const PostCard = ({
                         {name}
                     </Text>
                     <Text className="text-gray-400 text-sm">
-                        {location
-                        }</Text>
+                        {location}
+                    </Text>
                 </View>
                 <Text className="text-gray-400 text-sm ml-auto">
                     {new Date(time).toDateString()}

@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PostCard from '../../../components/profile/components/post-card';
 import useApiOps from '@/hooks/use-api';
-import { Post, Publication } from '@/lib/types';
+import { Post } from '@/lib/types';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { getAllResourcesByTarget } from '@/lib/api';
-import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
-import { Colors } from '@/constants';
+import { FlatList, RefreshControl } from 'react-native';
 import EmptyState from '@/components/empty-state';
 
 
@@ -61,9 +60,9 @@ const SocialFeedScreen = () => {
                 }
                 ListEmptyComponent={() => (
                     <EmptyState
-                        title="Aucune Publication personnelle"
-                        subtitle="Commencer par publier."
-                        label="Creer une Publication"
+                        title="Aucun rêve"
+                        subtitle="Commencer par publier un rêve."
+                        label="Poster un rêve"
                         titleStyle='text-white font-bold text-[16px]'
                         subtitleStyle="text-[13px] text-center font-psemibold text-white"
                         route={'/poster'}

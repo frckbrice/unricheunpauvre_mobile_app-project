@@ -58,7 +58,7 @@ const Favorites = () => {
                 ListEmptyComponent={() => (
                     <EmptyState
                         title="Pas de publications favories..."
-                        subtitle="Vous devez ajouter au moins une publication a vos favoris."
+                        subtitle="Vous devez ajouter au moins un rêve a vos favoris."
                         label="Revenir a l'accueil"
                         subtitleStyle="text-[14px] text-center text-white"
                         route={'/accueil'}

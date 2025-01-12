@@ -62,21 +62,16 @@ const About: React.FC = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 px-4 ">
-            {/* <View className="flex-row items-center mb-6">
-                <TouchableOpacity>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <Text className="text-white text-xl font-bold ml-4">Votre profil</Text>
-            </View> */}
+
             <ScrollView className='mb-10'>
                 <View className="mb-2">
-                    <Text className="text-white mb-2">Nom d'utilisateur</Text>
+                    <Text className="text-white mb-2">Nom Complet</Text>
                     <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
                         <Text className='text-white'>{currentUser?.name}</Text>
                     </View>
                 </View>
                 <View className="mb-2">
-                    <Text className="text-white mb-2">Username</Text>
+                    <Text className="text-white mb-2">Nom d'utilisateur</Text>
                     <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
                         <Text className=' text-white/75'>{username}</Text>
                     </View>
@@ -87,13 +82,7 @@ const About: React.FC = () => {
                         <Text className=' text-white/75'>{city}</Text>
                     </View>
                 </View>
-                {/* <View className="mb-2">
-                    <Text className="text-white mb-2">Description</Text>
-                    <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
-                        <Text>{currentUser?.description}</Text>
-                    </View>
 
-                </View> */}
                 <TouchableOpacity
                     onPress={() => router.push('/(settings)/edit-profile')}
                     className="bg-blue-500 
