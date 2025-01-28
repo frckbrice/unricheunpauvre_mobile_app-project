@@ -7,14 +7,17 @@ import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
     return (
-        <Stack screenOptions={{ headerShown: false }} initialRouteName="parameters" >
+        <>
+            <Stack screenOptions={{ headerShown: false }} initialRouteName="parameters" >
 
-            <Stack.Screen name="AccountIdentification" options={{ headerShown: false }} />
-            <Stack.Screen name="modifier-pwd" options={{ headerShown: false }} />
-            <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
-            <Stack.Screen name="politique-confidentialite" options={{ headerShown: false }} />
-            <Stack.Screen name="parameters" options={{ headerShown: false }} />
-            <StatusBar style="light" backgroundColor='@333' />
-        </Stack>
+                <Stack.Screen name="AccountIdentification" options={{ headerShown: false }} />
+                <Stack.Screen name="modifier-pwd" options={{ headerShown: false }} />
+                <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+                <Stack.Screen name="politique-confidentialite" options={{ headerShown: false }} />
+                <Stack.Screen name="parameters" options={{ headerShown: false }} />
+
+            </Stack>
+            <StatusBar style="auto" />
+        </>
     );
 }

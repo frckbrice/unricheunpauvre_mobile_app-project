@@ -279,7 +279,9 @@ const LoginScreen: React.FC = () => {
 
     const { control: forgotPasswordControl, handleSubmit: handleForgotPasswordSubmit, formState: { errors: forgotPasswordErrors } } = useForm<ForgotPasswordFormData>({
         defaultValues: {
-            email: ''
+            email: '',
+            confirmPassword: '',
+            password: ''
         },
         mode: 'onChange'
     });
@@ -287,15 +289,16 @@ const LoginScreen: React.FC = () => {
     const onSignInPress = async (data: LoginFormData) => {
         setSubmitStatus('loading');
 
+        console.log("signin data: ", data);
         try {
-            const res = await fetch(`${API_URL}/auth/login`, {
+            const res = await fetch(`https://unrichunpauvre-rest-api.onrender.com/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     username: data.username,
-                    mdpUser: data.password,
+                    mdpUser: data.password
                 }),
             });
 
@@ -305,6 +308,7 @@ const LoginScreen: React.FC = () => {
             }
 
             const responseData = await res.json();
+            console.log("response data: ", data);
             if (responseData?.accessToken) {
                 tokenCache.saveToken('currentUser', responseData?.accessToken);
                 setSubmitStatus('success');
@@ -329,10 +333,10 @@ const LoginScreen: React.FC = () => {
             return;
         }
 
-        console.log("updated password: ", data);
-        console.log("url: ", `${API_URL}/users/forgot-password`);
+        // console.log("updated password: ", data);
+        // console.log("url: ", `${API_URL}/users/forgot-password`);
         try {
-            const res = await fetch(`${API_URL}/users/forgot-password`, {
+            const res = await fetch(`https://unrichunpauvre-rest-api.onrender.com/api/users/forgot-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -426,7 +430,9 @@ const LoginScreen: React.FC = () => {
                                     )}
                                 />
                                 {forgotPasswordErrors.email && (
-                                    <Text className="text-red-500 text-sm mt-1">{forgotPasswordErrors.email.message}</Text>
+                                    <Text className="text-red-500 text-sm mt-1">
+                                        {forgotPasswordErrors.email.message}
+                                    </Text>
                                 )}
                             </View>
                             <View className="mb-4">
@@ -491,8 +497,6 @@ const LoginScreen: React.FC = () => {
                                     <Text className="text-red-500 text-sm mt-1">{forgotPasswordErrors.email.message}</Text>
                                 )}
                             </View>
-
-
 
                             <TouchableOpacity
                                 className={`rounded-lg p-3 ${resetEmailStatus === 'loading' ? 'bg-blue-400' : 'bg-blue-600'}`}

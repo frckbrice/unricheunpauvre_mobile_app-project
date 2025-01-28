@@ -6,14 +6,14 @@ const uri =
     Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':5000') ??
     'yourapi.com';
 
-export const API_URL = `http://${uri}/api`;
+// export const API_URL = `http://${uri}/api`;
 export const TOKEN_KEY = process.env.EXPO_PUBLIC_JWT_SECRET_KEY;
 
 
-// export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
+export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
 
-console.log("\n\n from constant: API_URL", API_URL);
-console.log("\n\n from constant: TOKEN_KEY", TOKEN_KEY);
+// console.log("\n\n from constant: API_URL", API_URL);
+// console.log("\n\n from constant: TOKEN_KEY", TOKEN_KEY);
 
 export const PAYPAL_CLIENT_ID = process.env.EXPO_PUBLIC_PAYPAL_CLIENT_ID
 export const PAYPAL_SECRET = process.env.EXPO_PUBLIC_PAYPAL_SECRET;

@@ -440,7 +440,7 @@ const Register: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            const res = await fetch(`${API_URL}/users/signup`, {
+            const res = await fetch(`https://unrichunpauvre-rest-api.onrender.com/api/users/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
