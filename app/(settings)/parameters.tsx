@@ -26,6 +26,7 @@ const SettingsItem = ({
     const handleRouting = async () => {
         if (route?.toLocaleLowerCase().includes('deconnexion')) {
             await SecureStore.deleteItemAsync('token')
+            await SecureStore.deleteItemAsync('currentUser')
             return router.push('/login');
         } else
             router.push(route as Href<string>)
@@ -61,18 +62,18 @@ const SentProjects = () => {
                     <View style={styles.section}>
                         <SettingsItem icon="person-outline" title="Information du compte" route='/(settings)/edit-profile' />
                         <SettingsItem icon="finger-print" title="modifier votre Identification" hasNotification route='/(settings)/AccountIdentification' />
-                        <SettingsItem icon="language" title="Langue" isLast />
+                        {/* <SettingsItem icon="language" title="Langue" isLast /> */}
                     </View>
                     <View style={styles.section}>
                         <SettingsItem icon="lock-closed-outline" title="Modifier mot de passe" route='/(settings)/modifier-pwd' />
-                        <SettingsItem icon="call-outline" title="Modifier numéro de téléphone" isLast />
+                        {/* <SettingsItem icon="call-outline" title="Modifier numéro de téléphone" isLast /> */}
                         {/* <SettingsItem icon="person" title="Modifier informations personnelles" isLast route='/(settings)/edit-profile' /> */}
                     </View>
                     <View style={styles.section}>
-                        <SettingsItem icon="notifications-outline" title="Notification" route='/notifications' />
-                        <SettingsItem icon="help-circle-outline" title="Centre d'aide" />
-                        <SettingsItem icon="shield-outline" title="Politique de confidentialité" />
-                        <SettingsItem icon="person-add-outline" title="Invité un ami" />
+                        {/* <SettingsItem icon="notifications-outline" title="Notification" route='/notifications' /> */}
+                        {/* <SettingsItem icon="help-circle-outline" title="Centre d'aide" /> */}
+                        <SettingsItem icon="shield-outline" title="Politique de confidentialité" route='/(settings)/politique-confidentialite' />
+                        {/* <SettingsItem icon="person-add-outline" title="Invité un ami" /> */}
                         <SettingsItem icon="log-out-outline" title="Déconnexion" isLast route='deconnexion' />
                     </View>
                 </ScrollView>

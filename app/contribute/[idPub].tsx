@@ -33,10 +33,11 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+
 export default function PayPalDonation() {
     const [isLoading, setIsLoading] = useState(true);
 
-    const paypalDonationURL = `https://www.paypal.com/donate?hosted_button_id=${process.env.EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID}`;
+    const paypalDonationURL = `https://www.paypal.com/donate?hosted_button_id=${process.env.EXPO_PUBLIC_PAYPAL_DONATION_BUTTON_ID}`;
 
     return (
         <View style={styles.container}>
@@ -85,3 +86,16 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 });
+
+/**
+ * 
+ <form action="https://www.paypal.com/donate" method="post" target="_top">
+<input type="hidden" name="hosted_button_id" value="LW7NY7QKHDVY2" />
+<input type="image" src="https://www.paypalobjects.com/fr_FR/FR/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Bouton Faites un don avec PayPal" />
+<img alt="" border="0" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" width="1" height="1" />
+</form>
+
+ */
+/**
+ * https://www.paypal.com/donate/?hosted_button_id=LW7NY7QKHDVY2
+ */

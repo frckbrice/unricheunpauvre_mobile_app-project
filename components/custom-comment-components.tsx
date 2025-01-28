@@ -22,13 +22,13 @@ import * as SecureStore from 'expo-secure-store'
 // Extended Comment type to handle replies
 export interface ExtendedComment extends Comment {
     replies?: ExtendedComment[];
-    idParent?: number | null;
+    idParent?: string | null;
     userName?: string;
     photoUser?: string;
     replyToUser?: string;
     likes?: number;
     isReplied?: boolean;
-    dateCom: string;
+    createdAt: string;
 }
 
 // Single Comment Component with Replies
@@ -43,10 +43,10 @@ const CommentItem = memo(({
     commentDone
 }: {
     comment: ExtendedComment;
-    currentUser: JWTBody<JWTDefaultBody> | null;
+    currentUser: any | null;
     onReply: (comment: ExtendedComment) => void;
-    onLike: (commentId: number) => void;
-    onAddReply: (idParent: number, text: string) => Promise<{ idPub: number; idUser: any; idParent: number; libeleCom: string; dateCom: string; etatCom: boolean; } | null>;
+    onLike: (commentId: string) => void;
+    onAddReply: (idParent: string, text: string) => Promise<{ idPub: string; idUser: string; idParent: string; libeleCom: string; createdAt: string; etatCom: boolean; } | null>;
     depth?: number;
     maxDepth?: number;
     commentDone?: Partial<ExtendedComment> | null
@@ -61,7 +61,7 @@ const CommentItem = memo(({
 
     const { // fetch the author of parent comment.
         data: commentDoneUser
-    } = useApiOps(() => getResourceByItsId(commentDone?.idUser as number, "User", "CommentItem"));
+    } = useApiOps(() => getResourceByItsId(commentDone?.idUser as string, "users", "CommentItem"));
 
     useEffect(() => {
         if (commentDoneUser) {
@@ -81,7 +81,7 @@ const CommentItem = memo(({
                 useNativeDriver: true,
             }),
         ]).start();
-        onLike(comment?.idCom);
+        onLike(comment?.id as string);
     };
 
     const handleReplyPress = () => {
@@ -94,7 +94,7 @@ const CommentItem = memo(({
 
         setIsSubmitting(true);
         try {
-            await onAddReply(comment?.idCom, replyText);
+            await onAddReply(comment?.id as string, replyText);
             setReplyText('');
             setIsReplying(false);
             setShowReplies(true);
@@ -105,6 +105,9 @@ const CommentItem = memo(({
         }
     };
 
+    console.log("inside the comment Item: currentUser: ", currentUser)
+    console.log("inside the comment Item: the current commment: ", comment)
+
     return (
         <View className={`flex-row mb-2 ${depth > 0 ? 'ml-8' : ''}`}>
             <Image
@@ -114,12 +117,12 @@ const CommentItem = memo(({
             {/* comment input */}
             <View className="flex-1">
                 <View className="bg-gray-700 rounded-2xl px-3 py-2">
-                    <Text className="text-white font-medium text-sm">
+                    <Text className="text-gray-400 font-medium text-[11px]">
                         {currentUser?.nomUser || 'User'}
                     </Text>
                     {comment?.replyToUser && (
                         <Text className="text-blue-400 text-xs mb-1">
-                            Répondre à @{commentAuthor?.nomUser ?? 'comment-author'}
+                            Répondre à @{commentAuthor?.nomUser ?? 'auteur du commentaire'}
                         </Text>
                     )}
                     <Text className="text-white text-sm mt-1">{comment?.libeleCom}</Text>
@@ -152,7 +155,7 @@ const CommentItem = memo(({
                         </TouchableOpacity>
                     )}
                     <Text className="text-xs text-gray-500">
-                        {new Date(comment?.dateCom).toLocaleDateString()}
+                        {new Date(comment?.createdAt).toLocaleString()}
                     </Text>
                 </View>
 
@@ -203,7 +206,7 @@ const CommentItem = memo(({
                             <View>
                                 {comment?.replies.map((reply) => (
                                     <CommentItem
-                                        key={reply.idCom}
+                                        key={reply.id}
                                         comment={reply}
                                         currentUser={currentUser}
                                         onReply={onReply}
@@ -218,7 +221,7 @@ const CommentItem = memo(({
                                         onPress={() => setShowReplies(false)}
                                         className="mt-1"
                                     >
-                                        <Text className="text-blue-400 text-sm">Hide replies</Text>
+                                        <Text className="text-blue-400 text-sm">cacher les réponses</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -241,21 +244,16 @@ const EnhancedCommentSection = memo(({
     post: any;
     currentUser: JWTBody<JWTDefaultBody> | null;
     onAddComment: (comment: Partial<ExtendedComment>) => Promise<Partial<ExtendedComment> | null>;
-    onAddReply: (idParent: number, text: string) => Promise<{ idPub: number; idUser: any; idParent: number; libeleCom: string; dateCom: string; etatCom: boolean; } | null>;
+    onAddReply: (idParent: string, text: string) => Promise<{ idPub: string; idUser: string; idParent: string; libeleCom: string; createdAt: string; etatCom: boolean; } | null>;
     initialComments?: ExtendedComment[];
 }) => {
-    const [comments, setComments] = useState<ExtendedComment[]>(initialComments);
+    const [comments, setComments] = useState<ExtendedComment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState<ExtendedComment | null>(null);
     const [commentText, setCommentText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    console.log("\n\n from EnhancedCommentSection current User: ", currentUser);
-
-    const {
-        data: user,
-        refetch
-    } = useApiOps(() => getResourceByItsId(Number(currentUser?.IdUser) as number, "User", "EnhancedCommentSection"));
+    // console.log("\n\n from EnhancedCommentSection current post: ", post);
 
     useEffect(() => {
         const loadComments = async () => {
@@ -266,44 +264,61 @@ const EnhancedCommentSection = memo(({
                 if (storedComments) {
                     const parsedComments = JSON.parse(storedComments);
                     setComments(parsedComments);
-                }
+                } else setIsLoading(false);
             } catch (error) {
                 console.error('Error loading comments:', error);
             } finally {
                 setIsLoading(false);
             }
         };
+        console.log("\n\n from EnhancedCommentSection commentaires 3: ", initialComments);
 
-        loadComments();
+        if (initialComments?.length || post?.comments) {
+            console.log("\n\n incoming comments: ", post?.comments);
+            setComments(initialComments ?? post?.comments);
+        }
+        else loadComments();
+
+
     }, [post.id]);
+
 
     const handleAddComment = useCallback(async () => {
         if (!commentText.trim() || isSubmitting) return;
 
         setIsSubmitting(true);
         const newComment: Partial<ExtendedComment> = {
-            idPub: post?.id,
-            idUser: currentUser?.IdUser as number,
+            idPub: post?.id || post?.idPub,
+            idUser: currentUser?.userId as string,
             etatCom: false,
             libeleCom: commentText,
-            dateCom: new Date(Date.now()).toISOString(),
-            idParent: replyingTo?.idCom || null,
+            createdAt: new Date(Date.now()).toISOString(),
+            idParent: replyingTo?.id || null,
             isReplied: !!replyingTo
         };
 
         try {
-            const comment = await onAddComment(newComment);
+            const result = await onAddComment(newComment);
 
-            if (comment) {
-                // If it's a reply
+            if (result) {
+                const comment = {
+                    idCom: result?.id as string,
+                    idPub: result?.idPub as string,
+                    idUser: result?.idUser as string,
+                    createdAt: result?.createdAt as string,
+                    etatCom: result?.etatCom as boolean,
+                    libeleCom: result?.libeleCom as string,
+                };
+                // If it's a reply comment
                 if (replyingTo) {
                     const updatedComments = comments.map(rootComment => {
-                        if (rootComment.idCom === replyingTo.idCom) {
+                        if (rootComment.id === replyingTo.id) {
                             return {
                                 ...rootComment,
                                 replies: [
                                     ...(rootComment.replies || []),
-                                    comment as ExtendedComment
+                                    // comment as ExtendedComment
+                                    comment
                                 ]
                             };
                         }
@@ -324,7 +339,7 @@ const EnhancedCommentSection = memo(({
             setCommentText('');
             setReplyingTo(null);
         } catch (error) {
-            Alert.alert('Error', 'Failed to add comment');
+            console.error('Error', 'Failed to add comment');
         } finally {
             setIsSubmitting(false);
         }
@@ -334,9 +349,9 @@ const EnhancedCommentSection = memo(({
         setReplyingTo(comment);
     }, []);
 
-    const handleLike = useCallback((commentId: number) => {
+    const handleLike = useCallback((commentId: string) => {
         const updatedComments = comments.map(comment => {
-            if (comment.idCom === commentId) {
+            if (comment.id === commentId) {
                 return {
                     ...comment,
                     likes: (comment.likes || 0) + 1
@@ -350,22 +365,30 @@ const EnhancedCommentSection = memo(({
         SecureStore.setItemAsync(`comments-${post.id}`, JSON.stringify(updatedComments));
     }, [comments, post.id]);
 
+    // console.log("\n\n from EnhancedCommentSection post is: ", post.author);
+
     return (
-        <View className="bg-gray-800 rounded-lg p-2">
+        <View className="bg-gray-800 rounded-sm py-2">
             {/* Main Comment Input */}
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="mb-4"
             >
-                <View className="flex-row items-center bg-gray-700 rounded-full px-4 py-2">
-                    <Image
-                        source={{ uri: user?.avatarUrl || 'https://via.placeholder.com/40' }}
+                <View className="flex-row items-center bg-gray-700 rounded-[14px] w-full px-2 py-2">
+                    {post?.author?.photUser ? <Image
+                        source={{ uri: post?.author?.username.slice(0, 2) as string }}
                         className="w-8 h-8 rounded-full mr-2"
                     />
+                        : <View className='w-8 h-8 rounded-full mr-2 bg-gray-500 text-white flex items-center justify-center'>
+                            <Text className='text-white text-bold text-[20px]'>
+                                {post?.author?.nomUser?.slice(0, 2)}
+                            </Text>
+                        </View>
+                    }
                     <TextInput
                         value={commentText}
                         onChangeText={setCommentText}
-                        placeholder={replyingTo ? `Repondre a ${replyingTo.userName || 'commentaire'}...` : "Ecrire un commentaire..."}
+                        placeholder={replyingTo ? `Repondre a ${replyingTo.userName || 'commentaire'}...` : "Laisser un commentaire..."}
                         placeholderTextColor="#9CA3AF"
                         multiline
                         className="flex-1 text-white text-sm mr-2"
@@ -388,20 +411,14 @@ const EnhancedCommentSection = memo(({
             </KeyboardAvoidingView>
 
             {/* Comments List */}
-            {isLoading ? (
+            {isLoading && !comments?.length ? (
                 <ActivityIndicator size="large" color="blue" />
-            ) : comments.length === 0 ? (
-                <View className="items-center justify-center py-4">
-                    <Text className="text-gray-400 text-center">
-                        Pas de commentaire. Ecrire un commentaire!
-                    </Text>
-                </View>
-            ) : (
-                comments.map((comment) => (
+            ) : (comments.length || post?.comments) ? (
+                (comments || post?.comments).map((comment) => (
                     <CommentItem
-                        key={comment.idCom}
+                        key={comment.id}
                         comment={comment}
-                        currentUser={currentUser}
+                        currentUser={post?.author || currentUser}
                         onReply={handleReply}
                         onLike={handleLike}
                         onAddReply={onAddReply}
@@ -409,7 +426,7 @@ const EnhancedCommentSection = memo(({
                         maxDepth={3}
                     />
                 ))
-            )}
+            ) : null}
         </View>
     );
 });

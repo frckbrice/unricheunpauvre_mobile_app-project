@@ -1,89 +1,65 @@
-import React, { useCallback, useRef, useState } from "react";
+import { useState, useCallback, useEffect } from 'react';
 
-// Updated useApiOps hook for chunk-based fetching
-export const useChunkedApiOps = <T>(
-    fetchFn: (page: number, pageSize: number) => Promise<T[]>,
-    initialPage = 1,
-    initialPageSize = 10,
-    total = 0
-) => {
+interface ChunkedApiOpsResult<T> {
+    data: T[];
+    isLoading: boolean;
+    hasMore: boolean;
+    loadMore: () => void;
+    refresh: () => void;
+}
+
+export function useChunkedApiOps<T>(
+    fetchFunction: (page: number, pageSize: number) => Promise<{ data: T[], total: number }>,
+    initialPageSize = 10
+): ChunkedApiOpsResult<T> {
     const [data, setData] = useState<T[]>([]);
+    const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    const [page, setPage] = useState(initialPage);
-    const [totalPages, setTotalPages] = useState(total);
     const [hasMore, setHasMore] = useState(true);
-    const abortController = useRef<AbortController | null>(null);
 
-    /**
-     * here we face a problem where the fetch All pubs is not yet set. it impose the setting of the 
-     * page and pageSize parameters.
-     */
-
-    const fetchData = useCallback(async (currentPage: number) => {
-
-        // Cancel previous request if exists
-        abortController.current?.abort();
-        abortController.current = new AbortController();
-
-        if (isLoading || !hasMore) return;
+    const fetchData = useCallback(async (reset = false) => {
+        if (isLoading) return;
 
         setIsLoading(true);
         try {
-            const result = await fetchFn(currentPage, initialPageSize);
-
-            console.log("\n\n from useChunkedApiOps file: ", result)
-
-            if (result?.length === 0) {
-                setHasMore(false);
-                return;
-            }
+            const currentPage = reset ? 1 : page;
+            const result = await fetchFunction(currentPage, initialPageSize);
 
             setData(prevData =>
-                currentPage === 1
-                    ? result
-                    : [...prevData, ...result]
+                reset
+                    ? result.data
+                    : [...prevData, ...result.data]
             );
 
-            setTotalPages(result.length);
-            // setPage(result.currentPage);
-            setPage(currentPage);
-            // setHasMore(result.currentPage < result.totalPages);
-            setHasMore(currentPage < totalPages);
-
+            setPage(reset ? 1 : currentPage + 1);
+            setHasMore(data.length + result.data.length < result.total);
         } catch (error) {
-            console.error('Chunk fetch error:', error);
+            console.error('Error fetching data:', error);
             setHasMore(false);
         } finally {
             setIsLoading(false);
         }
-    }, [fetchFn, initialPageSize, isLoading, hasMore]);
+    }, [page, isLoading, initialPageSize]);
 
     const loadMore = useCallback(() => {
         if (hasMore && !isLoading) {
-            fetchData(page + 1);
+            fetchData();
         }
-    }, [fetchData, page, hasMore, isLoading]);
+    }, [hasMore, isLoading, fetchData]);
 
     const refresh = useCallback(() => {
-        // setData([]);
-        // setPage(1);
-        // setHasMore(true);
-        // fetchData(1);
-        console.log("\n\n refreshing by loading more data")
-        loadMore();
+        fetchData(true);
     }, [fetchData]);
 
-    // Initial fetch
-    React.useEffect(() => {
-        fetchData(1);
-    }, [fetchData]);
+    useEffect(() => {
+        fetchData(true);
+    }, []);
 
     return {
         data,
         isLoading,
         hasMore,
         loadMore,
-        refresh,
-        totalPages
+        refresh
     };
-};
+}

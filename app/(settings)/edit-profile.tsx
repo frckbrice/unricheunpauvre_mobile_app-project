@@ -6,10 +6,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { icons } from '@/constants';
-import { getFileUrlFromProvider, updateResource, uploadResourceData } from '@/lib/api';
+import { getFileUrlFromProvider, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import AccountIdentificationScreen from './AccountIdentification';
 import AddIdAccount from '../../components/profile/components/identification';
+import { API_URL } from '@/constants/constants';
 
 // Define User interface to match the backend model
 // Profile Edit Screen
@@ -45,30 +45,22 @@ const ProfileEditScreen: React.FC = () => {
 
     const getTheCurrentUserData = useCallback(async (user_id: string) => {
         try {
-            const user = await fetch(`https://rhysapi.iptvstreamerspro.com/api/User/${user_id}`, {
-                headers: {
-                    "content-type": "application/json"
-                },
-            });
-            if (!user.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-            const userData = await user.json();
-            // console.log("\n\n curent user data: ", userData);
-            setName(userData.nomUser);
-            setUsername(userData.username);
-            setCity(userData.localisation);
-            setMdpUser(userData?.mdpUser);
-            setUserImg(userData?.photoUser);
-            setMotPwd(userData?.mdpUser);
-            setDateNaiss(userData?.dateNaiss);
-            setEtatuser(userData?.etatUser);
-            setIdf(userData?.pieceIdf);
-            setIdB(userData?.pieceIdb);
+            const userData = await getSingleResource("users", user_id);
+            console.log("\n\n curent user data: ", userData);
+            setName(userData?.data.nomUser);
+            setUsername(userData?.data.username);
+            setCity(userData?.data.localisation);
+            setMdpUser(userData?.data.mdpUser);
+            setUserImg(userData?.data.photoUser);
+            setMotPwd(userData?.data.mdpUser);
+            setDateNaiss(userData?.data.dateNaiss);
+            setEtatuser(userData?.data.etatUser);
+            setIdf(userData?.data.pieceIdf);
+            setIdB(userData?.data.pieceIdb);
 
             // Parse and set birth date if exists
-            if (userData.dateNaiss) {
-                const parsedDate = new Date(userData.dateNaiss);
+            if (userData?.data.dateNaiss) {
+                const parsedDate = new Date(userData?.data.dateNaiss);
                 setDate(parsedDate);
                 setBirthDate(formatDate(parsedDate));
             }
@@ -90,8 +82,8 @@ const ProfileEditScreen: React.FC = () => {
     }
 
     useEffect(() => {
-        if (currentUser?.IdUser) {
-            getTheCurrentUserData(currentUser?.IdUser)
+        if (currentUser?.userId) {
+            getTheCurrentUserData(currentUser?.userId)
         }
     }, [currentUser]);
 
@@ -141,8 +133,7 @@ const ProfileEditScreen: React.FC = () => {
 
 
             const dataObj = {
-                idUser: currentUser?.IdUser,
-                nomUser: name ?? currentUser?.name,
+                nomUser: name ?? currentUser?.nomUser,
                 username: username,
                 localisation: city ?? ville,
                 pieceIdf: !(pieceIdf?.uri && pieceIdb?.uri) ? passportUrl : pieceIdf?.uri ? pieceIdfUrl : idF,
@@ -157,9 +148,10 @@ const ProfileEditScreen: React.FC = () => {
 
             console.log("\n\n object to upload: ", dataObj);
 
+
             const result = await updateResource(
-                'User',
-                currentUser?.IdUser,
+                'users',
+                currentUser?.userId,
                 dataObj,
             );
             Alert.alert('Success', 'Profile updated successfully');
@@ -203,7 +195,7 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={currentUser?.name as string}
+                            value={currentUser?.nomUser as string}
                             onChangeText={(text) => setUsername(text)}
                         />
                     </View>
@@ -296,7 +288,7 @@ const ProfileEditScreen: React.FC = () => {
                     <ActivityIndicator size="small" color="white" />
                 ) :
                     <Text className="text-white text-[16px] text-center font-bold">
-                        Enrgister
+                        Cliquer pour modifier
                     </Text>}
                 </TouchableOpacity>
             </ScrollView>

@@ -4,11 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Href, Link, useRouter } from 'expo-router';
+import { Href, Link, usePathname, useRouter } from 'expo-router';
 
 const CustomHeader = () => {
     const { top } = useSafeAreaInsets();
     const router = useRouter();
+    const pathname = usePathname();
     return (
         <BlurView
             intensity={10}
@@ -25,9 +26,11 @@ const CustomHeader = () => {
 
                         className='w-[40px] h-[40px] rounded-[20px] bg-[#626D77] justify-center items-center'
                     >
-                        <Text style={{ color: '#fff', fontWeight: '500', fontSize: 16 }}>
-                            <Ionicons name="arrow-back" size={20} color={'#fff'} />
-                        </Text>
+                        {
+                            pathname.includes('accueil') ? null : <Text style={{ color: '#fff', fontWeight: '500', fontSize: 16 }}>
+                                <Ionicons name="arrow-back" size={20} color={'#fff'} />
+                            </Text>
+                        }
                     </TouchableOpacity>
                 </Link>
                 {/* <View

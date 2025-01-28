@@ -11,7 +11,7 @@ import EmptyState from '@/components/empty-state';
 
 const Favorites = () => {
 
-    const { currentUser } = useUserGlobal();
+    const { currentUser, currentUserObj } = useUserGlobal();
     // const { currentPub } = useAuthorAndPubGlobal();
     const [refreshing, setRefreshing] = React.useState(false);
 
@@ -19,8 +19,8 @@ const Favorites = () => {
         data: favoritePosts, // get all the post for this current user, by its ID
         refetch: refetchfavoritePosts,
         isLoading: isLoadingfavritePosts
-    } = useApiOps<any[]>(() => getAllResourcesByTarget(
-        'Favories', currentUser?.id, 'idUser'));
+    } = useApiOps(() => getAllResourcesByTarget(
+        'favorites', currentUser?.userId, 'idUser'));
 
     console.log("current user posts: ", favoritePosts);
 
@@ -47,11 +47,8 @@ const Favorites = () => {
                 renderItem={({ item: post }) => {
 
                     return <PostCard
-                        name={currentUser?.name}
-                        location={currentUser?.location ?? 'anonymous'}
-                        time={post?.datePub}
-                        content={post?.libelePub}
-                        imageUrl={currentUser?.profileImg ?? 'https://media.istockphoto.com/id/1162529718/photo/fealing-generous-becous-of-helping-to-other.jpg?s=612x612&w=0&k=20&c=Rq9YrcVlT13KsKolfG-fWjlx3mJVCWhIt1a2AB2m1CU='}
+                        currentPost={post}
+                        currentUser={currentUserObj}
                     />
                 }}
                 // this property displays in case the list of data above is empty. it behave like a fallback.

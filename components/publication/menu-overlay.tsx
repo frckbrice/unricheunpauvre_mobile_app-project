@@ -37,20 +37,20 @@ const MenuOverlay = memo(({
                 activeOpacity={1}
                 onPress={onClose}
             >
-                <View className="absolute top-12 right-4 bg-white rounded-lg shadow-lg w-48">
+                <View className="absolute top-16 right-2 bg-white rounded-lg shadow-lg w-48">
                     <TouchableOpacity
                         onPress={onViewDetails}
-                        className="flex-row items-center px-4 py-3 border-b border-gray-200"
+                        className="flex-row items-center px-4 py-2 border-b border-gray-200"
                     >
-                        <Ionicons name="document-text-outline" size={20} color="black" />
+                        <Ionicons name="document-text-outline" size={20} color="blue" />
                         <Text className="ml-2 text-black">View Details</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={onShare}
-                        className="flex-row items-center px-4 py-3"
+                        className="flex-row items-center px-4 py-2"
                     >
-                        <Ionicons name="share-social-outline" size={20} color="black" />
+                        <Ionicons name="share-social-outline" size={20} color="blue" />
                         <Text className="ml-2 text-black">Share</Text>
                     </TouchableOpacity>
                 </View>

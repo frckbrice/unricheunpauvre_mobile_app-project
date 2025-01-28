@@ -255,6 +255,50 @@ import { icons } from '@/constants';
 import * as DocumentPicker from 'expo-document-picker';
 import useUserGlobal from '@/hooks/use-user-hook';
 import Constants from "expo-constants";
+import * as FileSystem from 'expo-file-system';
+
+
+// import * as pdf from 'pdf-parse';
+import * as mammoth from 'mammoth';
+
+interface FileContentExtractor {
+    [key: string]: (uri: string) => Promise<string>;
+}
+
+// const extractFileContent: FileContentExtractor = {
+//     'text/plain': async (uri: string) => {
+//         return await FileSystem.readAsStringAsync(uri);
+//     },
+//     'application/pdf': async (uri: string) => {
+//         try {
+//             const fileBuffer = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+//             const pdfData = await pdf(Buffer.from(fileBuffer, 'base64'));
+//             return pdfData.text;
+//         } catch (error) {
+//             console.error('PDF extraction error:', error);
+//             return '';
+//         }
+//     },
+//     'application/msword': async (uri: string) => {
+//         try {
+//             const result = await mammoth.extractRawText({ path: uri });
+//             return result.value;
+//         } catch (error) {
+//             console.error('Word document extraction error:', error);
+//             return '';
+//         }
+//     },
+//     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': async (uri: string) => {
+//         try {
+//             const result = await mammoth.extractRawText({ path: uri });
+//             return result.value;
+//         } catch (error) {
+//             console.error('Modern Word document extraction error:', error);
+//             return '';
+//         }
+//     }
+// };
+
 
 const initialFormState: Publication = {
     datePub: new Date().toISOString(),
@@ -276,6 +320,9 @@ const CreatePostScreen: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const mounted = useRef(false);
+    const [documentFile, setDocumentFile] = useState<{
+        name: string, type: string, size: number, uri: string
+    } | null>(null);
 
     const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm<Publication>({
         defaultValues: initialFormState,
@@ -291,8 +338,6 @@ const CreatePostScreen: React.FC = () => {
             return getAllCategories()
         return Promise.resolve([]);
     });
-
-    const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
     useEffect(() => {
         mounted.current = true;
@@ -314,7 +359,7 @@ const CreatePostScreen: React.FC = () => {
         })();
     }, []);
 
-
+    // console.log("\n\n from poster file. current user: ", currentUser)
 
     const onSubmit = async (data: Publication) => {
         if (!currentCat?.id || !data.imagePub) {
@@ -326,42 +371,95 @@ const CreatePostScreen: React.FC = () => {
         setSubmitStatus('loading');
 
         try {
-            const imgUrl = await getFileUrlFromProvider(form?.imagePub);
+
+            const imgUrl = form?.imagePub
+                ? await getFileUrlFromProvider(form.imagePub)
+                : null;
+
+            const docUrl = documentFile
+                ? await getFileUrlFromProvider(documentFile)
+                : null;
+
             const formData = {
-                idUser: Number(currentUser?.IdUser),
+                idUser: currentUser?.userId,
                 idCat: currentCat?.id,
                 imagePub: imgUrl,
+                documentUrl: docUrl,
                 datePub: new Date().toISOString(),
                 libelePub: data.libelePub,
                 etat: false,
                 montantEstime: data.montantEstime
             };
 
-            await uploadResourceData(formData, "Publication");
-            setSubmitStatus('success');
-
-            // Reset form after successful submission
-            setTimeout(() => {
-                reset(initialFormState);
-                setForm(initialFormState);
-                setCurrentCat(undefined);
-                setSubmitStatus('idle');
-            }, 2000);
+            console.log("\n\n object to upload:", formData);
+            const newPub = await uploadResourceData(formData, "publications");
+            if (newPub)
+                setSubmitStatus('success');
 
         } catch (error) {
-            // setSubmitStatus('error');
+            setSubmitStatus('error');
+            console.error('Error uploading resource:', error);
 
-            setSubmitStatus('success');
-
-            // Reset form after successful submission
+            // setSubmitStatus('success');
+        } finally {
+            setUploading(false);
             setTimeout(() => {
                 reset(initialFormState);
                 setForm(initialFormState);
                 setCurrentCat(undefined);
                 setSubmitStatus('idle');
+                setDocumentFile(null);
             }, 2000);
-        } finally {
-            setUploading(false);
+        }
+    };
+
+
+    const onDocumentPicker = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: [
+                    'text/plain',
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ],
+                copyToCacheDirectory: true
+            });
+
+            if (!result.canceled) {
+                const file = result.assets[0];
+
+                // Determine extraction method based on MIME type
+                // const extractionMethod = extractFileContent[file.mimeType || ''];
+
+                // if (extractionMethod) {
+                //     const fileContent = await extractionMethod(file.uri);
+
+                //     // Pre-fill description, sanitize content
+                //     const sanitizedContent = fileContent
+                //         .replace(/\s+/g, ' ')
+                //         .trim()
+                //         .substring(0, 500);
+
+                //     setValue('libelePub', sanitizedContent);
+                //     setDocumentFile({
+                //         name: file.name,
+                //         type: file.mimeType as string,
+                //         size: file.size as number,
+                //         uri: file.uri
+                //     });
+                // } else {
+                //     console.warn('Unsupported file type');
+                // }
+                setDocumentFile({
+                    name: file.name,
+                    type: file.mimeType as string,
+                    size: file.size as number,
+                    uri: file.uri
+                });
+            }
+        } catch (error) {
+            console.error('Document content extraction error:', error);
         }
     };
 
@@ -419,12 +517,12 @@ const CreatePostScreen: React.FC = () => {
         }
     };
 
-    console.log("\n\n on post file current user", currentUser)
+    // console.log("\n\n on post file current user", currentUser)
 
     return (
         <>
             <ScrollView className="flex-1 bg-gray-900 px-4 py-2">
-                <Text className="text-white text-xl font-bold mb-4">Poster un rêve</Text>
+                <Text className="text-white text-xl font-bold mb-4 left-2">Poster un rêve</Text>
 
                 <View className='mb-20'>
                     <View className="flex-row items-center mb-4">
@@ -432,11 +530,13 @@ const CreatePostScreen: React.FC = () => {
                             source={{ uri: currentUserObj?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
                             className="w-10 h-10 rounded-full mr-2"
                         />
-                        <Text className="text-white">{currentUser?.name}</Text>
+                        <Text className="text-white">{currentUser?.nomUser}</Text>
                     </View>
 
-                    <SelectItem options={categories} setCurrentCat={setCurrentCat} />
-                    {!currentCat && <Text className="text-red-500 text-sm">Catégorie requise</Text>}
+                    <View className='my-4'>
+                        <SelectItem options={categories} setCurrentCat={setCurrentCat} />
+                        {!currentCat && <Text className="text-red-500 text-xs mb-3">Catégorie requise</Text>}
+                    </View>
 
                     <Controller
                         control={control}
@@ -449,48 +549,67 @@ const CreatePostScreen: React.FC = () => {
                             }
                         }}
                         render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                placeholder="Décrivez votre souhait..."
-                                placeholderTextColor="gray"
-                                className={`bg-gray-800 p-2 rounded text-white mb-1 ${errors.libelePub ? 'border border-red-500' : ''}`}
-                                multiline
-                                value={value}
-                                onChangeText={onChange}
-                            />
+                            <View>
+                                <TextInput
+                                    placeholder="donnez un resume de votre reve..."
+                                    placeholderTextColor="gray"
+                                    className={`bg-gray-800 p-2 rounded text-white mb-1 min-h-[100px] ${errors.libelePub ? 'border border-red-500' : ''}`}
+                                    multiline
+                                    textAlignVertical="top"
+                                    numberOfLines={5}
+                                    value={value}
+                                    onChangeText={onChange}
+                                />
+                                <TouchableOpacity
+                                    onPress={onDocumentPicker}
+                                    className="bg-gray-700 p-2 rounded mt-2 flex-row items-center justify-center"
+                                >
+                                    <Ionicons name="document-outline" size={20} color="white" />
+                                    <Text className="text-white ml-2">Importer un document</Text>
+                                </TouchableOpacity>
+                                {documentFile && (
+                                    <View className="flex-row items-center mt-2">
+                                        <Ionicons name="document" size={20} color="green" />
+                                        <Text className="text-white ml-2">{documentFile.name}</Text>
+                                    </View>
+                                )}
+                            </View>
                         )}
                     />
                     {errors.libelePub && (
                         <Text className="text-red-500 text-sm mb-2">{errors.libelePub.message}</Text>
                     )}
 
-                    <Text className="text-white mr-2">Estimation (cout)</Text>
-                    <Controller
-                        control={control}
-                        name="montantEstime"
-                        rules={{
-                            required: 'Le montant est requis',
-                            min: {
-                                value: 0,
-                                message: 'Le montant doit être positif'
-                            }
-                        }}
-                        render={({ field: { onChange, value } }) => (
-                            <View className='flex-row w-full rounded justify-between items-center bg-gray-800 pr-2 my-2'>
-                                <TextInput
-                                    placeholder="estimation..."
-                                    placeholderTextColor="#f1f1f1"
-                                    className={`bg-transparent p-2 rounded w-[80%] text-white h-100 ${errors.montantEstime ? 'border border-red-500' : ''}`}
-                                    keyboardType="numeric"
-                                    value={value?.toString()}
-                                    onChangeText={(text) => onChange(parseInt(text) || 0)}
-                                />
-                                <Text className="text-white ml-2">€</Text>
-                            </View>
+                    <View className='my-4'>
+                        <Text className="text-white mr-2">Estimation du coût</Text>
+                        <Controller
+                            control={control}
+                            name="montantEstime"
+                            rules={{
+                                required: 'Le montant est requis',
+                                min: {
+                                    value: 0,
+                                    message: 'Le montant doit être positif'
+                                }
+                            }}
+                            render={({ field: { onChange, value } }) => (
+                                <View className='flex-row w-full rounded justify-between items-center bg-gray-800 pr-2 my-2'>
+                                    <TextInput
+                                        placeholder="estimation..."
+                                        placeholderTextColor="#f1f1f1"
+                                        className={`bg-transparent p-2 rounded w-[80%] text-white h-100 ${errors.montantEstime ? 'border border-red-500' : ''}`}
+                                        keyboardType="numeric"
+                                        value={value?.toString()}
+                                        onChangeText={(text) => onChange(parseInt(text) || 0)}
+                                    />
+                                    <Text className="text-white ml-2">€</Text>
+                                </View>
+                            )}
+                        />
+                        {errors.montantEstime && (
+                            <Text className="text-red-500 text-sm mb-2">{errors.montantEstime.message}</Text>
                         )}
-                    />
-                    {errors.montantEstime && (
-                        <Text className="text-red-500 text-sm mb-2">{errors.montantEstime.message}</Text>
-                    )}
+                    </View>
 
                     <View className="flex mb-4 gap-3">
                         <TouchableOpacity
@@ -533,3 +652,4 @@ const CreatePostScreen: React.FC = () => {
 };
 
 export default CreatePostScreen;
+

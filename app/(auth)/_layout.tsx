@@ -2,7 +2,7 @@
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { Component } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 
@@ -11,7 +11,7 @@ export default function AuthLayout() {
 
     return (
         <>
-            <Stack>
+            <Stack >
                 <Stack.Screen
                     name="login"
                     options={{
@@ -24,10 +24,29 @@ export default function AuthLayout() {
                         headerShown: false,
                     }}
                 />
+                <Stack.Screen
+                    name="onboarding"
+                    options={{
+                        // headerShown: false,
+                        headerStyle: {
+                            backgroundColor: "#000",
+                        },
+                        headerTitle: () => (
+                            <View style={{ alignItems: "center" }}>
+                                <Image
+                                    source={require("@/assets/images/icon.png")}
+                                    resizeMode="contain"
+                                    className="w-20 h-20"
+                                />
+                            </View>
+                        ),
 
+                    }}
+                />
+                <StatusBar style="auto" />
             </Stack>
 
-            <StatusBar style="auto" />
+
         </>
     );
 }

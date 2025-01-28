@@ -5,7 +5,7 @@
 import { AppError } from '@/utils/error-class';
 // import { tokenCache } from '@/store/persist-token-cache';
 import axios from 'axios';
-import { Jaime, Post, Publication, User } from '@/lib/types';
+import { Comment, Jaime, Post, Publication, User } from '@/lib/types';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 // appWrite config
@@ -20,6 +20,8 @@ import {
     Query,
     Storage
 } from 'react-native-appwrite';
+import { API_URL } from '@/constants/constants';
+import { tokenCache } from '@/store/persist-token-cache';
 // import { supabase } from '@/utils/supabase';
 
 
@@ -38,7 +40,6 @@ export const config = {
 // Init your React Native SDK
 const client = new Client();
 
-const API_URL = "https://rhysapi.iptvstreamerspro.com/api";
 
 client
     .setEndpoint(config.endpoint) // Your Appwrite Endpoint
@@ -104,18 +105,31 @@ export const getFilePreview = async (fileId: string, type: string) => {
 export const uploadFile = async (file: any, type: string) => {
     if (!file) return;
 
-
-
-    const asset = {
-        name: file.fileName,
-        type: file.mimeType,
-        size: file.fileSize,
-        uri: file.uri ?? await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 }),
-    }; // to format it in a format understood by appwrite
+    // Convert local file URI to Blob/File for Appwrite
+    const fileBlob = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: FileSystem.EncodingType.Base64
+    });
+    let asset: any
+    if (file.uri.split('.').pop() === 'pdf')
+        asset = {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            uri: file.uri ?? fileBlob,
+        }; // to format it in a format understood by appwrite
+    else
+        asset = {
+            name: file.fileName,
+            type: file.mimeType,
+            size: file.fileSize,
+            uri: file.uri ?? fileBlob,
+        }; // to format it in a format understood by appwrite
 
     console.log(` asset :`, file);
+    console.log("\n\n storage ID: ", { storageId: config.storageId, id: ID.unique(), asset })
 
     try {
+
         // ID.unique() assigns a unique Id to this file
         const uploadedFile = await storage.createFile(config.storageId, ID.unique(), asset);
         console.log(` uploadedFile file : ${uploadedFile}`);
@@ -199,7 +213,7 @@ export const createUserAccount = async (
     endPoint: string,
     nomUser?: string) => {
     let dataObj, resouce;
-    if (endPoint.includes('User')) {
+    if (endPoint.includes('users')) {
         dataObj = {
             nomUser: nomUser,
             mdpUser: mdpUser,
@@ -208,7 +222,7 @@ export const createUserAccount = async (
             docUser: '',
         } as TConnect;
     }
-    else if (endPoint.includes('Auth/login')) {
+    else if (endPoint.includes('auth/login')) {
         dataObj = {
             username,
             password: mdpUser,
@@ -252,15 +266,18 @@ export const updatedUserPwd = async (
         mdpUser: newPassw,
     };
 
-    console.log(`${API_URL}/User/${idUser}`);
+    console.log(`${API_URL}/users/${idUser}`);
 
     try {
+        const token = await tokenCache.getToken('currentUser');
+        if (!token)
+            return console.error("\n\n in updatedUserPwd fct, No token found");
 
         const options = {
-            method: 'PUT',
-            url: `${API_URL}/User/${idUser}`,
+            method: 'PATCH',
+            url: `${API_URL}/users/${idUser}`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
 
             },
@@ -269,7 +286,7 @@ export const updatedUserPwd = async (
 
         // const response = await axios.request(options);
         // console.log("\n\nfrom api file connect fct", response?.data);
-        const data = await fetch(`${API_URL}/User/${idUser}`, options);
+        const data = await fetch(`${API_URL}/users/${idUser}`, options);
         const response = await data.json();
         return response
     } catch (error: any) {
@@ -280,7 +297,7 @@ export const updatedUserPwd = async (
 
 export const getAllResourcesByTarget = async <T>(
     resource: string,
-    id?: number,
+    id?: string,
     target1?: string,
     target2?: string,
     value?: boolean | number
@@ -288,6 +305,10 @@ export const getAllResourcesByTarget = async <T>(
 
 
     try {
+        const token = await tokenCache.getToken('currentUser');
+        if (!token)
+            return console.error("\n\n in getAllResourcesByTarget fct, No token found");
+
         if (!id || !resource) {
             console.error(` from api file Resource ${resource} not found or resource ${id} is missing`);
             return [];
@@ -311,6 +332,7 @@ export const getAllResourcesByTarget = async <T>(
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token ?? ""}`,
             },
         };
 
@@ -328,6 +350,36 @@ export const getAllResourcesByTarget = async <T>(
         try {
             const data = await response.json();
             // console.log("from api file on getAllResourcesByTarget fct and resource " + resource, "data is:", data);
+            if (resource === "publications") {
+                const value = data?.data?.map((resp: any) => ({
+                    id: resp?.id,
+                    idPub: resp?.id,
+                    location: resp?.location ?? "origine inconnue",
+
+                    content: resp?.libelePub ?? "pas de contenu",
+                    imageUrl: resp?.imagePub,
+                    documentUrl: resp?.documentUrl,
+                    montant: resp?.montantEstime,
+                    comments: resp?.commentaires as Comment[] ?? [],
+
+                    timeAgo: resp?.datePub ?? "",
+                    idUser: resp?.idUser,
+                    idCat: resp?.idCat,
+                    statePub: resp?.etat,
+                    author: resp?.user,
+                    category: resp?.categorie ?? "categorie inconnue",
+                    likes: resp?.likes as Jaime[] ?? []
+                }))
+
+                return {
+                    data: value,
+                    total: data?.total,
+                    page: data?.page,
+                    pageSize: data?.perPage,
+                    message: data?.message,
+                    status: data?.status
+                }
+            }
             return data;
         } catch (jsonError) {
             console.error("Error parsing JSON:", jsonError);
@@ -344,7 +396,9 @@ export const getAllResourcesByTarget = async <T>(
 // pull all videos
 export const getAllPublications = async (page?: number, pageSize?: number): Promise<Post[] | any> => {
 
-    // const token = await tokenCache.getToken("token");
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in getAllPublications fct, No token found");
     try {
 
         if (!page) page = 1;
@@ -352,29 +406,47 @@ export const getAllPublications = async (page?: number, pageSize?: number): Prom
 
         const options = {
             method: 'GET',
-            url: `${API_URL}/Publication?page=${page}&pageSize=${pageSize}`,
+            // params: {
+            //     page,
+            //     pageSize
+            // }, 
+            url: `${API_URL}/publications?page=${page}&perPage=${pageSize}`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
-
             },
         }
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file getAllPublications fct", response?.data);
+        console.log("\n\nfrom api file getAllPublications fct", response?.data?.data);
 
-        return response?.data?.map((resp: any) => ({
-            id: resp?.idPub,
+        const data = response?.data?.data?.map((resp: any) => ({
+            id: resp?.id,
+            idPub: resp?.id,
             // author: resp?.nomUser ?? "ANONYMOUS",
             location: resp?.location ?? "origine inconnue",
             content: resp?.libelePub ?? "pas de contenu",
             imageUrl: resp?.imagePub,
-            comments: resp?.commentaires ?? [],
+            documentUrl: resp?.documentUrl,
+            montant: resp?.montantEstime,
+            comments: resp?.commentaires as Comment[] ?? [],
             timeAgo: resp?.datePub ?? "",
             idUser: resp?.idUser,
             idCat: resp?.idCat,
-            statePub: resp?.etat
+            statePub: resp?.etat,
+            author: resp?.user,
+            category: resp?.categorie ?? "categorie inconnue",
+            likes: resp?.likes as Jaime[] ?? []
         }))
+
+        return {
+            data,
+            total: response?.data?.total,
+            page: response?.data?.page,
+            pageSize: response?.data?.perPage,
+            message: response?.data?.message,
+            status: response?.data?.status
+        }
 
     } catch (error: any) {
         console.error(`from api file. Error fetching Publication data : ${error}`);
@@ -383,9 +455,14 @@ export const getAllPublications = async (page?: number, pageSize?: number): Prom
 }
 
 // update pub
-export const updateResource = async <T>(resource: string, id: number, value: Partial<T>): Promise<T | any> => {
+export const updateResource = async <T>(resource: string, id: string, value: Partial<T>): Promise<T | any> => {
 
     try {
+
+        const token = await tokenCache.getToken('currentUser');
+        if (!token)
+            return console.error("\n\n in updateResource fct, No token found");
+
         if (!id || !resource)
             return console.error("\n\n No user Id or resource provided!")
 
@@ -393,32 +470,69 @@ export const updateResource = async <T>(resource: string, id: number, value: Par
             method: 'PUT',
             url: `${API_URL}/${resource}/${id}`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
             },
             data: value
         }
 
         const response = await axios.request(options);
-        return response?.data
+        console.log("\n\n from updateResource request fct", response?.data.data);
+        return response?.data.data;
     } catch (error: any) {
         console.error(`inside updateResource fct on api file. Error updating resource ${resource} with id ${id} : ${error}`);
         throw new Error(error);
     }
 }
 
+
+// update pub
+export const patchResource = async <T>(resource: string, id: string, value: Partial<T>): Promise<T | any> => {
+
+    try {
+
+        const token = await tokenCache.getToken('currentUser');
+        if (!token)
+            return console.error("\n\n in updateResource fct, No token found");
+
+        if (!id || !resource)
+            return console.error("\n\n No user Id or resource provided!")
+
+        const options = {
+            method: 'Patch',
+            url: `${API_URL}/${resource}/${id}`,
+            headers: {
+                'Authorization': `Bearer ${token ?? ""}`,
+                'Content-Type': 'application/json',
+            },
+            data: value
+        }
+
+        const response = await axios.request(options);
+        console.log("\n\n from updateResource request fct", response?.data.data);
+        return response?.data.data;
+    } catch (error: any) {
+        console.error(`inside updateResource fct on api file. Error updating resource ${resource} with id ${id} : ${error}`);
+        throw new Error(error);
+    }
+}
+
+
 // pull latest videos
-export const getSingleResource = async (resource: string, id: number) => {
+export const getSingleResource = async (resource: string, id: string) => {
 
     // const token = await tokenCache.getToken("token");
     console.log("from api file API_URL: ", `${API_URL}/${resource}/${id}`);
     try {
+        const token = await tokenCache.getToken('currentUser');
+        if (!token)
+            return console.error("\n\n in getSingleResource fct, No token found");
 
         const options = {
             method: 'GET',
             url: `${API_URL}/${resource}/${id}`,
             headers: {
-                // 'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             },
@@ -427,23 +541,23 @@ export const getSingleResource = async (resource: string, id: number) => {
         const response = await axios.request(options);
         console.log("from api file getSingleResource fct:", response?.data);
 
-        if (resource.toLocaleLowerCase().includes('publication')) return {
-            id: response?.data.id,
-            // author: response?.data.user.username,
-            // location: response?.data.user.location ?? "",
-            content: response?.data.libelePub ?? "",
-            imageUrl: response?.data.imagePub ?? "",
-            // likes: response?.data.favories ?? "",
-            comments: response?.data.commentaires ?? [],
-            timeAgo: response?.data.datePub ?? "",
-            idUser: response?.data.idUser,
-            idPub: response?.data.idPub,
-            idCat: response?.data.idCat,
-            statePub: response?.data.etat
-        };
+        if (resource.toLocaleLowerCase().includes('publication'))
+            return {
+                id: response?.data.data.id,
+                author: response?.data.data.user,
+                content: response?.data.data.libelePub ?? "",
+                imageUrl: response?.data.data.imagePub ?? "",
+                likes: response?.data.data.likes ?? [],
+                comments: response?.data.data.commentaires ?? [],
+                timeAgo: response?.data.data.datePub ?? "",
+                idUser: response?.data.data.idUser,
+                idPub: response?.data.data.idPub,
+                idCat: response?.data.data.idCat,
+                statePub: response?.data.data.etat
+            };
         else if (resource.toLocaleLowerCase().includes('categorie'))
-            return response.data.map((cat: any) => ({
-                id: cat?.idCat,
+            return response.data.data?.map((cat: any) => ({
+                id: cat?.id,
                 idUser: cat?.idUser,
                 name: cat?.nomCat,
                 type: cat?.typeCat,
@@ -460,26 +574,30 @@ export const getSingleResource = async (resource: string, id: number) => {
 
 export const getAllCategories = async () => {
 
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in getAllCategories fct, No token found");
 
-    // const token = await tokenCache.getToken("token");
     try {
 
         const options = {
             method: 'GET',
             // url: `${API_URL}/Categorie`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
             },
         }
 
         // const response = await axios.request(options);
         // console.log("\n\nfrom api file getAllCategories fct", response?.data);
-        const data = await fetch(`${API_URL}/Categorie`, options);
+        const data = await fetch(`${API_URL}/categories`, options);
         const response = await data.json();
 
-        return response?.map((cat: any) => ({
-            id: cat?.idCat,
+        console.log("\n\nfrom api file getAllCategories fct", response);
+
+        return response?.data.map((cat: any) => ({
+            id: cat?.id,
             idUser: cat?.idUser,
             name: cat?.nomCat,
             type: cat?.typeCat,
@@ -494,9 +612,13 @@ export const getAllCategories = async () => {
 // store the file and get the url from the bucket.
 export const uploadResourceData = async <T>(
     dataValues: T, resource: string
-): Promise<T | null> => {
+): Promise<T | null | any> => {
 
-    // const token = await tokenCache.getToken("token");
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in uploadResourceData fct, No token found");
+
+    console.log("\n\n dataValues and resource: ", dataValues, resource);
 
     try {
 
@@ -505,9 +627,10 @@ export const uploadResourceData = async <T>(
             method: 'POST',
             url: `${API_URL}/${resource}`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
                 // Accept: 'application/json'
+
             },
             data: dataValues
         }
@@ -515,7 +638,7 @@ export const uploadResourceData = async <T>(
         const response = await axios.request(options);
         console.log(`\n\nfrom api file uploadResourceData fct, and resource: ${resource}`, response?.data);
         if (response.data)
-            return response.data;
+            return response.data.data;
         return null;
 
     } catch (error: any) {
@@ -525,10 +648,13 @@ export const uploadResourceData = async <T>(
 }
 
 // get a resource by its id
-export const getResourceByItsId = async (res_id: number, resource: string, origine?: string) => {
+export const getResourceByItsId = async (res_id: string, resource: string, origin?: string) => {
 
-    console.log("\n\n from api file getResourceByItsId fct", { res_id, resource });
+    console.log("\n\n getResourceByItsId", res_id, resource, origin);
     // console.log("\n\n from api file getResourceByItsId origin: ", origin ? origine : "undefined");
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in getResourceByItsId fct, No token found");
 
     if (!res_id || !resource)
         return console.error(`Resource ${resource} not found or resource id is missing`);
@@ -538,14 +664,14 @@ export const getResourceByItsId = async (res_id: number, resource: string, origi
             method: 'GET',
             url: `${API_URL}/${resource}/${res_id}`,
             headers: {
-                // 'Authorization': `Bearer ${token ?? ""}`,
+                'Authorization': `Bearer ${token ?? ""}`,
                 'Content-Type': 'application/json',
             },
         };
 
         const response = await axios.request(options);
         console.log("\n\nfrom api file getResourceByItsId fct", response?.data);
-        return response.data;
+        return response.data.data;
 
     } catch (error: any) {
         console.error(`from api file getResourceByItsId fct. failed to fetch a resource ${resource} by its id ${res_id} : ${error}`);

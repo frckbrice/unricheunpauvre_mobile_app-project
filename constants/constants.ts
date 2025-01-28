@@ -1,14 +1,25 @@
-import { Post } from "@/lib/types";
+import Constants from "expo-constants";
+const { manifest } = Constants;
 
+// get the local IP address at run time.
+const uri =
+    Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':5000') ??
+    'yourapi.com';
+
+export const API_URL = `http://${uri}/api`;
 export const TOKEN_KEY = process.env.EXPO_PUBLIC_JWT_SECRET_KEY;
 
-export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
+
+// export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
+
+console.log("\n\n from constant: API_URL", API_URL);
+console.log("\n\n from constant: TOKEN_KEY", TOKEN_KEY);
 
 export const PAYPAL_CLIENT_ID = process.env.EXPO_PUBLIC_PAYPAL_CLIENT_ID
 export const PAYPAL_SECRET = process.env.EXPO_PUBLIC_PAYPAL_SECRET;
 
-console.log("PAYPAL_SECRET: ", PAYPAL_SECRET);
-console.log("PAYPAL_CLIENT_ID: ", PAYPAL_CLIENT_ID);
+// console.log("PAYPAL_SECRET: ", PAYPAL_SECRET);
+// console.log("PAYPAL_CLIENT_ID: ", PAYPAL_CLIENT_ID);
 
 export const comments = [{
     idCom: 5,

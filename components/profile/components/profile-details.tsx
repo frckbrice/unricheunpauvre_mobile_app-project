@@ -10,13 +10,17 @@ import {
 } from 'react-native';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const MODAL_HEIGHT = SCREEN_HEIGHT * 0.7;
 
 // User type definition
 type User = {
-    dateCrea: string;
+    createdAt: string | undefined;
     dateNaiss: Date | string;
     etatUser: boolean;
-    idUser: number;
+    id: string;
     localisation: string;
     mdpUser: string;
     nomUser: string;
@@ -34,17 +38,20 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
 }) => {
     if (!user) return null;
 
+    const router = useRouter();
+
     return (
         <Modal
             animationType="slide"
             transparent={true}
             visible={isVisible}
             onRequestClose={onClose}
+
         >
-            <View className="flex-1 bg-black/50">
-                <View className="bg-gray-800 rounded-t-3xl mt-auto h-4/5">
+            <View className="flex-1 bg-black/50 mt-32">
+                <View className="bg-gray-800 rounded-t-3xl h-4/5">
                     <View className="flex-row justify-between items-center p-4 border-b border-gray-700">
-                        <Text className="text-white text-xl font-bold">Profile</Text>
+                        <Text className="text-white text-xl font-bold">detail de mon Profile</Text>
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color="white" />
                         </TouchableOpacity>
@@ -54,7 +61,7 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                         {/* Profile Header */}
                         <View className="items-center mb-6">
                             <Image
-                                source={{ uri: user?.photoUser }}
+                                source={user?.photoUser ? { uri: user?.photoUser } : require('@/assets/images/profile.png')}
                                 className="w-24 h-24 rounded-full mb-3"
                             />
                             <Text className="text-white text-xl font-bold">{user?.nomUser}</Text>
@@ -62,22 +69,34 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                         </View>
 
                         {/* Profile Details */}
-                        <View className="space-y-4">
-                            <View className="flex-row items-center">
-                                <Ionicons name="location" size={20} color="white" className="mr-2" />
+                        <View className="space-y-2">
+                            <View className="flex-row items-center justify-between">
+                                <View className="flex-row items-center gap-3">
+                                    <Ionicons name="location" size={20} color="white" className="mr-2" />
+                                    <View>
+                                        <Text className="text-gray-400 text-sm">Ville</Text>
+                                        <Text className="text-white">{user?.localisation ?? 'Origine non definie'}</Text>
+                                    </View>
+                                </View>
                                 <View>
-                                    <Text className="text-gray-400 text-sm">Location</Text>
-                                    <Text className="text-white">{user?.localisation}</Text>
+                                    <TouchableOpacity
+                                        className="bg-blue-500 p-2 ml-4 rounded-xl "
+                                        onPress={() => router.push("/(settings)/edit-profile")}
+                                    >
+                                        <Text className="text-white text-center">
+                                            <Ionicons name="pencil" size={30} color="white" className="mr-2" />
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
-                            <View className="flex-row items-center">
+                            <View className="flex-row items-center gap-3">
                                 <Ionicons name="calendar" size={20} color="white" className="mr-2" />
                                 <View>
                                     <Text className="text-gray-400 text-sm">Membre depuis</Text>
                                     <Text className="text-white">
                                         {/* {format(new Date(user.dateCrea), 'MMMM dd, yyyy')} */}
-                                        {new Date(user?.dateCrea).toLocaleDateString('en-FR', {
+                                        {new Date(user?.createdAt as string).toLocaleDateString('en-FR', {
                                             day: 'numeric',
                                             month: 'long',
                                             year: 'numeric',
@@ -86,7 +105,7 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                                 </View>
                             </View>
 
-                            <View className="flex-row items-center">
+                            <View className="flex-row items-center gap-3">
                                 <Ionicons name="person" size={20} color="white" className="mr-2" />
                                 <View>
                                     <Text className="text-gray-400 text-sm">Date de naissance</Text>
@@ -100,7 +119,7 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                                 </View>
                             </View>
 
-                            <View className="flex-row items-center">
+                            <View className="flex-row items-center gap-3">
                                 <Ionicons name="radio-button-on" size={20}
                                     color={user?.etatUser ? '#4CAF50' : '#F44336'}
                                     className="mr-2"
@@ -112,6 +131,7 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                                     </Text>
                                 </View>
                             </View>
+
                         </View>
                     </ScrollView>
                 </View>
@@ -121,9 +141,10 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
 });
 
 // Modify the profile click area in your existing PostPublication component
-const ProfileClickArea = memo(({ user, onPress }: { user: User; onPress: () => void }) => {
+const ProfileClickArea = memo(({ user, onPress }: { user: any; onPress: () => void }) => {
 
-    console.log("\n\n from profile clic component: ", user)
+    console.log("\n\n from profile clic component: ", user);
+
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -138,10 +159,10 @@ const ProfileClickArea = memo(({ user, onPress }: { user: User; onPress: () => v
             <View className="flex justify-center items-start">
                 <Text className="text-white font-medium">
                     {user?.nomUser?.includes('@')
-                        ? user?.nomUser?.substring(0, user?.nomUser?.indexOf('@'))
+                        ? user?.nomUser?.substring(0, user?.nomUser.indexOf('@'))
                         : user?.nomUser}
                 </Text>
-                <Text className="text-gray-400 text-xs">{user?.localisation}</Text>
+                <Text className="text-gray-400 text-xs">{user?.localisation ?? 'Origine non definie'}</Text>
             </View>
         </TouchableOpacity>
     );

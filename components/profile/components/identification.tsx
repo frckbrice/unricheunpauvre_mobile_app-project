@@ -25,8 +25,6 @@ const AddIdAccount: React.FC<UploadedFile> = ({ editProfile,
         idBack?: any;
         passport?: any;
     }>({});
-    const [showPassWd, setShowPasswd] = useState(false);
-    const [showIsCard, setShowIsCard] = useState(false);
 
 
     const pickImage = async (fileType: 'idFront' | 'idBack' | 'passport') => {

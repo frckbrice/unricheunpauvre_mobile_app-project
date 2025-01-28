@@ -5,6 +5,7 @@ import { getAllResourcesByTarget } from '@/lib/api';
 import { Jaime, Publication } from '@/lib/types';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { Colors } from '@/constants';
+import { ProfileClickArea, ProfileModal } from './profile-details';
 
 type TProfileScreen = {
     pubNumber: number;
@@ -13,8 +14,7 @@ type TProfileScreen = {
 
 const ProfileScreen: React.FC = () => {
 
-    const { currentUser } = useUserGlobal();
-    const mounted = useRef(false);
+    const { currentUser, currentUserObj } = useUserGlobal();
 
     const router = useRouter();
     const [likes, setLikes] = useState(0);
@@ -22,13 +22,16 @@ const ProfileScreen: React.FC = () => {
     const [posts, setPosts] = useState(0);
     const [isPostsLoading, setIsPostsLoading] = useState(false);
 
+    const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+
+
     const getAllLikes = useCallback(async () => {
         setIsLikeLoading(true);
         try {
             const allLikes = await getAllResourcesByTarget(
-                'Jaime', currentUser?.IdUser, 'idPub') as Jaime[];
-            console.log("all likes: ", allLikes);
-            setLikes(allLikes.length);
+                'likes', currentUser?.userId, 'idUser');
+            console.log("all likes: ", allLikes?.data);
+            setLikes(allLikes?.data.length);
         } catch (error) {
             console.error('Failed to get all likes:', error);
         } finally {
@@ -40,9 +43,9 @@ const ProfileScreen: React.FC = () => {
         setIsPostsLoading(true);
         try {
             const posts = await getAllResourcesByTarget(
-                'UserPublications', currentUser?.IdUser);
-            console.log("all posts: ", posts);
-            setPosts(posts.length);
+                'publications', currentUser?.userId, 'idUser');
+            console.log("all posts: ", posts.data);
+            setPosts(posts?.data.length);
         } catch (error) {
             console.error('Failed to get all posts:', error);
         } finally {
@@ -62,13 +65,28 @@ const ProfileScreen: React.FC = () => {
     return (
         <>
             <View className="bg-gray-900 ">
-                <View className="flex-row items-center mb-2 px-4">
-                    <Image source={{ uri: currentUser?.profileImg ?? 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-12 h-12 rounded-full mr-4" />
+                <View className="flex-row items-center mb-2 px-4 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
+                    <Image source={{ uri: currentUserObj?.photoUser ?? 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-12 h-12 rounded-full mr-4" />
                     <View>
-                        <Text className="text-white text-[14.5px] font-bold">{currentUser?.name ?? "Anonymous"} </Text>
-                        <Text className="text-gray-400">{currentUser?.location ?? "Anonynous"}</Text>
+                        <Text className="text-white text-[14.5px] font-bold">{currentUser?.nomUser ?? "Anonymous"} </Text>
+                        <Text className="text-gray-400">{currentUser?.localisation ?? "Anonynous"}</Text>
                     </View>
                 </View>
+
+                {/* <View className="flex-row items-center mb-1 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-gray-700">
+
+                    <ProfileClickArea
+                        user={currentUserObj as any}
+                        onPress={() => setIsProfileModalVisible(true)}
+                    />
+
+                    <ProfileModal
+                        isVisible={isProfileModalVisible}
+                        onClose={() => setIsProfileModalVisible(false)}
+                        user={currentUserObj as any}
+                    />
+                </View> */}
+
                 <View className="flex-row justify-around mb-4">
                     <View>
                         <Text className="text-white text-center font-bold">
@@ -99,3 +117,106 @@ const ProfileScreen: React.FC = () => {
 };
 
 export default ProfileScreen;
+
+// import React, { useCallback, useEffect, useMemo, useState } from 'react';
+// import {
+//     View, Text,
+//     Image, TouchableOpacity, ActivityIndicator
+// } from 'react-native';
+// import { useRouter, } from 'expo-router';
+// import { getAllResourcesByTarget } from '@/lib/api';
+// import useUserGlobal from '@/hooks/use-user-hook';
+// import { Colors } from '@/constants';
+// import useApiOps from '@/hooks/use-api';
+
+// const ProfileScreen = () => {
+//     const { currentUser, currentUserObj } = useUserGlobal();
+//     const router = useRouter();
+
+//     const [likes, setLikes] = useState([]);
+//     const [posts, setPosts] = useState([]);
+//     const [isPostsLoading, setIsLoading] = useState(false);
+//     const [isLikesLoading, setIsLikesLoading] = useState(false);
+
+//     // const {
+//     //     data,
+//     //     refetch,
+//     // } = useApiOps(() => getAllResourcesByTarget('likes', currentUser?.userId, 'idUser'));
+
+//     // const {
+//     //     data: dataPubs,
+//     //     refetch: refetchPubs,
+//     // } = useApiOps(() => getAllResourcesByTarget('publications', currentUser?.userId, 'idUser'));
+
+//     // console.log("\n\n from profile screen file currentUser: ", data, dataPubs);
+
+
+//     useEffect(() => {
+//         const getCurrentPubLike = async () => {
+//             const data = await getAllResourcesByTarget('likes', currentUser?.userId, 'idUser');
+//             const dataPubs = await getAllResourcesByTarget('publications', currentUser?.userId, 'idUser');
+
+//             console.log("\n\n from profile screen file currentUser: ", data, dataPubs);
+//             setLikes(data?.data);
+//             setPosts(dataPubs?.data);
+//         }
+//         getCurrentPubLike();
+//     }, [])
+
+//     const stats = useMemo(() => ({
+//         likes: likes?.length || 0,
+//         posts: posts?.length || 0
+//     }), [likes, posts]);
+
+//     const profileImage = useMemo(() => ({
+//         uri: currentUserObj?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true'
+//     }), [currentUserObj?.photoUser]);
+
+//     const StatBlock = ({ value, label }: {
+//         value: number;
+//         label: string;
+//     }) => (
+//         <View>
+//             <Text className="text-white text-center font-bold">
+//                 {value}
+//             </Text>
+//             <Text className="text-gray-400">{label}</Text>
+//         </View>
+//     );
+
+//     return (
+//         <View className="bg-gray-900">
+//             <View className="flex-row items-center mb-2 px-4 bg-gray-800 p-2 rounded-tl-xl rounded-tr-xl">
+//                 <Image source={{ uri: currentUserObj?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-12 h-12 rounded-full mr-4" />
+//                 <View>
+//                     <Text className="text-white text-[14.5px] font-bold">
+//                         {currentUser?.nomUser ?? "Anonymous"}
+//                     </Text>
+//                     <Text className="text-gray-400">
+//                         {currentUserObj?.localisation ?? "Anonymous"}
+//                     </Text>
+//                 </View>
+//             </View>
+
+//             <View className="flex-row justify-around mb-4">
+//                 <StatBlock
+//                     value={stats.posts}
+//                     label="Rêves"
+//                 />
+//                 <StatBlock
+//                     value={stats.likes}
+//                     label="J'aime"
+//                 />
+//             </View>
+
+//             <TouchableOpacity
+//                 className="bg-blue-500 p-2 ml-4 rounded-xl mb-1 w-[90%]"
+//                 onPress={() => router.push("/(settings)/edit-profile")}
+//             >
+//                 <Text className="text-white text-center">Éditer profil</Text>
+//             </TouchableOpacity>
+//         </View>
+//     );
+// };
+
+// export default ProfileScreen;

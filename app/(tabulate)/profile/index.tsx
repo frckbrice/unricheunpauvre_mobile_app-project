@@ -11,8 +11,8 @@ import EmptyState from '@/components/empty-state';
 
 const SocialFeedScreen = () => {
 
-    const { currentUser } = useUserGlobal();
-    const mounted = useRef(false);
+    const { currentUser, currentUserObj } = useUserGlobal();
+
     const [refreshing, setRefreshing] = useState(false);
 
     const {
@@ -20,12 +20,12 @@ const SocialFeedScreen = () => {
         refetch,
         isLoading
     } = useApiOps<Post>(() => {
-        return getAllResourcesByTarget(
-            'UserPublications', currentUser?.IdUser);
+        return getAllResourcesByTarget<Post>(
+            'publications', currentUser?.userId, 'idUser'); // get the publications made by this user with id : idUser
 
     });
 
-    console.log("\n\n from profile indec file, personal posts: ", posts)
+
     const onRefresh = React.useCallback(() => {
         if (!isLoading) {
             setRefreshing(true);
@@ -43,16 +43,13 @@ const SocialFeedScreen = () => {
     return (
         <SafeAreaView className="flex-1 bg-gray-900 px-4 mb-6">
             <FlatList
-                data={posts}
+                data={posts?.data}
                 keyExtractor={(post) => String(post?.id)}
                 renderItem={({ item: post }) => {
                     console.log("current user posts: ", post)
                     return <PostCard
-                        name={currentUser?.name}
-                        location={currentUser?.location ?? 'anonyme'}
-                        time={post?.datePub}
-                        content={post?.libelePub}
-                        imageUrl={post?.imagePub}
+                        currentUser={currentUserObj}
+                        currentPost={post}
                     />
                 }}
                 refreshControl={

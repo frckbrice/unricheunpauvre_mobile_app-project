@@ -13,7 +13,7 @@ import FormField from '@/components/form-field';
 import { API_URL } from '@/constants/constants';
 
 // Profile Edit Screen
-const ProfileAdressEditScreen: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -53,7 +53,7 @@ const ProfileAdressEditScreen: React.FC = () => {
         dataObj,
       );
       Alert.alert('Reussi', 'Profile mis a jour avec success!');
-      router.push('/(tabulate)/profile');
+      router.push('/login');
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
     } finally {
@@ -64,17 +64,17 @@ const ProfileAdressEditScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-gray-900 p-4 pt-5">
       <View className="flex-row items-center mb-6 gap-4">
-        <TouchableOpacity onPress={() => router.push("/parameters")}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
+
         <View className=' flex justify-center items-center gap-2 mb-2'>
-          <Text className="text-white text-xl font-bold ml-4">Modification Mot de passe</Text>
-          {/* <Text className="text-gray-400 text-[14px] font-bold ml-4">saisir votre nouveau mot de pass et confirmer</Text> */}
+          <Text className="text-white text-xl font-bold ml-4">
+            mot de passe oublié
+          </Text>
+
         </View>
       </View>
       <ScrollView>
         <View className="mb-4">
-          <Text className="mb-2 text-gray-300">Mot de passe</Text>
+          <Text className="mb-2 text-gray-300">Entrer le nouveau mot de passe</Text>
           <FormField
             title={"Mot de passe"}
             value={password}
@@ -111,4 +111,6 @@ const ProfileAdressEditScreen: React.FC = () => {
   );
 };
 
-export default ProfileAdressEditScreen;
+export default ForgotPassword;
+
+// https://play.google.com/store/apps/details?id=com.senima.senwisetool

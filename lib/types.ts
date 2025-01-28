@@ -1,19 +1,21 @@
 export type Post = {
-    id: number;
-    author: string;
+    id: string;
+    author: User;
     location: string;
     content: string;
     imageUrl: string;
-    likes?: number;
+    likes?: Jaime[];
     comments: Comment[];
     timeAgo: string;
-    idUser: number | undefined;
+    idUser: string | undefined;
     statePub: boolean;
     category: string;
+    montant?: number | string;
+    documentUrl: string | any
 };
 
 export interface IUser {
-    id?: number;
+    id?: string;
     nomUser: string;
     mdpUser: string;
     username: string;
@@ -41,17 +43,15 @@ export interface TokenCache {
 
 
 export type Category = {
-    idCat: number;
-    idUser: number;
-    typeCat: number;
-    nullable: boolean;
+    id: string;
     nomCat: string;
+    typeCat: string;
 }
 
 export type Publication = {
-    idPub?: number
-    idUser: number | undefined;
-    idCat: number | undefined;
+    id?: string
+    idUser: string | undefined;
+    idCat: string | undefined;
     libelePub: string;
     imagePub: string | any;
     datePub: string;
@@ -64,25 +64,23 @@ export type Publication = {
 
 
 export type Jaime = {
-    idJaime?: number,
-    idPub: number,
-    idUser: number,
-    libleJaime: string,
+    id?: string,
+    idPub: string,
+    idUser: string,
     dateJaime: string
 }
 
 export interface Comment {
-    idCom: number;
-    idPub: number;
-    idUser: number;
-    idParent?: number | null;  // Add this for nested replies
-    dateCom: string;
+    idPub: string;
+    idUser: string;
+    idParent?: string | null;  // Add this for nested replies
+    createdAt: string;
     etatCom: boolean;
     libeleCom: string;
     userName?: string;
     userAvatar?: string;
     replies?: Comment[];
-
+    id?: string;
     replyToUser?: string;
     likes?: number; // the number of likes of this message
 }
@@ -105,7 +103,7 @@ export interface Comment {
  */
 
 export type User = {
-    idUser?: number;
+    id?: string;
     nomUser: string;
     mdpUser: string;
     username: string;
@@ -115,13 +113,13 @@ export type User = {
     photoUser?: string;
     pieceIdf?: string;
     pieceIdb?: string;
-    dateCrea?: string;
+    createdAt?: string | undefined;
     dateNaiss?: string
 }
 
 
 export type Don = {
-    idDons: number;
+    id: string;
     idPub: number;
     idUser: number;
     nomDons: string;

@@ -6,16 +6,14 @@ import { EncodingKey, JWTBody, JWTDefaultBody } from 'expo-jwt/dist/types/jwt';
 import { useRouter } from 'expo-router';
 import { IUser, User } from '@/lib/types';
 import { getResourceByItsId } from '@/lib/api';
+import { TOKEN_KEY } from '@/constants/constants';
 
-const TOKEN_KEY = '8b41c9eb4a6b43f9aeb6ddf7497bd237rhys';
 
 const useUserGlobal = () => {
 
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<JWTBody<JWTDefaultBody> | null>(null)
     const [currentUserObj, setCurrentUserObj] = useState<User | null>(null);
-
-
 
     const getToken = async () => {
 
@@ -27,18 +25,20 @@ const useUserGlobal = () => {
                 console.log("new user decoded: ", decoded);
                 setCurrentUser(decoded);
 
-                console.log("in useUSerGlobal file:  new user decoded: ", decoded);
                 // get the current user pofile
-                if (decoded?.IdUser) setCurrentUserObj(await getResourceByItsId(decoded?.IdUser as number, "User", "useUserGlobal"));
-            } else return router.push('/login');
+                if (decoded?.userId)
+                    setCurrentUserObj(await getResourceByItsId(decoded?.userId, "users", "useUserGlobal"));
+            }
+
         } catch (error) {
             console.error('Failed to decode token:', error);
+            setCurrentUser(null);
+            setCurrentUserObj(null);
+            router.push("/");
         }
     };
 
-
-
-
+    // console.log('current user obj: ', currentUserObj)
 
     useEffect(() => {
         getToken();

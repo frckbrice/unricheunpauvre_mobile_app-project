@@ -1,41 +1,58 @@
 import SelectDropdown from 'react-native-select-dropdown'
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Category, Publication } from '@/lib/types';
+import { getAllResourcesByTarget } from '@/lib/api';
 
 type TPicker = {
     options: Category[];
-    setCurrentCat: React.Dispatch<React.SetStateAction<Category | undefined>>
+    setCurrentCat?: React.Dispatch<React.SetStateAction<Category | undefined>>
+    onCategorySelect?: (data: any) => void,
 }
-export function SelectItem({ options, setCurrentCat }: TPicker) {
-
+export function SelectItem({ options, setCurrentCat, onCategorySelect }: TPicker) {
+    const [uploading, setUploading] = useState(false);
+    const handleCategoryPress = async (categoryId: string) => {
+        setUploading(true);
+        try {
+            const { data } = await getAllResourcesByTarget(
+                "publications",
+                categoryId,
+                "idCat"
+            );
+            onCategorySelect && onCategorySelect(data || []);
+        } catch (error) {
+            console.error("Category fetch error:", error);
+            Alert.alert("Error", "Impossible de charger les publications de cette categorie");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     return (
         <SelectDropdown
             data={options}
             onSelect={(selectedItem, index) => {
                 console.log("in select component: ", selectedItem, index);
-                setCurrentCat(selectedItem);
+                handleCategoryPress(selectedItem.id);
             }}
             renderButton={(selectedItem, isOpened) => {
                 return (
                     <View style={styles.dropdownButtonStyle}>
-                        {/* {selectedItem && (
-                            <Ionicons name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />
-                        )} */}
-                        <Text style={styles.dropdownButtonTxtStyle}>
-                            {(selectedItem && selectedItem.name) || 'Selectionnez une categorie'}
-                        </Text>
-                        <Text className='text-xs'>▼</Text>
-                        {/* <Ionicons name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} /> */}
+                        {uploading ?
+                            <ActivityIndicator size="small" color="white" /> :
+                            <View className='flex-row items-center justify-between'>
+                                <Text style={styles.dropdownButtonTxtStyle}>
+                                    {(selectedItem && selectedItem.name) || 'Selectionnez une categorie'}
+                                </Text>
+                                <Text className='text-xs text-white'>▼</Text>
+                            </View>}
                     </View>
                 );
             }}
             renderItem={(item, index, isSelected) => {
                 return (
                     <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#6b7280' }) }}>
-                        {/* <Ionicons name={item.icon} style={styles.dropdownItemIconStyle} /> */}
                         <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
                     </View>
                 );
@@ -58,7 +75,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 12,
-        marginVertical: 10,
+        marginVertical: 2,
         marginTop: 0,
 
     },
