@@ -47,6 +47,7 @@ const SocialFeedScreen = () => {
                 keyExtractor={(post) => String(post?.id)}
                 renderItem={({ item: post }) => {
                     console.log("current user posts: ", post)
+                    console.log("current user hser in card: ", currentUserObj)
                     return <PostCard
                         currentUser={currentUserObj}
                         currentPost={post}

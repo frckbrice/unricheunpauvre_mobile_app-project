@@ -54,12 +54,12 @@ export type Publication = {
     idCat: string | undefined;
     libelePub: string;
     imagePub: string | any;
-    datePub: string;
-    favories: boolean;
-    etat: boolean;
-    videoPub?: string | any;
+    datePub?: string;
+    favories?: boolean;
+    etat?: boolean;
+    // videoPub?: string | any;
     montantEstime: number | string;
-    documentUrl: string | any;
+    documentUrl?: string | any;
 }
 
 

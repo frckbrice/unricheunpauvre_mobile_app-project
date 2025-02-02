@@ -225,9 +225,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { tokenCache } from '@/store/persist-token-cache';
-import { Colors } from '@/constants';
+
 import FormField from '@/components/form-field';
-import { API_URL } from '@/constants/constants';
+import * as SecureStore from 'expo-secure-store';
 
 interface LoginFormData {
     username: string;
@@ -308,14 +308,19 @@ const LoginScreen: React.FC = () => {
             }
 
             const responseData = await res.json();
-            console.log("response data: ", data);
+            console.log("response data: ", responseData);
             if (responseData?.accessToken) {
-                tokenCache.saveToken('currentUser', responseData?.accessToken);
-                setSubmitStatus('success');
-
-                setTimeout(() => {
-                    router.replace('/accueil');
-                }, 1000);
+                // tokenCache.saveToken('currentUser', responseData?.accessToken);
+                SecureStore.setItemAsync('currentUser', responseData?.accessToken)
+                    .then(() => {
+                        console.log("token saved");
+                        setSubmitStatus('success');
+                        setTimeout(() => {
+                            router.replace('/accueil');
+                        }, 1000);
+                    }).catch((error) => {
+                        console.error("error saving token: ", error);
+                    });
             } else {
                 setSubmitStatus('error');
             }
@@ -538,7 +543,7 @@ const LoginScreen: React.FC = () => {
 
                         <View className="mb-4">
                             <Text className="mb-2 text-gray-700">
-                                Nom d'utilisateur
+                                Email
                                 <Text className='text-red-500'>*</Text>
                             </Text>
                             <Controller

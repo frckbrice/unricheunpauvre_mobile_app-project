@@ -69,7 +69,7 @@ const ProfileScreen: React.FC = () => {
                     <Image source={{ uri: currentUserObj?.photoUser ?? 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-12 h-12 rounded-full mr-4" />
                     <View>
                         <Text className="text-white text-[14.5px] font-bold">{currentUser?.nomUser ?? "Anonymous"} </Text>
-                        <Text className="text-gray-400">{currentUser?.localisation ?? "Anonynous"}</Text>
+                        <Text className="text-gray-400">{currentUserObj?.localisation ?? "Anonynous"}</Text>
                     </View>
                 </View>
 

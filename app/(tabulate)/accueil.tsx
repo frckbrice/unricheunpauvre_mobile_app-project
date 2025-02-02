@@ -121,7 +121,7 @@ import { getAllPublications } from '@/lib/api';
 
 const HomeScreen: React.FC = () => {
     const [refreshing, setRefreshing] = useState(false);
-    const [publications, setPublications] = useState<Post[]>([]);
+    // const [publications, setPublications] = useState<Post[]>([]);
     const {
         data: posts,
         isLoading: isLoadingPosts,
@@ -134,15 +134,15 @@ const HomeScreen: React.FC = () => {
     );
 
 
-    const fetchData = useCallback(async () => {
-        const { data, hasMore, isLoading, loadMore, refresh } = useChunkedApiOps<Post>(
-            () => getAllPublications(1, 10),
-            10
-        );
+    // const fetchData = useCallback(async () => {
+    //     const { data, hasMore, isLoading, loadMore, refresh } = useChunkedApiOps<Post>(
+    //         () => getAllPublications(1, 10),
+    //         10
+    //     );
 
-        console.log("existing publications: ", data);
-        setPublications(data);
-    }, [])
+    //     console.log("existing publications: ", data);
+    //     setPublications(data);
+    // }, [])
 
 
     const uniquePosts = useMemo(() => {

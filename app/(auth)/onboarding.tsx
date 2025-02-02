@@ -283,7 +283,7 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { ViewToken } from "@react-native/community/viewpager";
+// import { ViewToken } from "@react-native/community/viewpager";
 
 const { width } = Dimensions.get("window");
 
@@ -349,14 +349,23 @@ Vous êtes le seul capable de transformer votre avenir, tout en influençant cel
   },
 ];
 
-const OnboardingScreen = () => {
+type OnboardingScreenProps = {
+  onComplete: () => void;
+};
+
+const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slidesRef = useRef<FlatList>(null);
   const router = useRouter();
 
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+  const handleOnboardingComplete = () => {
+    onComplete();
+  };
+
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
     if (viewableItems && viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index ?? 0);
     }
@@ -440,7 +449,7 @@ const OnboardingScreen = () => {
         {currentIndex === slides.length - 1 ? (
           <TouchableOpacity
             className="bg-blue-600 p-4 rounded-xl flex-row justify-center items-center mb-2.5"
-            onPress={() => router.replace("/register")}
+            onPress={() => handleOnboardingComplete()}
           >
             <Text className="text-white text-base font-semibold mr-2">
               Commencez l'expérience.

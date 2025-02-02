@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -7,6 +7,8 @@ import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SplashScreenComponent from '@/components/splash-screen';
 import useUserGlobal from '@/hooks/use-user-hook';
+
+import * as SecureStore from 'expo-secure-store';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -20,9 +22,7 @@ export default function RootLayout() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { currentUser } = useUserGlobal();
-
-  // useEffect(() => {
-
+  const segments = useSegments();
 
   useEffect(() => {
     if (error) throw error;
@@ -31,16 +31,36 @@ export default function RootLayout() {
       setIsLoading(false);
     }
 
+  }, [loaded, error]);
+
+  // Handle navigation based on auth state
+  useEffect(() => {
+    // const inAuthGroup = segments[0] === '(auth)';
+    // const inTabGroup = segments[0] === '(tabulate)';
+
     // if (currentUser?.nomUser) {
-    //   setTimeout(() => {
+    //   // Logged in
+    //   if (inTabGroup) {
     //     router.replace('/(tabulate)/accueil');
-    //   }, 2000)
+    //   }
     // } else {
-    //   setTimeout(() => {
-    //     router.replace('/')
-    //   }, 2000)
+    //   // Not logged in
+    //   if (inAuthGroup) {
+    //     router.replace('/login');
+    //   }
     // }
-  }, [loaded, error, currentUser])
+    // Only handle navigation when loading is complete
+
+
+    (async () => {
+      if (!isLoading) {
+        const token =
+          await SecureStore.getItemAsync('currentUser');
+        if (token)
+          router.replace('/(tabulate)/accueil');
+      }
+    })();
+  }, [currentUser, isLoading]);
 
   if (isLoading) {
     return <SplashScreenComponent />;
@@ -60,14 +80,13 @@ export default function RootLayout() {
           headerStyle: {
             backgroundColor: '#111827',
             // reduce the height of the header
-
           },
           headerTitleStyle: {
             color: '#fff',
           },
           headerLeft: () => {
             return (
-              <TouchableOpacity onPress={() => router.back()} className='pr-4'>
+              <TouchableOpacity onPress={() => router.replace('/(tabulate)/profile')} className='pr-4'>
                 <Ionicons name='arrow-back' size={24} color={'#fff'} className='p-4 bg-red-50' />
               </TouchableOpacity>
             );
@@ -96,7 +115,6 @@ export default function RootLayout() {
           }
         }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
-
     </Stack>
   );
 }

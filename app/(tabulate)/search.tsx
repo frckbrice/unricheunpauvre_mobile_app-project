@@ -2,11 +2,11 @@
 
 // SearchScreen.tsx
 import React, { useState, useCallback } from 'react';
-import { View, FlatList, SafeAreaView, Text, Image, TouchableOpacity } from 'react-native';
-import { Category, Post } from '@/lib/types';
+import { View, FlatList, SafeAreaView, Text, TouchableOpacity } from 'react-native';
+import { Post } from '@/lib/types';
 import useApiOps from '@/hooks/use-api';
 import { getAllCategories } from '@/lib/api';
-import PublicationPost from '@/components/post';
+// import PublicationPost from '@/components/post';
 import SearchInput from '@/components/search-input';
 import EmptyState from '@/components/empty-state';
 import { SelectItem } from '@/components/picker';
@@ -14,7 +14,11 @@ import { useRouter } from 'expo-router';
 
 const SearchScreen = () => {
     const [posts, setPosts] = useState<Post[]>([]);
-    const { data: categories } = useApiOps<{ nomCat: string, typeCat: string, id: string }>(() => getAllCategories());
+    const { data: categories } = useApiOps<{
+        nomCat: string,
+        typeCat: string,
+        id: string
+    }>(() => getAllCategories());
     const router = useRouter();
 
     const handleSearchResults = useCallback((results: Post[]) => {
@@ -31,7 +35,7 @@ const SearchScreen = () => {
                     return (
                         <>
                             {/* display a list of post links */}
-                            <View className="my-2 mx-4 space-y-2 w-[100%] border border-gray-900 rounded-lg px-4">
+                            <View className="my-2  space-y-2 w-[100%] border-[0.1px] border-gray-500 rounded-lg  shadow-xl p-2">
                                 <TouchableOpacity onPress={() => router.replace(`/post/${item?.id}`)}>
                                     {/* <Image source={{ uri: item.imageUrl }} resizeMode='contain' className="w-96 h-16 rounded-lg" /> */}
                                     <Text className='text-white '>{item?.content?.substring(0, 100)}...</Text>

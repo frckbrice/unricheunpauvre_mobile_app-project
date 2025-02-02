@@ -43,9 +43,9 @@ export default function AuthLayout() {
 
                     }}
                 />
-                <StatusBar style="auto" />
-            </Stack>
 
+            </Stack>
+            <StatusBar style="auto" />
 
         </>
     );

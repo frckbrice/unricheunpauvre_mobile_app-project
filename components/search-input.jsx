@@ -124,7 +124,7 @@ const SearchInput = ({ placeholder, onSearchResults }) => {
   };
 
   return (
-    <View className="border-2 border-black-200 rounded-2xl w-full px-4 h-16 focus:border-secondary items-center bg-black-100 flex-row justify-between space-x-4">
+    <View className="border-2 border-black-200 rounded-2xl w-full px-4 h-14 focus:border-secondary items-center bg-black-100 flex-row justify-between space-x-4">
       <TextInput
         placeholder={placeholder}
         className="font-pregular text-white mt-0.5 flex-1 font-psemibold text-base"

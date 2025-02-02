@@ -508,7 +508,7 @@ const Register: React.FC = () => {
                         </View>
                         <View className="mb-4">
                             <Text className="mb-2 text-gray-700">
-                                Nom d'utilisateur
+                                Email
                                 <Text className='text-red-500'>*</Text>
                             </Text>
                             <View className="flex-row items-center border border-gray-300 rounded-lg p-2">

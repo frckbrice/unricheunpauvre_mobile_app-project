@@ -7,15 +7,21 @@ import { getAllResourcesByTarget } from '@/lib/api';
 
 type TPicker = {
     options: Category[];
-    setCurrentCat?: React.Dispatch<React.SetStateAction<Category | undefined>>
+    getCurrentCat?: (...event: any) => void
     onCategorySelect?: (data: any) => void,
+    important?: boolean
 }
-export function SelectItem({ options, setCurrentCat, onCategorySelect }: TPicker) {
+export function SelectItem({
+    options,
+    getCurrentCat,
+    onCategorySelect,
+    important
+}: TPicker) {
     const [uploading, setUploading] = useState(false);
     const handleCategoryPress = async (categoryId: string) => {
         setUploading(true);
         try {
-            const { data } = await getAllResourcesByTarget(
+            const { data } = await getAllResourcesByTarget(  // get the publications of this category.
                 "publications",
                 categoryId,
                 "idCat"
@@ -34,25 +40,33 @@ export function SelectItem({ options, setCurrentCat, onCategorySelect }: TPicker
             data={options}
             onSelect={(selectedItem, index) => {
                 console.log("in select component: ", selectedItem, index);
-                handleCategoryPress(selectedItem.id);
+                // send api call to get the category with current ID.
+                //    handleCategoryPress(selectedItem.id);
+                getCurrentCat ? getCurrentCat(selectedItem?.id) : handleCategoryPress(selectedItem.id);
             }}
             renderButton={(selectedItem, isOpened) => {
                 return (
                     <View style={styles.dropdownButtonStyle}>
-                        {uploading ?
-                            <ActivityIndicator size="small" color="white" /> :
-                            <View className='flex-row items-center justify-between'>
-                                <Text style={styles.dropdownButtonTxtStyle}>
-                                    {(selectedItem && selectedItem.name) || 'Selectionnez une categorie'}
-                                </Text>
-                                <Text className='text-xs text-white'>▼</Text>
-                            </View>}
+                        {
+                            uploading ?
+                                <ActivityIndicator size="small" color="white" /> :
+                                <View className='flex-row items-center justify-between'>
+                                    <Text style={styles.dropdownButtonTxtStyle}>
+                                        {(selectedItem && selectedItem.name) || `Selectionnez une categorie `}
+                                        {important && !selectedItem?.name && <Text className="text-red-500">*</Text>}
+                                    </Text>
+                                    <Text className='text-xs text-white'>▼</Text>
+                                </View>
+                        }
                     </View>
                 );
             }}
             renderItem={(item, index, isSelected) => {
                 return (
-                    <View style={{ ...styles.dropdownItemStyle, ...(isSelected && { backgroundColor: '#6b7280' }) }}>
+                    <View style={{
+                        ...styles.dropdownItemStyle,
+                        ...(isSelected && { backgroundColor: '#6b7280' })
+                    }}>
                         <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
                     </View>
                 );

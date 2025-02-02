@@ -25,7 +25,7 @@ import { tokenCache } from '@/store/persist-token-cache';
 // import { supabase } from '@/utils/supabase';
 
 
-
+// export const API_URL = "https://unrichunpauvre-rest-api.onrender.com/api";
 export const config = {
     endpoint: "https://cloud.appwrite.io/v1",
     platform: "com.avom.AvomReactNativeApp",

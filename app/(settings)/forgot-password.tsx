@@ -10,7 +10,6 @@ import useUserGlobal from '@/hooks/use-user-hook';
 import { Alert } from 'react-native';
 import { patchResource, updatedUserPwd, updateResource } from '@/lib/api';
 import FormField from '@/components/form-field';
-import { API_URL } from '@/constants/constants';
 
 // Profile Edit Screen
 const ForgotPassword: React.FC = () => {
