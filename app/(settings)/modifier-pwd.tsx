@@ -10,15 +10,21 @@ import useUserGlobal from '@/hooks/use-user-hook';
 import { Alert } from 'react-native';
 import { patchResource, updatedUserPwd, updateResource } from '@/lib/api';
 import FormField from '@/components/form-field';
-import { API_URL } from '@/constants/constants';
+import { API_URL, MESSAGES } from '@/constants/constants';
+import CustomToast from '@/components/custom-toast';
 
 // Profile Edit Screen
 const ProfileAdressEditScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [currentPasword, setCurrentPasword] = useState('');
 
-
+  const [toast, setToast] = useState({
+    visible: false,
+    message: "",
+    type: "error",
+  });
   const { currentUser } = useUserGlobal();
 
   const router = useRouter();
@@ -26,36 +32,67 @@ const ProfileAdressEditScreen: React.FC = () => {
 
   console.log("credentials: ", {
     password, confirmPwd
-  })
-  const onSignInPress = React.useCallback(async () => {
+  });
 
+  const showToast = (messageKey: "Mauvais_mot_de_passe"
+    | "success_de_modification_de_mot_de_passe"
+    | "Non_Correspondance_de_mots_de_passes"
+    | "error_de_modification_de_mot_de_passe"
+    | 'No_Current_user_ID',
+    type = "error"
+  ) => {
+    // You can determine the language based on your app's language settings
+    const language = "fr"; // or "en" based on your app's language setting
+    setToast({
+      visible: true,
+      message: MESSAGES[messageKey][language],
+      type,
+    });
+
+    // Hide toast after 3.5 seconds
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, visible: false }));
+    }, 3500);
+  };
+
+
+  const onSignInPress = React.useCallback(async () => {
+    if (!password.trim() || !confirmPwd.trim() || !currentPasword.trim()) {
+      showToast("Mauvais_mot_de_passe");
+      return;
+    }
     console.log("password correspondance:", password.includes(confirmPwd))
 
     // Check if passwords match
     if (!password.includes(confirmPwd)) {
-      return Alert.alert('Erreur', 'Pas de correspondance entre mots de passes');
+      return showToast("Non_Correspondance_de_mots_de_passes");
     }
 
     setIsSubmitting(true);
     try {
       const dataObj = {
+        currentPasword,
         mdpUser: password,
       };
 
       console.log("\n\n object to upload: ", dataObj);
 
-      if (!dataObj.mdpUser || currentUser?.userId)
-        return console.error(`no ${dataObj.mdpUser} or ${currentUser?.userId} found`);
+      if (!currentUser?.userId)
+        return showToast("No_Current_user_ID");
 
-      await patchResource(
+      const data = await patchResource(
         'users',
         currentUser?.userId,
         dataObj,
       );
-      Alert.alert('Reussi', 'Profile mis a jour avec success!');
+
+      console.log("\n\n from api file connect fct", data);
+      // Alert.alert('Reussi', 'Mot de pass mis a jour avec success!');
+      showToast("success_de_modification_de_mot_de_passe");
       router.push('/(tabulate)/profile');
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
+      showToast("error_de_modification_de_mot_de_passe");
     } finally {
       setIsSubmitting(false);
     }
@@ -63,6 +100,7 @@ const ProfileAdressEditScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900 p-4 pt-5">
+
       <View className="flex-row items-center mb-6 gap-4">
         <TouchableOpacity onPress={() => router.push("/parameters")}>
           <Ionicons name="arrow-back" size={24} color="white" />
@@ -72,7 +110,17 @@ const ProfileAdressEditScreen: React.FC = () => {
           {/* <Text className="text-gray-400 text-[14px] font-bold ml-4">saisir votre nouveau mot de pass et confirmer</Text> */}
         </View>
       </View>
-      <ScrollView>
+      <ScrollView><View className="mb-4">
+        <Text className="mb-2 text-gray-300">Entrer le mot de passe actuel</Text>
+        <FormField
+          title={"Mot de passe actuel"}
+          value={currentPasword}
+          placeholder="Entrer votre mot de pass actuel..."
+          handleChangeText={(text) => setCurrentPasword(text)}
+          inputStyle="text-white"
+        />
+      </View>
+
         <View className="mb-4">
           <Text className="mb-2 text-gray-300">Mot de passe</Text>
           <FormField
@@ -83,7 +131,6 @@ const ProfileAdressEditScreen: React.FC = () => {
             inputStyle="text-white"
           />
         </View>
-
 
         <View className="mb-4">
           <Text className="mb-2 text-gray-300">Confirmer le mot de passe</Text>
@@ -97,6 +144,14 @@ const ProfileAdressEditScreen: React.FC = () => {
         </View>
 
       </ScrollView>
+
+
+      <CustomToast
+        message={toast.message}
+        isVisible={toast.visible}
+        type={toast.type}
+      />
+
       <TouchableOpacity
         onPress={onSignInPress}
         className="bg-blue-600 rounded-lg p-3 mt-4"

@@ -338,8 +338,6 @@ const LoginScreen: React.FC = () => {
             return;
         }
 
-        // console.log("updated password: ", data);
-        // console.log("url: ", `${API_URL}/users/forgot-password`);
         try {
             const res = await fetch(`https://unrichunpauvre-rest-api.onrender.com/api/users/forgot-password`, {
                 method: 'POST',
@@ -348,7 +346,7 @@ const LoginScreen: React.FC = () => {
                 },
                 body: JSON.stringify({
                     username: data.email,
-                    mdpUser: data.confirmPassword
+                    // mdpUser: data.confirmPassword
                 }),
             });
 
@@ -440,68 +438,7 @@ const LoginScreen: React.FC = () => {
                                     </Text>
                                 )}
                             </View>
-                            <View className="mb-4">
-                                <Controller
-                                    control={forgotPasswordControl}
-                                    name="password"
-                                    rules={{
-                                        required: 'Le mot de passe est requis',
-                                        // pattern: {
-                                        //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        //     message: 'Adresse email invalide'
-                                        // }
-                                    }}
-                                    render={({ field: { onChange, value } }) => (
-                                        <View className={`flex-row items-center border rounded-lg p-2 
-                                            ${forgotPasswordErrors.email ? 'border-red-500' : 'border-gray-300'}`}>
-                                            <Ionicons name="lock-closed" size={24} color="#2563eb" />
-                                            <TextInput
-                                                className="flex-1 ml-2 text-black-200"
-                                                placeholder="Entrer votre mot de passe"
-                                                value={value}
-                                                onChangeText={onChange}
-                                                autoCapitalize="none"
-                                                keyboardType="email-address"
-                                            />
-                                        </View>
-                                    )}
-                                />
-                                {forgotPasswordErrors.email && (
-                                    <Text className="text-red-500 text-sm mt-1">{forgotPasswordErrors.email.message}</Text>
-                                )}
-                            </View>
 
-
-                            <View className="mb-4">
-                                <Controller
-                                    control={forgotPasswordControl}
-                                    name="confirmPassword"
-                                    rules={{
-                                        required: 'Le mot de passe est requis',
-                                        // pattern: {
-                                        //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        //     message: 'Adresse email invalide'
-                                        // }
-                                    }}
-                                    render={({ field: { onChange, value } }) => (
-                                        <View className={`flex-row items-center border rounded-lg p-2 
-                                            ${forgotPasswordErrors.email ? 'border-red-500' : 'border-gray-300'}`}>
-                                            <Ionicons name="lock-closed" size={24} color="#2563eb" />
-                                            <TextInput
-                                                className="flex-1 ml-2 text-black-200"
-                                                placeholder="Confirmer votre mot de passe"
-                                                value={value}
-                                                onChangeText={onChange}
-                                                autoCapitalize="none"
-                                                keyboardType="email-address"
-                                            />
-                                        </View>
-                                    )}
-                                />
-                                {forgotPasswordErrors.email && (
-                                    <Text className="text-red-500 text-sm mt-1">{forgotPasswordErrors.email.message}</Text>
-                                )}
-                            </View>
 
                             <TouchableOpacity
                                 className={`rounded-lg p-3 ${resetEmailStatus === 'loading' ? 'bg-blue-400' : 'bg-blue-600'}`}

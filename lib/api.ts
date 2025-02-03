@@ -323,7 +323,6 @@ export const getAllResourcesByTarget = async <T>(
             query += `${target1}=${id}&${target2}=${value}`;
 
 
-
         const url = `${API_URL}/${resource}?` + query;
 
         console.log("\n\n url: ", { url, resource, query });
@@ -509,10 +508,10 @@ export const patchResource = async <T>(resource: string, id: string, value: Part
         }
 
         const response = await axios.request(options);
-        console.log("\n\n from updateResource request fct", response?.data.data);
+        console.log("\n\n from patchResource request fct", response?.data.data);
         return response?.data.data;
     } catch (error: any) {
-        console.error(`inside updateResource fct on api file. Error updating resource ${resource} with id ${id} : ${error}`);
+        console.error(`inside patchResource fct on api file. Error updating resource ${resource} with id ${id} : ${error}`);
         throw new Error(error);
     }
 }
@@ -720,3 +719,57 @@ export const formatTimeAgo = (date: Date): string => {
     const diffInYears = Math.floor(diffInMonths / 12);
     return `il y a ${diffInYears} an${diffInYears === 1 ? '' : 's'}`;
 };
+
+
+export const deleteResourceData = async (resource: string, id: string) => {
+
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in deleteResourceData fct, No token found");
+
+    try {
+        const options = {
+            method: 'DELETE',
+            url: `${API_URL}/${resource}/${id}`,
+            headers: {
+                'Authorization': `Bearer ${token ?? ""}`,
+                'Content-Type': 'application/json',
+            },
+        };
+
+        const response = await axios.request(options);
+        console.log("\n\nfrom api file deleteResourceData fct", response?.data);
+        return response.data.data;
+
+    } catch (error: any) {
+        console.error(`from api file deleteResourceData fct. failed to delete a resource ${resource} by its id ${id} : ${error}`);
+        throw Error(error);
+    }
+}
+
+
+export const deleteResourceWithUserAndPub = async (resource: string, idPub: string, idUser: string) => {
+
+    const token = await tokenCache.getToken('currentUser');
+    if (!token)
+        return console.error("\n\n in deleteResourceData fct, No token found");
+
+    try {
+        const options = {
+            method: 'DELETE',
+            url: `${API_URL}/${resource}?idPub=${idPub}&idUser=${idUser}`,
+            headers: {
+                'Authorization': `Bearer ${token ?? ""}`,
+                'Content-Type': 'application/json',
+            },
+        };
+
+        const response = await axios.request(options);
+        console.log("\n\nfrom api file deleteResourceData fct", response?.data);
+        return response.data.data;
+
+    } catch (error: any) {
+        console.error(`from api file deleteResourceData fct. failed to delete a resource ${resource} by its id pub ${idPub} and id user ${idUser} : ${error}`);
+        throw Error(error);
+    }
+}

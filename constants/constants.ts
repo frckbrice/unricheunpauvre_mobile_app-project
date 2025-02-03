@@ -70,4 +70,35 @@ export const comments = [{
     libeleCom: "le mont essama",
     dateCom: new Date().toLocaleDateString(),
 
-}]
+}];
+
+export const MESSAGES = {
+    emptyQuery: {
+        en: "Please enter a search query",
+        fr: "Veuillez saisir une recherche",
+    },
+    searchError: {
+        en: "Failed to perform search",
+        fr: "Échec de la recherche",
+    },
+    Mauvais_mot_de_passe: {
+        en: "Please enter a right pass word",
+        fr: "Veuillez saisir un mot de passe correct",
+    },
+    Non_Correspondance_de_mots_de_passes: {
+        en: "Failed to correspond the passwords",
+        fr: "les mots de passe ne correspondent pas",
+    },
+    error_de_modification_de_mot_de_passe: {
+        en: "Failed to update the password",
+        fr: "Echec de la modification du mots de passe",
+    },
+    success_de_modification_de_mot_de_passe: {
+        en: "successfully updated the password",
+        fr: "success de la modification du mots de passe",
+    },
+    No_Current_user_ID: {
+        en: "No current user Id found",
+        fr: "Pas d'identifiant pour l'utilisateur courant",
+    }
+};

@@ -167,16 +167,16 @@ const HomeScreen: React.FC = () => {
     }, [refresh]);
 
     const renderPost = useCallback(({ item }: { item: Post }) => (
-        <PublicationPost post={item} />
+        <PublicationPost post={item} isPostDetail={false} />
     ), []);
 
     const renderHeader = useCallback(() => (
         <View className="px-4">
-            <View className="flex-row justify-center items-center mb-4 gap-2">
+            <View className="flex-row justify-center items-center gap-2">
                 <Text className="text-white text-sm font-bold">Donner pour aider</Text>
                 <Image
                     source={require('../../assets/images/adaptive-icon.png')}
-                    className="w-8 h-8"
+                    className="w-10 h-10"
                 />
                 <Text className="text-white text-sm font-bold">Recevoir pour rêver</Text>
             </View>
@@ -185,7 +185,7 @@ const HomeScreen: React.FC = () => {
 
     const renderEmpty = useCallback(() => (
         <EmptyState
-            title="Aucune Publication Existante"
+            title="Aucun rêve publié"
             subtitle="Commencer par la premiere."
             label="Creer une Publication"
             titleStyle='text-white font-bold text-[16px]'

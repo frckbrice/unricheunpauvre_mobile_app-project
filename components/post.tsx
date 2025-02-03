@@ -7,7 +7,7 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Jaime, Post, User } from '@/lib/types';
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
+import { deleteResourceData, deleteResourceWithUserAndPub, getAllResourcesByTarget, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
 import useApiOps from '@/hooks/use-api';
 import useUserGlobal from '@/hooks/use-user-hook';
 
@@ -20,13 +20,15 @@ import { EnhancedCommentSection, ExtendedComment } from './custom-comment-compon
 import Share from 'react-native-share';
 import { ProfileClickArea, ProfileModal } from './profile/components/profile-details';
 import { MenuOverlay } from './publication/menu-overlay';
+import PostImage from './post-image-viewing';
 
 type TPost = {
     post: Post;
     postAuthor?: User | null;
+    isPostDetail?: boolean;
 }
 
-const PublicationPost = ({ post }: TPost) => {
+const PublicationPost = ({ post, isPostDetail }: TPost) => {
 
     const mounted = useRef(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -46,161 +48,112 @@ const PublicationPost = ({ post }: TPost) => {
     const [comments, setComments] = useState(post?.comments || []);
     const [startComment, setStartComment] = useState<boolean>(false);
     const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
-
+    const [hasLiked, setHasLiked] = useState(false);
 
     const { currentUser } = useUserGlobal();
     const router = useRouter();
 
 
-    // const getALlCommentsForthisPub = useCallback(async () => {
-    //     try {
-    //         const allComments = await getAllResourcesByTarget(
-    //             'commentaires', post?.id, 'idPub') as ExtendedComment[];
-
-    //         // Group comments by their parent
-    //         const commentMap = new Map();
-    //         const rootComments: ExtendedComment[] = [];
-
-    //         allComments.forEach(comment => {
-    //             const extendedComment: ExtendedComment = {
-    //                 ...comment,
-    //                 replies: comment.isReplied ? [] : undefined,
-    //                 userName: '', // You might want to fetch username
-    //                 photoUser: '', // You might want to fetch user photo
-    //             };
-
-    //             if (comment.idParent) {
-    //                 // This is a reply
-    //                 const parentComment = commentMap.get(comment.idParent);
-    //                 if (parentComment) {
-    //                     if (!parentComment.replies?.length) {
-    //                         parentComment.replies = [];
-    //                     }
-    //                     parentComment.replies.push(extendedComment);
-    //                     commentMap.set(comment.idParent, parentComment);
-    //                 }
-    //             } else {
-    //                 // This is a root comment   
-    //                 rootComments.push(extendedComment);
-    //                 commentMap.set(comment.id, extendedComment);
-    //             }
-    //         });
-
-    //         // Sort root comments by date (most recent first)
-    //         rootComments.sort((a, b) =>
-    //             new Date(b.dateCom).getTime() - new Date(a.dateCom).getTime()
-    //         );
-
-    //         // Store comments specifically for this publication
-    //         await SecureStore.setItemAsync(`comments-${post.id}`, JSON.stringify(rootComments));
-
-    //         return rootComments;
-    //     } catch (error) {
-    //         console.error('Failed to get all comments:', error);
-    //         return [];
-    //     }
-    // }, [post?.id]);
-
     // Modify your existing useEffect to use this function
     useEffect(() => {
-        // const fetchComments = async () => {
-        //     try {
-        //         const fetchedComments = await getALlCommentsForthisPub();
-        //         // console.log("\n\n root comments", fetchedComments);
-        //         const filterCommentForCurrentPost = fetchedComments?.filter((c) => c.idPub === post?.id);
-        //         setComments(filterCommentForCurrentPost || []);
-        //     } catch (error) {
-        //         console.error('Error fetching comments:', error);
-        //     }
-        // };
-
-        // fetchComments();
-        // getAllLikes();
-
-        // if (!postAuthor)
-        //     refetchPostAuthor();
 
         // Store the current post to local store
         SecureStore.setItemAsync('post', JSON.stringify(post?.author));
     }, [post]);
 
 
-    // const getAllLikes = useCallback(async () => {
-    //     try {
-    //         const allLikes = await getAllResourcesByTarget(
-    //             'likes', post?.id, 'idPub') as Jaime[];
-    //         console.log("all likes for this pub: ", allLikes);
-    //         // const filterLikesForCurrentPost = allLikes?.filter((l) => l.idPub === post?.id);
-    //         // setLikes(filterLikesForCurrentPost?.length);
-    //         setLikes(allLikes?.length);
-    //     } catch (error) {
-    //         console.error('Failed to get all likes:', error);
-    //     }
-    // }, [getAllResourcesByTarget, setLikes]);
-
-    // console.log("\n\n initialLikes: ", likes);
-
     // write a logic to like a post
     const likePost = useCallback(async () => {
+        if (!post?.id || !currentUser?.userId) {
+            return console.error("Post must exist for a like action", { postID: post?.id, isliked, currentUser });
+        }
 
         try {
-            // Optimistically update the UI
-            setIsliked(prev => !prev);
-            // increase/decrease the number of likes for this publication.
-            setLikes(prev => prev + (isliked ? 1 : 0));
-            console.log('\n isliked: ', isliked)
-            console.log('\n number of likes: ', likes)
-            // no post, no like
-            if (!post.id || (!isliked) || !currentUser?.userId)
-                return console.error("post must be liked or there should be a post for a like", { postID: post?.id, isliked, currentUser });
-
+            // Create like object
             const likeObj = {
-                idPub: post?.id,
-                idUser: currentUser?.userId,
-                dateJaime: new Date(Date.now()).toISOString(),
+                idPub: post.id,
+                idUser: currentUser.userId,
+                dateJaime: new Date().toISOString(),
             };
-            console.log("post a like : ", likeObj)
 
-            const newLike = await uploadResourceData<Jaime>(likeObj, 'likes');
-            setLikes(likes + 1);
-            if (newLike)
-                console.log('\n\n Sucess', 'Post liked');
+            console.log("Like object:", likeObj);
 
+            if (!hasLiked) {
+                // Optimistically update UI
+                setLikes(prev => prev + 1);
+                setHasLiked(true);
+
+                // Send API request to like the post
+                const newLike = await uploadResourceData<Jaime>(likeObj, "likes");
+
+                if (!newLike) {
+                    throw new Error("Failed to like post");
+                }
+
+                console.log("✅ Post liked successfully");
+            } else {
+                // Optimistically update UI
+                setLikes(prev => prev - 1);
+                setHasLiked(false);
+
+                // API request to unlike the post
+                const unlikeResponse = await deleteResourceWithUserAndPub("likes", post.id, currentUser.userId);
+
+                if (!unlikeResponse) {
+                    throw new Error("Failed to unlike post");
+                }
+
+                console.log("❌ Post unliked successfully");
+            }
         } catch (error) {
-            console.error("error liking post: ", error)
-        } finally {
-            setIsliked(!isliked);
+            console.error("Error liking/unliking post:", error);
+
+            // Rollback UI state if the request fails
+            setLikes(prev => (hasLiked ? prev + 1 : prev - 1));
+            setHasLiked(!hasLiked);
         }
-    }, [uploadResourceData, post?.id, isliked, currentUser])
+    }, [uploadResourceData, deleteResourceData, post?.id, hasLiked, currentUser]);
+
 
     // set ths pub as favorite
     const favoritePost = useCallback(async () => {
         // no post, no like
         setIsFavorite(prev => !prev);
-        // if (!isFavorite) {
-        //     return console.error("The post should be favorite", { isFavorite });
-        // }
-
-        if (!post.id || !currentUser)
-            return console.error("Post must exist or there should be a current user");
+        if (!post?.id || !currentUser?.userId) {
+            return console.error("Post and current user must exist.");
+        }
 
         const pubObj = {
             idPub: post.id,
-            idUser: currentUser?.userId,
+            idUser: currentUser.userId,
         };
 
-        console.log("\n\n favorite object: ", pubObj);
+        console.log("\n\nFavorite object: ", pubObj);
 
         try {
-            const newLike = await uploadResourceData(pubObj, 'favorites')
-            if (typeof newLike != 'undefined')
-                console.log("\n\n post set as favorite: ", newLike);
-            else
-                return console.error("fail to set post favorite.");
+            if (isFavorite) {
+                // Unfavorite the post (DELETE request)
+                setIsFavorite(false); // Optimistic UI update
+
+                const response = await deleteResourceWithUserAndPub('favorites', post.id, currentUser.userId);
+                if (!response) {
+                    throw new Error("Failed to unfavorite post.");
+                }
+                console.log("\n\nPost unfavorited: ", response);
+            } else {
+                // Favorite the post (POST request)
+                setIsFavorite(true); // Optimistic UI update
+
+                const newFavorite = await uploadResourceData(pubObj, 'favorites');
+                if (!newFavorite) {
+                    throw new Error("Failed to favorite post.");
+                }
+                console.log("\n\nPost set as favorite: ", newFavorite);
+            }
         } catch (error) {
-            console.error("error liking post: ", error)
-        } finally {
-            setIsFavorite(false);
+            console.error("Error favoriting/unfavoriting post: ", error);
+            // Revert UI change if request fails
+            setIsFavorite(prev => !prev);
         }
     }, [updateResource, post, isFavorite, currentUser]
     );
@@ -226,7 +179,7 @@ const PublicationPost = ({ post }: TPost) => {
     // handle share function
     const handleShare = async () => {
         const shareOptions = {
-            title: 'Partager cette publication',
+            title: 'Partager ce reve',
             message: `${post?.author?.nomUser} a partagé: ${post.content.substring(0, 50)}...`,
             url: post.imageUrl,
             type: 'image/*'
@@ -251,6 +204,7 @@ const PublicationPost = ({ post }: TPost) => {
                 <ProfileClickArea
                     user={post?.author as any}
                     onPress={() => setIsProfileModalVisible(true)}
+                    postDate={post?.timeAgo}
                 />
 
                 <View className="ml-auto mr-2 relative">
@@ -267,6 +221,7 @@ const PublicationPost = ({ post }: TPost) => {
                         onShare={handleShare}
                         onViewDetails={() => router.push(`/post/${post.id}`)}
                         post={post}
+                        isPostDetail={isPostDetail}
                     />
                 </View>
 
@@ -278,8 +233,8 @@ const PublicationPost = ({ post }: TPost) => {
             </View>
             <View className="bg-gray-800 rounded-lg rounded-tl-none  rounded-tr-none p-4 mb-4">
 
-                <Text className="text-white mb-2 text-[13px]">
-                    {post?.content}
+                <Text className=" mb-2 text-[13px] text-base text-slate-100 text-justify leading-5" onPress={() => router.push(`/post/${post.id}`)}>
+                    {isPostDetail ? post?.content : post?.content.substring(0, 100) + '...'}
                 </Text>
                 <Text className=" mb-2 text-[13px] text-blue-400">
                     Montant du projet: {post?.montant} &euro;
@@ -289,7 +244,8 @@ const PublicationPost = ({ post }: TPost) => {
                         <Text className="text-white text-[12px]">lire le document complet</Text>
                     </TouchableOpacity>
                 </View> */}
-                <Image source={post.imageUrl ? { uri: post?.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" />
+                {/* <Image source={post.imageUrl ? { uri: post?.imageUrl } : require('../assets/images/appdonateimg.jpg')} className="w-full h-48 rounded-lg mb-2" /> */}
+                <PostImage imageUrl={post?.imageUrl} />
                 <View className="flex-row justify-end">
 
                     <TouchableOpacity

@@ -8,56 +8,63 @@ import { Colors } from '@/constants';
 import { ProfileClickArea, ProfileModal } from './profile-details';
 
 type TProfileScreen = {
-    pubNumber: number;
+    postsNumber: number;
     likesNumber: number;
+    islikeLoading?: boolean;
+    isPostsLoading?: boolean
 }
 
-const ProfileScreen: React.FC = () => {
+const ProfileScreen: React.FC<TProfileScreen> = ({
+    likesNumber,
+    postsNumber,
+    isPostsLoading,
+    islikeLoading
+}) => {
 
     const { currentUser, currentUserObj } = useUserGlobal();
 
     const router = useRouter();
     const [likes, setLikes] = useState(0);
-    const [islikeLoading, setIsLikeLoading] = useState(false);
+    // const [islikeLoading, setIsLikeLoading] = useState(false);
     const [posts, setPosts] = useState(0);
-    const [isPostsLoading, setIsPostsLoading] = useState(false);
+    // const [isPostsLoading, setIsPostsLoading] = useState(false);
 
     const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
 
 
-    const getAllLikes = useCallback(async () => {
-        setIsLikeLoading(true);
-        try {
-            const allLikes = await getAllResourcesByTarget(
-                'likes', currentUser?.userId, 'idUser');
-            console.log("all likes: ", allLikes?.data);
-            setLikes(allLikes?.data.length);
-        } catch (error) {
-            console.error('Failed to get all likes:', error);
-        } finally {
-            setIsLikeLoading(false);
-        }
-    }, [getAllResourcesByTarget, setLikes, setIsLikeLoading]);
+    // const getAllLikes = useCallback(async () => {
+    //     setIsLikeLoading(true);
+    //     try {
+    //         const allLikes = await getAllResourcesByTarget(
+    //             'likes', currentUser?.userId || currentUserObj?.id, 'idUser');
+    //         console.log("all likes: ", allLikes?.data);
+    //         setLikes(allLikes?.data.length);
+    //     } catch (error) {
+    //         console.error('Failed to get all likes:', error);
+    //     } finally {
+    //         setIsLikeLoading(false);
+    //     }
+    // }, [getAllResourcesByTarget, setLikes, setIsLikeLoading]);
 
-    const getAllUserPublications = useCallback(async () => {
-        setIsPostsLoading(true);
-        try {
-            const posts = await getAllResourcesByTarget(
-                'publications', currentUser?.userId, 'idUser');
-            console.log("all posts: ", posts.data);
-            setPosts(posts?.data.length);
-        } catch (error) {
-            console.error('Failed to get all posts:', error);
-        } finally {
-            setIsPostsLoading(false);
-        }
-    }, [getAllResourcesByTarget, setPosts, setIsPostsLoading])
+    // const getAllUserPublications = useCallback(async () => {
+    //     setIsPostsLoading(true);
+    //     try {
+    //         const posts = await getAllResourcesByTarget(
+    //             'publications', currentUser?.userId || currentUserObj?.id, 'idUser');
+    //         console.log("all posts: ", posts.data);
+    //         setPosts(posts?.data.length);
+    //     } catch (error) {
+    //         console.error('Failed to get all posts:', error);
+    //     } finally {
+    //         setIsPostsLoading(false);
+    //     }
+    // }, [getAllResourcesByTarget, setPosts, setIsPostsLoading])
 
-    useEffect(() => {
-        console.log("\n\n from profile screen file currentUser: ", currentUser)
-        getAllLikes();
-        getAllUserPublications();
-    }, []);
+    // useEffect(() => {
+    //     console.log("\n\n from profile screen file currentUser: ", currentUser)
+    //     getAllLikes();
+    //     getAllUserPublications();
+    // }, []);
 
     console.log("\n\n from profile file:  the likes are: ", likes)
 
@@ -69,7 +76,7 @@ const ProfileScreen: React.FC = () => {
                     <Image source={{ uri: currentUserObj?.photoUser ?? 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }} className="w-12 h-12 rounded-full mr-4" />
                     <View>
                         <Text className="text-white text-[14.5px] font-bold">{currentUser?.nomUser ?? "Anonymous"} </Text>
-                        <Text className="text-gray-400">{currentUserObj?.localisation ?? "Anonynous"}</Text>
+                        <Text className="text-gray-400">{currentUserObj?.localisation ?? "ville inconnue"}</Text>
                     </View>
                 </View>
 
@@ -90,17 +97,23 @@ const ProfileScreen: React.FC = () => {
                 <View className="flex-row justify-around mb-4">
                     <View>
                         <Text className="text-white text-center font-bold">
+                            {/* {isPostsLoading
+                                ? <ActivityIndicator size="large" color={Colors.primary} />
+                                : posts || 0} */}
                             {isPostsLoading
                                 ? <ActivityIndicator size="large" color={Colors.primary} />
-                                : posts || 0}
+                                : postsNumber || 0}
                         </Text>
                         <Text className="text-gray-400">Rêves</Text>
                     </View>
                     <View>
                         <Text className="text-white text-center font-bold">
+                            {/* {islikeLoading ? (
+                                <ActivityIndicator size="large" color={Colors.primary} />
+                            ) : likes ?? 0} */}
                             {islikeLoading ? (
                                 <ActivityIndicator size="large" color={Colors.primary} />
-                            ) : likes ?? 0}
+                            ) : likesNumber ?? 0}
                         </Text>
                         <Text className="text-gray-400">J'aime</Text>
                     </View>

@@ -11,6 +11,7 @@ import {
 import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { formatTimeAgo } from '@/lib/api';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.7;
@@ -141,9 +142,18 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
 });
 
 // Modify the profile click area in your existing PostPublication component
-const ProfileClickArea = memo(({ user, onPress }: { user: any; onPress: () => void }) => {
+const ProfileClickArea = memo(({
+    user,
+    onPress,
+    postDate
+}:
+    {
+        user: any;
+        onPress: () => void;
+        postDate?: string
+    }) => {
 
-    console.log("\n\n from profile clic component: ", user);
+    // console.log("\n\n from profile clic component: ", user);
 
     return (
         <TouchableOpacity
@@ -151,9 +161,7 @@ const ProfileClickArea = memo(({ user, onPress }: { user: any; onPress: () => vo
             className="flex-row items-center"
         >
             <Image
-                source={{
-                    uri: user?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true'
-                }}
+                source={user?.photoUser ? { uri: user?.photoUser } : require('@/assets/images/1riche1povreAvatar.png')}
                 className="w-10 h-10 rounded-full mr-2"
             />
             <View className="flex justify-center items-start">
@@ -163,6 +171,7 @@ const ProfileClickArea = memo(({ user, onPress }: { user: any; onPress: () => vo
                         : user?.nomUser}
                 </Text>
                 <Text className="text-gray-400 text-xs">{user?.localisation ?? 'Origine non definie'}</Text>
+                <Text className="text-gray-400 text-xs">{formatTimeAgo(new Date(postDate as string))}</Text>
             </View>
         </TouchableOpacity>
     );

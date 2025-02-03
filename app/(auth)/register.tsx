@@ -363,6 +363,7 @@ import { ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants';
 import { API_URL } from '@/constants/constants';
 import Checkbox from 'expo-checkbox';
+import OnboardingScreen from './onboarding';
 
 const Register: React.FC = () => {
     const router = useRouter()
@@ -418,23 +419,24 @@ const Register: React.FC = () => {
 
     const handlePrivacyPolicyPress = async () => {
         // Replace this URL with your actual privacy policy URL
-        const privacyPolicyUrl = 'https://your-website.com/privacy-policy';
-        try {
-            const supported = await Linking.canOpenURL(privacyPolicyUrl);
-            if (supported) {
-                await Linking.openURL(privacyPolicyUrl);
-            } else {
-                Alert.alert("Erreur", "Impossible d'ouvrir le lien de la politique de confidentialité");
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert("Erreur", "Une erreur s'est produite lors de l'ouverture du lien");
-        }
+        const privacyPolicyUrl = '/politique-confidentialite';
+        // try {
+        //     const supported = await Linking.canOpenURL(privacyPolicyUrl);
+        //     if (supported) {
+        //         await Linking.openURL(privacyPolicyUrl);
+        //     } else {
+        //         Alert.alert("Erreur", "Impossible d'ouvrir le lien de la politique de confidentialité");
+        //     }
+        // } catch (error) {
+        //     console.error(error);
+        //     Alert.alert("Erreur", "Une erreur s'est produite lors de l'ouverture du lien");
+        // }
+        router.replace(privacyPolicyUrl);
     };
 
     const onSignUpPress = async () => {
         if (!validateForm()) {
-            Alert.alert('Erreur de validation', 'Veuillez remplir tous les champs obligatoires et accepter les conditions d\'utilisation')
+            // Alert.alert('Erreur de validation', 'Veuillez remplir tous les champs obligatoires et accepter les conditions d\'utilisation')
             return
         }
 
@@ -485,11 +487,11 @@ const Register: React.FC = () => {
                             <Text className="text-3xl font-bold text-blue-600">S'inscrire</Text>
                         </View>
                         <Text className="text-center mb-8 text-gray-600">
-                            Veuillez entrer vos indentifiants de compte
+                            Veuillez entrer vos identifiants de compte
                         </Text>
                         <View className="mb-2">
                             <Text className=" text-gray-700">
-                                Nom complet
+                                Pseudo
                                 <Text className='text-red-500'>*</Text>
                             </Text>
                             <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
@@ -508,7 +510,7 @@ const Register: React.FC = () => {
                         </View>
                         <View className="mb-4">
                             <Text className="mb-2 text-gray-700">
-                                Email
+                                email
                                 <Text className='text-red-500'>*</Text>
                             </Text>
                             <View className="flex-row items-center border border-gray-300 rounded-lg p-2">
@@ -549,7 +551,7 @@ const Register: React.FC = () => {
                         </View>
 
                         {/* Privacy Policy Checkbox */}
-                        <View className="mb-4 flex-row items-center">
+                        {/* <View className="mb-4 flex-row items-center">
                             <Checkbox
                                 value={acceptPrivacy}
                                 onValueChange={(value) => {
@@ -566,9 +568,9 @@ const Register: React.FC = () => {
                         </View>
                         {errors.privacy ? (
                             <Text className="text-red-500 text-sm mt-1 mb-2">{errors.privacy}</Text>
-                        ) : null}
+                        ) : null} */}
 
-                        {/* <View className="mb-4">
+                        <View className="mb-4">
                             <View className="flex-row items-start">
                                 <Checkbox
                                     value={acceptPrivacy}
@@ -595,7 +597,7 @@ const Register: React.FC = () => {
                             {errors.privacy ? (
                                 <Text className="text-red-500 text-sm mt-1 mb-2">{errors.privacy}</Text>
                             ) : null}
-                        </View> */}
+                        </View>
                     </View>
                     <View className='w-full h-80 rounded-tr-[40px] rounded-tl-[40px]'>
                         <View className='bg-transparent justify-center'>

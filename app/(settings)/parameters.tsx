@@ -61,7 +61,8 @@ const SentProjects = () => {
                 <ScrollView>
                     <View style={styles.section}>
                         <SettingsItem icon="person-outline" title="Information du compte" route='/(settings)/edit-profile' />
-                        <SettingsItem icon="finger-print" title="modifier votre Identification" hasNotification route='/(settings)/AccountIdentification' />
+                        {/* <SettingsItem icon="finger-print" title="Vérification
+d’identification" hasNotification route='/(settings)/AccountIdentification' /> */}
                         {/* <SettingsItem icon="language" title="Langue" isLast /> */}
                     </View>
                     <View style={styles.section}>

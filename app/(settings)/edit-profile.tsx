@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -29,7 +29,7 @@ const ProfileEditScreen: React.FC = () => {
     const [motPwd, setMotPwd] = useState("");
     const [dateNaiss, setDateNaiss] = useState("");
     const [etatuser, setEtatuser] = useState(false);
-
+    const [pseudo, setPseudo] = useState('');
 
     const [registering, setRegistering] = useState(false);
     const router = useRouter();
@@ -41,7 +41,10 @@ const ProfileEditScreen: React.FC = () => {
     const [pieceIdb, setPieceIdb] = useState<any>();
     const [passport, setPassport] = useState<any>();
 
-    const { currentUser } = useUserGlobal();
+    const [isIdentificationComplete, setIsIdentificationComplete] = useState(false);
+
+
+    const { currentUser, } = useUserGlobal();
 
     const getTheCurrentUserData = useCallback(async (user_id: string) => {
         try {
@@ -57,6 +60,7 @@ const ProfileEditScreen: React.FC = () => {
             setEtatuser(userData?.data.etatUser);
             setIdf(userData?.data.pieceIdf);
             setIdB(userData?.data.pieceIdb);
+            setPseudo(userData?.data.pseudo);
 
             // Parse and set birth date if exists
             if (userData?.data.dateNaiss) {
@@ -65,10 +69,58 @@ const ProfileEditScreen: React.FC = () => {
                 setBirthDate(formatDate(parsedDate));
             }
 
+            // Check if identification is complete
+            const hasIdOrPassport = userData?.data.pieceIdf || userData?.data.pieceIdb;
+            setIsIdentificationComplete(!!hasIdOrPassport);
+
+
         } catch (error) {
             console.error(error);
         }
     }, [setImagePub, setBirthDate, setCity, setUsername, setName]);
+
+    // call the support.
+    const showSupportContactAlert = (field: string) => {
+        // Alert.alert(
+        //     'Modification Restreinte',
+        //     `Vous ne pouvez pas modifier le/la ${field} sans autorisation. Veuillez contacter le support à Unricheunpauvre@gmail.com pour obtenir une permission.`,
+        //     [
+        //         {
+        //             text: 'Envoyer un Email',
+        //             onPress: () => Linking.openURL(`mailto:Unricheunpauvre@gmail.com?subject=Permission pour modifier le/la ${field}`)
+        //         },
+        //         { text: 'Annuler', style: 'cancel' }
+        //     ]
+        // );
+        Alert.alert(
+            'Modification Non Autorisée',
+            `Votre ${field} est sécurisé et ne peut être modifié sans validation. Cette restriction protège votre identité et vos informations personnelles.`,
+            [
+                {
+                    text: 'Contacter Support',
+                    style: 'default',
+                    onPress: () => Linking.openURL(`mailto:Unricheunpauvre@gmail.com?subject=Demande de modification de/du ${field}`)
+                },
+                {
+                    text: 'Plus d\'Informations',
+                    style: 'default',
+                    onPress: () => Alert.alert(
+                        'Pourquoi Cette Restriction?',
+                        'Nos protocoles de sécurité exigent une vérification manuelle pour toute modification de données personnelles sensibles afin de prévenir toute usurpation d\'identité.'
+                    )
+                },
+                {
+                    text: 'Annuler',
+                    style: 'cancel'
+                }
+            ],
+            {
+                cancelable: true,
+                userInterfaceStyle: 'dark'
+            }
+        );
+    };
+
 
     // get date from child component.
     const getIdData = (data: any, fileType: 'idFront' | 'idBack' | 'passport') => {
@@ -122,6 +174,27 @@ const ProfileEditScreen: React.FC = () => {
         console.log("\n\n imagePub : ", imagePub);
         let pieceIdfUrl, pieceIdbUrl, passportUrl;
 
+        // Check if user is attempting to modify restricted fields
+        if (isIdentificationComplete) {
+            const hasChangedRestrictedFields =
+                (currentUser?.username !== username) ||
+                (currentUser?.dateNaiss !== birthDate);
+
+            if (hasChangedRestrictedFields) {
+                setRegistering(false);
+                if (currentUser?.username !== username) {
+                    showSupportContactAlert('nom d\'utilisateur');
+                    return;
+                }
+
+                if (currentUser?.dateNaiss !== birthDate) {
+                    showSupportContactAlert('date de naissance');
+                    return;
+                }
+            }
+        }
+
+
         try {
             const imgUrl = await getFileUrlFromProvider(imagePub);
             if (pieceIdf?.uri)
@@ -143,7 +216,7 @@ const ProfileEditScreen: React.FC = () => {
                 photoUser: imgUrl ?? userImg,
                 mdpUser: mdpUser ?? motPwd,
                 dateCrea: new Date(Date.now()).toISOString(),
-
+                pseudo: pseudo ?? currentUser?.pseudo
             };
 
             console.log("\n\n object to upload: ", dataObj);
@@ -183,7 +256,7 @@ const ProfileEditScreen: React.FC = () => {
     return (
         <SafeAreaView className="flex-1 bg-gray-900 p-4">
             <View className="flex-row items-center mb-6">
-                <TouchableOpacity onPress={() => router.push('/(tabulate)/profile')}>
+                <TouchableOpacity onPress={() => router.push('/parameters')}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
                 <Text className="text-white text-xl font-bold ml-4">Modifier votre profil</Text>
@@ -195,13 +268,24 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={currentUser?.nomUser as string}
-                            onChangeText={(text) => setUsername(text)}
+                            value={name as string}
+                            onChangeText={(text) => setName(text)}
                         />
                     </View>
                 </View>
                 <View className="mb-4">
-                    <Text className="text-white mb-2">Username</Text>
+                    <Text className="text-white mb-2">Pseudo</Text>
+                    <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
+                        <Ionicons name="person-outline" size={24} color="gray" />
+                        <TextInput
+                            className="flex-1 ml-2 text-white"
+                            value={pseudo as string}
+                            onChangeText={(text) => setPseudo(text)}
+                        />
+                    </View>
+                </View>
+                <View className="mb-4">
+                    <Text className="text-white mb-2">Username ou email</Text>
                     <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
@@ -212,7 +296,7 @@ const ProfileEditScreen: React.FC = () => {
                     </View>
                 </View>
                 <View className="mb-4">
-                    <Text className="text-white mb-2">Ville</Text>
+                    <Text className="text-white mb-2">Ville, pays &nbsp;&nbsp;&nbsp; (ex. Yaoundé, Cameroun)</Text>
                     <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
                         <Ionicons name="location-outline" size={24} color="gray" />
                         <TextInput
@@ -230,7 +314,11 @@ const ProfileEditScreen: React.FC = () => {
                     >
                         <Ionicons name="calendar-outline" size={24} color="gray" />
                         <Text className="flex-1 ml-2 text-white">
-                            {birthDate || 'Sélectionner une date'}
+                            {new Date(birthDate).toLocaleString('fr-FR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            }) || 'Sélectionner une date'}
                         </Text>
                     </TouchableOpacity>
 
@@ -280,7 +368,14 @@ const ProfileEditScreen: React.FC = () => {
                     </TouchableOpacity>
                 </View>
 
-                <AddIdAccount getIdData={getIdData} />
+                {/* account identification component */}
+                {/* <AddIdAccount getIdData={getIdData} /> */}
+                <AddIdAccount
+                    getIdData={getIdData}
+                    restrictModification={isIdentificationComplete}
+                    onRestrictedAttempt={() => showSupportContactAlert('pièce d\'identité')}
+                />
+
                 <TouchableOpacity
                     className="bg-blue-500 rounded-lg p-3 my-3"
                     onPress={onSaveUser}

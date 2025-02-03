@@ -29,12 +29,12 @@ function PrivacyPolicy() {
     return (
         <SafeAreaView className="flex-1 bg-gray-900 pb-10">
             <ScrollView style={styles.scrollView}>
-                <Text style={styles.title}>Politique de Confidentialité - UnRichUnPauvre</Text>
+                <Text style={styles.title}>Politique de Confidentialité</Text>
                 <Text style={styles.date}>Dernière mise à jour : 27 janvier 2025</Text>
 
                 <SectionTitle>1. Introduction</SectionTitle>
                 <Paragraph>
-                    UnRichUnPauvre s'engage à protéger la confidentialité des utilisateurs.
+                    1Riche1Pauvre s'engage à protéger la confidentialité des utilisateurs.
                     Cette politique détaille nos pratiques concernant la collecte et
                     l'utilisation des données.
                 </Paragraph>
@@ -46,7 +46,7 @@ function PrivacyPolicy() {
                     'Adresse email',
                     'Numéro de téléphone',
                     'Documents d\'identité',
-                    'Localisation',
+                    'ville',
                     'Photo de profil'
                 ]} />
 
@@ -107,8 +107,7 @@ function PrivacyPolicy() {
 
                 <SectionTitle>8. Contact</SectionTitle>
                 <Paragraph>Pour toute question :</Paragraph>
-                <Text style={styles.contactInfo}>Email : bricefrkc@gmail.com</Text>
-                <Text style={styles.contactInfo}>Adresse : monte jouvence, yaounde, Cameroun</Text>
+                <Text style={styles.contactInfo}>Email :Unricheunpauvre@gmail.com</Text>
 
                 <SectionTitle>9. Modifications</SectionTitle>
                 <Paragraph>
@@ -133,11 +132,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#f5f5f5',
         marginBottom: 8,
+        marginTop: 24,
+        textAlign: 'center',
     },
     date: {
         fontSize: 14,
         color: '#ccc',
         marginBottom: 24,
+        textAlign: 'center',
     },
     sectionTitle: {
         fontSize: 20,

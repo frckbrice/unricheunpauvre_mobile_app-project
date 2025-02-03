@@ -86,7 +86,7 @@ export default function RootLayout() {
           },
           headerLeft: () => {
             return (
-              <TouchableOpacity onPress={() => router.replace('/(tabulate)/profile')} className='pr-4'>
+              <TouchableOpacity onPress={() => router.replace('/(tabulate)/accueil')} className='pr-4'>
                 <Ionicons name='arrow-back' size={24} color={'#fff'} className='p-4 bg-red-50' />
               </TouchableOpacity>
             );

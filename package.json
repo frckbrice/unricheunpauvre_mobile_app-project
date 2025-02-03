@@ -45,6 +45,7 @@
     "react-native": "0.74.5",
     "react-native-appwrite": "^0.5.0",
     "react-native-gesture-handler": "~2.16.1",
+    "react-native-image-viewing": "^0.2.2",
     "react-native-pager-view": "6.3.0",
     "react-native-pdf": "^6.7.6",
     "react-native-reanimated": "~3.10.1",

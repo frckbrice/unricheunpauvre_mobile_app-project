@@ -1027,7 +1027,7 @@ const CreatePostScreen: React.FC = () => {
                 {/* User Info Section */}
                 <View className="flex-row items-center mb-4">
                     <Image
-                        source={{ uri: currentUserObj?.photoUser || 'https://unsplash.com/photos/-F9NSTwlnjo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTl8fGNoYXJpdHl8ZW58MHx8fHwxNzI4MzIxOTIxfDA&force=true' }}
+                        source={currentUserObj?.photoUser ? { uri: currentUserObj?.photoUser } : require("@/assets/images/1riche1povreAvatar.png")}
                         className="w-10 h-10 rounded-full mr-2"
                     />
                     <View className='gap-[0.3px]'>
@@ -1097,43 +1097,7 @@ const CreatePostScreen: React.FC = () => {
                     )}
                 />
 
-                {/* Document Upload */}
-                <View className='mb-4'>
-                    <Controller
-                        control={control}
-                        name='documentUrl'
-                        rules={{
-                            required: 'Le document est requis'
-                        }}
-                        render={({ field: { onChange } }) => (
-                            <View>
-                                <Text className="text-white mb-2">
-                                    Document <Text className="text-red-500">*</Text>
-                                </Text>
-                                <TouchableOpacity
-                                    onPress={() => onDocumentPicker(onChange)}
-                                    className={`bg-gray-700 p-2 rounded flex-row items-center justify-center ${errors.documentUrl ? 'border border-red-500' : ''}`}
-                                >
-                                    <Ionicons name="document-outline" size={20} color="gray" />
-                                    <Text className="text-gray-400 mx-2">
-                                        Importer un document
-                                    </Text>
-                                </TouchableOpacity>
-                                {documentFile && (
-                                    <View className="flex-row items-center mt-2">
-                                        <Ionicons name="document" size={20} color="green" />
-                                        <Text className="text-white ml-2">{documentFile.name}</Text>
-                                    </View>
-                                )}
-                                {errors?.documentUrl && (
-                                    <Text className="text-red-500 text-sm mt-1">
-                                        {errors.documentUrl.message?.toString()}
-                                    </Text>
-                                )}
-                            </View>
-                        )}
-                    />
-                </View>
+
 
 
                 {/* Cost Estimation */}
@@ -1222,6 +1186,44 @@ const CreatePostScreen: React.FC = () => {
                     {errors.imagePub && (
                         <Text className="text-red-500 text-sm mt-1">{errors.imagePub.message}</Text>
                     )}
+                </View>
+
+                {/* Document Upload */}
+                <View className='mb-4'>
+                    <Controller
+                        control={control}
+                        name='documentUrl'
+                        rules={{
+                            required: 'Le document est requis'
+                        }}
+                        render={({ field: { onChange } }) => (
+                            <View>
+                                <Text className="text-white mb-2">
+                                    Document <Text className="text-red-500">*</Text>
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() => onDocumentPicker(onChange)}
+                                    className={`bg-gray-700 p-2 rounded flex-row items-center justify-center ${errors.documentUrl ? 'border border-red-500' : ''}`}
+                                >
+                                    <Ionicons name="document-outline" size={20} color="gray" />
+                                    <Text className="text-gray-400 mx-2">
+                                        Importer un document
+                                    </Text>
+                                </TouchableOpacity>
+                                {documentFile && (
+                                    <View className="flex-row items-center mt-2">
+                                        <Ionicons name="document" size={20} color="green" />
+                                        <Text className="text-white ml-2">{documentFile.name}</Text>
+                                    </View>
+                                )}
+                                {errors?.documentUrl && (
+                                    <Text className="text-red-500 text-sm mt-1">
+                                        {errors.documentUrl.message?.toString()}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    />
                 </View>
 
                 {/* Global Error Messages */}
