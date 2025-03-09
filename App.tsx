@@ -11,7 +11,7 @@ const App = () => {
       <View className="bg-white rounded-2xl p-4 shadow-lg w-16 h-16">
         <Text className="text-4xl font-bold text-blue-600">
           <Image
-            source={require('../assets/images/adaptive-icon.png')}
+            source={require('../assets/images/favicon.png')}
             resizeMode='contain'
             className="w-8 h-8"
           />

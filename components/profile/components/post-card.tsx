@@ -37,14 +37,15 @@ const PostCard = ({
             rounded-lg
             shadow-xl p-2"
             >
-                <Link href={`/post/${currentPost?.id}`} className='' asChild>
+                <Link href={`/post/${currentPost?.pubId}`} className='' asChild>
                     <TouchableOpacity>
                         <Text className="text-white mb-2   text-justify leading-4">
                             {currentPost?.content?.substring(0, 100)}...
                         </Text>
                         <View className="pt-1 mt-2 border-t border-gray-600">
-                            <Text className="text-white font-bold text-xs">
-                                envoyé par : {currentPost?.nomUser ?? currentPost?.author?.nomUser} de {currentPost?.localisation ?? currentPost?.author?.localisation}
+                            <Text className="text-gray-400 font-bold text-xs">
+                                envoyé par :
+                                {currentPost?.nomUser ?? currentPost?.author?.nomUser} de {currentPost?.localisation ?? (currentPost?.author?.localisation || 'Origine non definie')}
                             </Text>
                         </View>
                     </TouchableOpacity>

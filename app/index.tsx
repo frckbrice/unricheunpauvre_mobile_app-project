@@ -1,14 +1,9 @@
 
-
 // import React, { useEffect, useState } from 'react'
-// import useUserGlobal from '@/hooks/use-user-hook';
+// import { ActivityIndicator, View } from 'react-native';
 // import { useRouter } from 'expo-router';
 // import OnboardingScreen from './(auth)/onboarding';
-
 // import * as SecureStore from 'expo-secure-store';
-// import LoginScreen from './(auth)/login';
-// import { ActivityIndicator, View } from 'react-native';
-
 
 // const LoadingScreen = () => (
 //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -16,54 +11,68 @@
 //     </View>
 // );
 
-
-
 // const IndexPage = () => {
-
-//     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+//     const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+//     const [isChecking, setIsChecking] = useState(true);
 //     const router = useRouter();
 
 //     useEffect(() => {
-//         // Check authentication status on component mount
-//         const checkAuth = async () => {
+//         const checkAuthAndOnboarding = async () => {
 //             try {
-//                 const token = await SecureStore.getItemAsync('currentUser');
+//                 // Check if user has seen onboarding
+//                 const onboardingSeen = await SecureStore.getItemAsync('hasSeenOnboarding');
+//                 // Check if user is authenticated
+//                 const userToken = await SecureStore.getItemAsync('currentUser');
 
-//                 if (token) {
-//                     console.log('user token: ', token);
+//                 if (userToken) {
+//                     console.log("\n\n token exists!")
+//                     // User is authenticated, go straight to accueil
 //                     router.replace('/(tabulate)/accueil');
+//                 } else if (onboardingSeen === 'true') {
+//                     console.log("\n\n has onboard!")
+//                     // User has seen onboarding but not logged in, go to login
+//                     router.replace('/(auth)/login');
 //                 } else {
-//                     console.error('Error getting user token from cache: ', error);
-//                     setIsAuthenticated(false);
+//                     console.log("\n\n has not yet onboarded!")
+//                     // First time user, show onboarding
+//                     setHasSeenOnboarding(false);
 //                 }
 //             } catch (error) {
-//                 console.error('error getting user token: ', error);
-//                 setIsAuthenticated(false);
+//                 console.error('Error checking auth state:', error);
+//                 setHasSeenOnboarding(false);
+//             } finally {
+//                 setIsChecking(false);
 //             }
 //         };
 
-//         checkAuth();
+//         checkAuthAndOnboarding();
 //     }, []);
 
-//     // Show loading state while checking auth
-//     if (isAuthenticated === null) {
-//         return <LoadingScreen />; // return a loading spinner
+//     if (isChecking) {
+//         return <LoadingScreen />;
 //     }
 
-//     // Show login screen if not authenticated
-//     if (isAuthenticated === false) {
-//         return <LoginScreen />;
+//     // Show onboarding only if user hasn't seen it
+//     if (!hasSeenOnboarding) {
+//         return (
+//             <OnboardingScreen
+//                 onComplete={async () => {
+//                     // Mark onboarding as seen
+//                     await SecureStore.setItemAsync('hasSeenOnboarding', 'true');
+//                     // Navigate to login
+//                     router.replace('/(auth)/login');
+//                 }}
+//             />
+//         );
 //     }
 
-//     // By default, show onboarding
-//     return <OnboardingScreen />;
+//     return null;
 // };
 
 // export default IndexPage;
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import useUserGlobal from '@/hooks/use-user-hook';
 import { useRouter } from 'expo-router';
 import OnboardingScreen from './(auth)/onboarding';
 import * as SecureStore from 'expo-secure-store';
@@ -75,8 +84,9 @@ const LoadingScreen = () => (
 );
 
 const IndexPage = () => {
-    const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
-    const [isChecking, setIsChecking] = useState(true);
+    const [appState, setAppState] = useState<'loading' | 'onboarding' | null>(
+        'loading'
+    );
     const router = useRouter();
 
     useEffect(() => {
@@ -86,49 +96,51 @@ const IndexPage = () => {
                 const onboardingSeen = await SecureStore.getItemAsync('hasSeenOnboarding');
                 // Check if user is authenticated
                 const userToken = await SecureStore.getItemAsync('currentUser');
-                // if (!userToken) {
-                //     router.replace('/');
-                // }
+
+                // Wait to make sure all async operations are complete before deciding navigation
                 if (userToken) {
                     // User is authenticated, go straight to accueil
+                    console.log("User is authenticated, redirecting to home");
                     router.replace('/(tabulate)/accueil');
-                } else if (onboardingSeen) {
+                } else if (onboardingSeen === 'true') {
                     // User has seen onboarding but not logged in, go to login
+                    console.log("User has seen onboarding, redirecting to login");
                     router.replace('/(auth)/login');
                 } else {
                     // First time user, show onboarding
-                    setHasSeenOnboarding(false);
+                    console.log("First time user, showing onboarding");
+                    setAppState('onboarding');
                 }
             } catch (error) {
                 console.error('Error checking auth state:', error);
-                setHasSeenOnboarding(false);
-            } finally {
-                setIsChecking(false);
+                // In case of error, default to onboarding
+                setAppState('onboarding');
             }
         };
 
         checkAuthAndOnboarding();
     }, []);
 
-    if (isChecking) {
+    const handleOnboardingComplete = async () => {
+        console.log("has just onboarded...");
+        // Mark onboarding as seen
+        await SecureStore.setItemAsync('hasSeenOnboarding', 'true');
+        // Navigate to login
+        router.replace('/(auth)/login');
+    };
+
+    // Show loading screen while checking the state
+    if (appState === 'loading') {
         return <LoadingScreen />;
     }
 
-    // Show onboarding only if user hasn't seen it
-    if (!hasSeenOnboarding) {
-        return (
-            <OnboardingScreen
-                onComplete={async () => {
-                    // Mark onboarding as seen
-                    await SecureStore.setItemAsync('hasSeenOnboarding', 'true');
-                    // Navigate to login
-                    router.replace('/(auth)/login');
-                }}
-            />
-        );
+    // Show onboarding if that's the determined state
+    if (appState === 'onboarding') {
+        return <OnboardingScreen />;
     }
 
-    return null;
+    // This will be reached if router.replace was called but hasn't completed yet
+    return <LoadingScreen />;
 };
 
 export default IndexPage;

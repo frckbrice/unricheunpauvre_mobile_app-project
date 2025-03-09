@@ -17,7 +17,7 @@ export default function App() {
                 <Stack.Screen name="parameters" options={{ headerShown: false }} />
 
             </Stack>
-            <StatusBar style="auto" />
+            <StatusBar style="light" animated networkActivityIndicatorVisible backgroundColor='#000' />
         </>
     );
 }

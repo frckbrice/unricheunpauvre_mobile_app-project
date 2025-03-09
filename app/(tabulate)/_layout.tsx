@@ -80,7 +80,7 @@ export default function TabulateLayoutPage() {
             // headerTransparent: true
           }}
         />
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="notifications"
           options={{
             title: '',
@@ -91,7 +91,7 @@ export default function TabulateLayoutPage() {
             header: () => <CustomHeader />,
             // headerTransparent: true
           }}
-        />
+        /> */}
         <Tabs.Screen
           name="profile"
           options={{

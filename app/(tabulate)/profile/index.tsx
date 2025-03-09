@@ -8,79 +8,72 @@ import { getAllResourcesByTarget } from '@/lib/api';
 import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 import EmptyState from '@/components/empty-state';
 import { usePathname } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { useIsFocused } from '@react-navigation/native';
 
 
 const SocialFeedScreen = () => {
 
     const { currentUser, currentUserObj } = useUserGlobal();
+    const isFocused = useIsFocused();
 
     const [refreshing, setRefreshing] = useState(false);
     const pathname = usePathname();
-    const [isPostsLoading, setIsPostsLoading] = useState(false);
-    const [userPosts, setUserPosts] = useState<Post[]>([]);
+    // const [isPostsLoading, setIsPostsLoading] = useState(false);
+    // const [userPosts, setUserPosts] = useState<Post[]>([]);
 
-    // const {
-    //     data: posts, // get all the post for this current user, by its ID
-    //     refetch,
-    //     isLoading
-    // } = useApiOps<Post>(() => {
-    //     return getAllResourcesByTarget<Post>(
-    //         'publications', currentUser?.userId, 'idUser'); // get the publications made by this user with id : idUser
-
-    // });
 
     const getPublicationsOfThisUser = async () => {
-        setIsPostsLoading(true)
+
+        // setIsPostsLoading(true)
+        if (!currentUser?.userId) return []
+
         try {
             const publications = await getAllResourcesByTarget<Post>(
                 'publications', currentUser?.userId, 'idUser'); // get the publications made by this user with id : idUser
-            setUserPosts(publications?.data);
+            // setUserPosts(publications?.data);
+            return publications?.data;
         } catch (error) {
             console.error('Failed to get all publications:', error);
             return [];
-        } finally {
-            setIsPostsLoading(false);
         }
+        // finally {
+        //     setIsPostsLoading(false);
+        // }
     }
+
+    // optimistically fetch data when there is stale data or there is no data in the cache
+    const { data: userPosts, isLoading, error, refetch } = useQuery({
+        queryKey: ['publications', currentUser?.userId],
+        queryFn: getPublicationsOfThisUser,
+        enabled: !!currentUser?.userId,
+        staleTime: 5 * 60 * 1000,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+    })
+
 
     useEffect(() => {
         // if (pathname.toString().toLowerCase() === '/profile' )
         //     onRefresh();
-        if (pathname.toString().toLowerCase() === '/profile' && !userPosts?.length)
+        // if (pathname.toString().toLowerCase() === '/profile' && !userPosts?.length)
+        if (isFocused)
             setTimeout(() => {
-                getPublicationsOfThisUser();
+                // getPublicationsOfThisUser();
+                refetch()
             }, 2000);
-    }, [pathname]);
-
-    // useEffect(() => {
-    //     if (!isLoading && !posts.length)
-    //         onRefresh();
-    // }, [posts]);
-
-
-    // const onRefresh = React.useCallback(() => {
-    //     if (!isLoading) {
-    //         setRefreshing(true);
-    //         refetch().finally(() => setRefreshing(false));
-    //     }
-    // }, [isLoading, refetch]);
-
-    // if (isLoading)
-    //     return (
-    //         <View className='flex-1 justify-center items-center'>
-    //             <ActivityIndicator size="small" color={'gray'} />
-    //         </View>
-    //     );
+    }, [pathname, userPosts]);
 
 
     const onRefresh = React.useCallback(() => {
-        if (!isPostsLoading) {
+        if (!isLoading) {
             setRefreshing(true);
             getPublicationsOfThisUser().finally(() => setRefreshing(false));
         }
-    }, [getPublicationsOfThisUser, isPostsLoading]);
+    }, [getPublicationsOfThisUser, isLoading]);
 
-    if (isPostsLoading)
+    if (isLoading)
         return (
             <View className='flex-1 justify-center items-center'>
                 <ActivityIndicator size="small" color={'gray'} />
@@ -94,8 +87,7 @@ const SocialFeedScreen = () => {
                 data={userPosts}
                 keyExtractor={(post) => String(post?.id)}
                 renderItem={({ item: post }) => {
-                    // console.log("current user posts: ", post)
-                    // console.log("current user  in card: ", currentUserObj)
+
                     return <PostCard
                         currentUser={currentUserObj}
                         currentPost={post}

@@ -23,12 +23,21 @@ const CustomHeader = () => {
         <BlurView
             intensity={10}
             tint={'systemMaterialDark'}
-            style={{ paddingTop: top }}
-            className={`pb-1 bg-gray-900  border-b-0.5 border-gray-700`}
+            style={{
+                paddingTop: top + 10,
+                height: 60,
+                borderTopWidth: 0.5,
+                borderTopColor: Colors.light.tint,
+                // borderBottomWidth: 0.5,
+                // borderBottomColor: Colors.light.tint,
+                padding: 0,
+                margin: 0
+            }}
+            className={`pb-1 bg-gray-900 `}
         >
             <View
 
-                className='flex-row  justify-between items-center h-[60px] gap-[10px] px-[20px] bg-transparent'
+                className='flex-row  justify-between items-center gap-[10px] px-[20px] bg-transparent my-5'
             >
                 {pathname.toString().toLowerCase() !== '/accueil' ?
 
@@ -42,7 +51,10 @@ const CustomHeader = () => {
                             </Text>
                         </TouchableOpacity>
                     </Link> : <Image
-                        source={currentUserObj?.photoUser ? { uri: currentUserObj?.photoUser } : require("@/assets/images/1riche1povreAvatar.png")}
+                        source={currentUserObj?.photoUser
+                            ? { uri: currentUserObj?.photoUser }
+                            : require("@/assets/images/1riche1povreAvatar.png")
+                        }
                         className="w-10 h-10 rounded-full mr-2"
                         resizeMode='cover'
                     />}

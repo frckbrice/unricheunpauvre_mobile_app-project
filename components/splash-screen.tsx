@@ -13,7 +13,7 @@ const SplashScreenComponent = () => {
                 rounded-2xl shadow-lg flex
                  items-center justify-center relative">
                     <Image
-                        source={require('../assets/images/adaptive-icon.png')}
+                        source={require('@/assets/images/splash.png')}
                         className="w-full h-full rounded-2xl"
 
                         resizeMode="cover"

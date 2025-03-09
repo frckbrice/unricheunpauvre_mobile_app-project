@@ -12,6 +12,7 @@ type FProps = {
   placeholder: string,
   handleChangeText: (str: string) => void,
   inputStyle: string,
+  placeholderTextColor?: string
 };
 
 const FormField = ({
@@ -20,6 +21,7 @@ const FormField = ({
   placeholder,
   handleChangeText,
   inputStyle,
+  placeholderTextColor
 }: FProps) => {
   const [showPasswd, setShowpwd] = useState(false);
 
@@ -38,9 +40,10 @@ const FormField = ({
           placeholder={placeholder}
           value={value}
           onChangeText={handleChangeText}
-          placeholderTextColor={"#404757"}
+          placeholderTextColor={placeholderTextColor}
           secureTextEntry={(title === "Mot de passe" || title === "Confirmer Mot de passe") && !showPasswd}
           className={`flex-1 ml-2 text-black-200 ${inputStyle}`}
+          autoCapitalize='none'
         />
         {(title === "Mot de passe" || title === "Confirmer Mot de passe") && (
           <TouchableOpacity

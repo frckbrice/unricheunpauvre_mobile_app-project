@@ -6,10 +6,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { icons } from '@/constants';
-import { getFileUrlFromProvider, getSingleResource, updateResource, uploadResourceData } from '@/lib/api';
+import { getFileUrlFromProvider, getSingleResource, updateResource } from '@/lib/api';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AddIdAccount from '../../components/profile/components/identification';
-import { API_URL } from '@/constants/constants';
 
 // Define User interface to match the backend model
 // Profile Edit Screen
@@ -40,15 +39,18 @@ const ProfileEditScreen: React.FC = () => {
     const [pieceIdf, setPieceIdf] = useState<any>();
     const [pieceIdb, setPieceIdb] = useState<any>();
     const [passport, setPassport] = useState<any>();
+    const [phone, setPhone] = useState('');
 
     const [isIdentificationComplete, setIsIdentificationComplete] = useState(false);
 
 
-    const { currentUser, } = useUserGlobal();
+    const { currentUser, currentUserObj } = useUserGlobal();
 
     const getTheCurrentUserData = useCallback(async (user_id: string) => {
-        try {
+
+        try {// api call
             const userData = await getSingleResource("users", user_id);
+
             console.log("\n\n curent user data: ", userData);
             setName(userData?.data.nomUser);
             setUsername(userData?.data.username);
@@ -61,6 +63,7 @@ const ProfileEditScreen: React.FC = () => {
             setIdf(userData?.data.pieceIdf);
             setIdB(userData?.data.pieceIdb);
             setPseudo(userData?.data.pseudo);
+            setPhone(userData?.data.phone);
 
             // Parse and set birth date if exists
             if (userData?.data.dateNaiss) {
@@ -81,17 +84,7 @@ const ProfileEditScreen: React.FC = () => {
 
     // call the support.
     const showSupportContactAlert = (field: string) => {
-        // Alert.alert(
-        //     'Modification Restreinte',
-        //     `Vous ne pouvez pas modifier le/la ${field} sans autorisation. Veuillez contacter le support à Unricheunpauvre@gmail.com pour obtenir une permission.`,
-        //     [
-        //         {
-        //             text: 'Envoyer un Email',
-        //             onPress: () => Linking.openURL(`mailto:Unricheunpauvre@gmail.com?subject=Permission pour modifier le/la ${field}`)
-        //         },
-        //         { text: 'Annuler', style: 'cancel' }
-        //     ]
-        // );
+
         Alert.alert(
             'Modification Non Autorisée',
             `Votre ${field} est sécurisé et ne peut être modifié sans validation. Cette restriction protège votre identité et vos informations personnelles.`,
@@ -122,7 +115,8 @@ const ProfileEditScreen: React.FC = () => {
     };
 
 
-    // get date from child component.
+
+    // get data from child component.
     const getIdData = (data: any, fileType: 'idFront' | 'idBack' | 'passport') => {
 
         console.log("\n\n getIdData fct: ", data, fileType)
@@ -141,11 +135,7 @@ const ProfileEditScreen: React.FC = () => {
 
     // Utility function to format date
     const formatDate = (date: Date): string => {
-        // return date.toLocaleDateString('fr-FR', {
-        //     day: '2-digit',
-        //     month: '2-digit',
-        //     year: 'numeric'
-        // });
+
         return date.toISOString();
     };
 
@@ -177,17 +167,17 @@ const ProfileEditScreen: React.FC = () => {
         // Check if user is attempting to modify restricted fields
         if (isIdentificationComplete) {
             const hasChangedRestrictedFields =
-                (currentUser?.username !== username) ||
-                (currentUser?.dateNaiss !== birthDate);
+                (currentUserObj?.username !== username) ||
+                (currentUserObj?.dateNaiss !== birthDate);
 
             if (hasChangedRestrictedFields) {
                 setRegistering(false);
-                if (currentUser?.username !== username) {
+                if (currentUserObj?.username !== username) {
                     showSupportContactAlert('nom d\'utilisateur');
                     return;
                 }
 
-                if (currentUser?.dateNaiss !== birthDate) {
+                if (currentUserObj?.dateNaiss !== birthDate) {
                     showSupportContactAlert('date de naissance');
                     return;
                 }
@@ -196,7 +186,7 @@ const ProfileEditScreen: React.FC = () => {
 
 
         try {
-            const imgUrl = await getFileUrlFromProvider(imagePub);
+            const imgUrl = imagePub ? await getFileUrlFromProvider(imagePub) : userImg;;
             if (pieceIdf?.uri)
                 pieceIdfUrl = await getFileUrlFromProvider(pieceIdf) as URL;
             if (pieceIdb?.uri)
@@ -221,13 +211,12 @@ const ProfileEditScreen: React.FC = () => {
 
             console.log("\n\n object to upload: ", dataObj);
 
-
             const result = await updateResource(
                 'users',
                 currentUser?.userId,
                 dataObj,
             );
-            Alert.alert('Success', 'Profile updated successfully');
+            Alert.alert('Reussi', 'Profil mis à jour avec succès');
             router.push('/(tabulate)/profile');
 
         } catch (error) {
@@ -237,10 +226,25 @@ const ProfileEditScreen: React.FC = () => {
         }
     };
 
+    // Handle Image Picker Permissions
+    const checkImagePickerPermissions = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert("Permission refusée", "Vous devez autoriser l'accès aux images.");
+            return false;
+        }
+        return true;
+    };
+
     const onCaptureImage = async () => {
+
+        const hasPermission = await checkImagePickerPermissions();
+        if (!hasPermission) return;
+
+
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
+            allowsEditing: false,
             aspect: [4, 3],
             quality: 0.75,
             base64: true, //<--- important
@@ -256,7 +260,7 @@ const ProfileEditScreen: React.FC = () => {
     return (
         <SafeAreaView className="flex-1 bg-gray-900 p-4">
             <View className="flex-row items-center mb-6">
-                <TouchableOpacity onPress={() => router.push('/parameters')}>
+                <TouchableOpacity onPress={() => router.push('/profile')}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
                 <Text className="text-white text-xl font-bold ml-4">Modifier votre profil</Text>
@@ -281,6 +285,17 @@ const ProfileEditScreen: React.FC = () => {
                             className="flex-1 ml-2 text-white"
                             value={pseudo as string}
                             onChangeText={(text) => setPseudo(text)}
+                        />
+                    </View>
+                </View>
+                <View className="mb-4">
+                    <Text className="text-white mb-2">Telephone</Text>
+                    <View className="bg-gray-800 rounded-lg p-3 flex-row items-center">
+                        <Ionicons name="person-outline" size={24} color="gray" />
+                        <TextInput
+                            className="flex-1 ml-2 text-white"
+                            value={phone as string}
+                            onChangeText={(text) => setPhone(text)}
                         />
                     </View>
                 </View>
@@ -311,14 +326,15 @@ const ProfileEditScreen: React.FC = () => {
                     <TouchableOpacity
                         onPress={showDatepicker}
                         className="bg-gray-800 rounded-lg p-3 flex-row items-center"
+                        activeOpacity={0.8}
                     >
                         <Ionicons name="calendar-outline" size={24} color="gray" />
                         <Text className="flex-1 ml-2 text-white">
-                            {new Date(birthDate).toLocaleString('fr-FR', {
+                            {birthDate ? new Date(birthDate).toLocaleString('fr-FR', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',
-                            }) || 'Sélectionner une date'}
+                            }) : 'Sélectionner une date'}
                         </Text>
                     </TouchableOpacity>
 
@@ -327,9 +343,9 @@ const ProfileEditScreen: React.FC = () => {
                         <DateTimePicker
                             testID="dateTimePicker"
                             value={date}
+                            display={Platform.OS === 'ios' ? 'inline' : 'default'} // platform-specific date picker
                             mode="date"
                             is24Hour={true}
-                            display="default"
                             onChange={onDateChange}
                             maximumDate={new Date()} // Prevent future dates
                         />
@@ -342,10 +358,11 @@ const ProfileEditScreen: React.FC = () => {
                         onPress={() => onCaptureImage()}
                         className="bg-gray-900 p-4 
                         rounded-xl border-blue-400 border-0.5"
+                        activeOpacity={0.8}
                     >
                         {(imagePub || userImg) ? (
                             <Image
-                                source={{ uri: imagePub?.uri ?? userImg }} // uri is used for non local images.
+                                source={{ uri: imagePub?.uri || userImg }}// uri is used for non local images.
                                 className="w-full h-36 rounded-xl mt-3"
                                 resizeMode="cover"
                             />
@@ -369,7 +386,6 @@ const ProfileEditScreen: React.FC = () => {
                 </View>
 
                 {/* account identification component */}
-                {/* <AddIdAccount getIdData={getIdData} /> */}
                 <AddIdAccount
                     getIdData={getIdData}
                     restrictModification={isIdentificationComplete}
@@ -377,14 +393,18 @@ const ProfileEditScreen: React.FC = () => {
                 />
 
                 <TouchableOpacity
-                    className="bg-blue-500 rounded-lg p-3 my-3"
+                    className="bg-blue-500 rounded-lg p-3 my-3 justify-center items-center"
                     onPress={onSaveUser}
-                >{registering ? (
-                    <ActivityIndicator size="small" color="white" />
-                ) :
-                    <Text className="text-white text-[16px] text-center font-bold">
-                        Cliquer pour modifier
-                    </Text>}
+                >
+                    <Text>
+                        {registering &&
+                            <Text className='mx-2'>
+                                <ActivityIndicator size="small" color="white" />
+                            </Text>
+                        } <Text className="text-white text-[16px] text-center font-bold">
+                            Enregister
+                        </Text>
+                    </Text>
                 </TouchableOpacity>
             </ScrollView>
 

@@ -1,34 +1,4 @@
 
-// import React from "react";
-// import { View, StyleSheet } from "react-native";
-// import { WebView } from "react-native-webview";
-
-// export default function PayPalDonation() {
-//     const paypalDonationURL = "https://www.paypal.com/donate?hosted_button_id=" + process.env.EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID;
-
-//     return (
-//         <View style={styles.container}>
-//             <WebView
-//                 source={{ uri: paypalDonationURL }}
-//                 style={styles.webview}
-//                 javaScriptEnabled={true}
-//                 domStorageEnabled={true}
-//                 startInLoadingState={true}
-//             />
-//         </View>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         marginTop: 20
-//     },
-//     webview: {
-//         flex: 1,
-//     },
-// });
-
 import React, { useState } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -71,6 +41,7 @@ export default function PayPalDonation() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#111827',
     },
     webview: {
         flex: 1,

@@ -14,19 +14,19 @@ const renderSubmitButton = (
         case 'success':
             return (
                 <View className="flex-row items-center justify-center space-x-2">
-                    <Text className="text-white text-center font-bold">CONNECTÉ</Text>
+                    <Text className="text-white text-center font-bold">{successButton}</Text>
                     <Ionicons name="checkmark-circle" size={20} color="white" />
                 </View>
             );
         case 'error':
             return (
                 <View className="flex-row items-center justify-center space-x-2">
-                    <Text className="text-white text-center font-bold">RÉESSAYER</Text>
+                    <Text className="text-white text-center font-bold">{errorButton}</Text>
                     <Ionicons name="alert-circle" size={20} color="white" />
                 </View>
             );
         default:
-            return <Text className="text-white text-center font-bold">CONNEXION</Text>;
+            return <Text className="text-white text-center font-bold">{defaultButton}</Text>;
     }
 };
 

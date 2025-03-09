@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -8,10 +8,11 @@ import { ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants';
 import useUserGlobal from '@/hooks/use-user-hook';
 import { Alert } from 'react-native';
-import { patchResource, updatedUserPwd, updateResource } from '@/lib/api';
+import { patchResource } from '@/lib/api';
 import FormField from '@/components/form-field';
-import { API_URL, MESSAGES } from '@/constants/constants';
+import { MESSAGES } from '@/constants/constants';
 import CustomToast from '@/components/custom-toast';
+
 
 // Profile Edit Screen
 const ProfileAdressEditScreen: React.FC = () => {
@@ -99,70 +100,75 @@ const ProfileAdressEditScreen: React.FC = () => {
   }, [password]);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900 p-4 pt-5">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-gray-900 p-4 pt-5">
 
-      <View className="flex-row items-center mb-6 gap-4">
-        <TouchableOpacity onPress={() => router.push("/parameters")}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
-        <View className=' flex justify-center items-center gap-2 mb-2'>
-          <Text className="text-white text-xl font-bold ml-4">Modification Mot de passe</Text>
-          {/* <Text className="text-gray-400 text-[14px] font-bold ml-4">saisir votre nouveau mot de pass et confirmer</Text> */}
+        <View className="flex-row items-center mb-6 gap-4">
+          <TouchableOpacity onPress={() => router.push("/parameters")}>
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <View className=' flex justify-center items-center gap-2 mb-2'>
+            <Text className="text-white text-xl font-bold ml-4">Modification Mot de passe</Text>
+            {/* <Text className="text-gray-400 text-[14px] font-bold ml-4">saisir votre nouveau mot de pass et confirmer</Text> */}
+          </View>
         </View>
-      </View>
-      <ScrollView><View className="mb-4">
-        <Text className="mb-2 text-gray-300">Entrer le mot de passe actuel</Text>
-        <FormField
-          title={"Mot de passe actuel"}
-          value={currentPasword}
-          placeholder="Entrer votre mot de pass actuel..."
-          handleChangeText={(text) => setCurrentPasword(text)}
-          inputStyle="text-white"
-        />
-      </View>
-
-        <View className="mb-4">
-          <Text className="mb-2 text-gray-300">Mot de passe</Text>
+        <ScrollView><View className="mb-4">
+          <Text className="mb-2 text-gray-300">Entrer le mot de passe actuel</Text>
           <FormField
-            title={"Mot de passe"}
-            value={password}
-            placeholder="Entrer votre mot de pass..."
-            handleChangeText={(text) => setPassword(text)}
+            title={"Mot de passe actuel"}
+            value={currentPasword}
+            placeholder="Entrer votre mot de pass actuel..."
+            handleChangeText={(text) => setCurrentPasword(text)}
             inputStyle="text-white"
+            placeholderTextColor="#404757"
           />
         </View>
 
-        <View className="mb-4">
-          <Text className="mb-2 text-gray-300">Confirmer le mot de passe</Text>
-          <FormField
-            title={"Confirmer Mot de passe"}
-            value={confirmPwd}
-            placeholder="Entrer votre mot de pass..."
-            handleChangeText={(text) => setConfirmPwd(text)}
-            inputStyle=" text-white"
-          />
-        </View>
+          <View className="mb-4">
+            <Text className="mb-2 text-gray-300">Mot de passe</Text>
+            <FormField
+              title={"Mot de passe"}
+              value={password}
+              placeholder="Entrer votre mot de pass..."
+              handleChangeText={(text) => setPassword(text)}
+              inputStyle="text-white"
+              placeholderTextColor="#404757"
+            />
+          </View>
 
-      </ScrollView>
+          <View className="mb-4">
+            <Text className="mb-2 text-gray-300">Confirmer le mot de passe</Text>
+            <FormField
+              title={"Confirmer Mot de passe"}
+              value={confirmPwd}
+              placeholder="Entrer votre mot de pass..."
+              handleChangeText={(text) => setConfirmPwd(text)}
+              inputStyle=" text-white"
+              placeholderTextColor="#404757"
+            />
+          </View>
+        </ScrollView>
 
+        <CustomToast
+          message={toast.message}
+          isVisible={toast.visible}
+          type={toast.type}
+        />
 
-      <CustomToast
-        message={toast.message}
-        isVisible={toast.visible}
-        type={toast.type}
-      />
+        <TouchableOpacity
+          onPress={onSignInPress}
+          className="bg-blue-600 rounded-lg p-3 mt-4 justify-center items-center"
+        >
 
-      <TouchableOpacity
-        onPress={onSignInPress}
-        className="bg-blue-600 rounded-lg p-3 mt-4"
-      >
+          <Text>
+            {isSubmitting &&
+              <ActivityIndicator size="large" color={Colors.primary} />
+            }<Text className="text-white text-center font-bold text-[16px]">&nbsp;Modifier</Text>
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
 
-        {isSubmitting ?
-          <ActivityIndicator size="large" color={Colors.primary} /> :
-
-          <Text className="text-white text-center font-bold">Modifier</Text>}
-      </TouchableOpacity>
-    </SafeAreaView>
   );
 };
 

@@ -5,8 +5,7 @@
 import { AppError } from '@/utils/error-class';
 // import { tokenCache } from '@/store/persist-token-cache';
 import axios from 'axios';
-import { Comment, Jaime, Post, Publication, User } from '@/lib/types';
-import { Platform } from 'react-native';
+import { Comment, Jaime, Post, User } from '@/lib/types';
 import * as FileSystem from 'expo-file-system';
 // appWrite config
 
@@ -20,20 +19,18 @@ import {
     Query,
     Storage
 } from 'react-native-appwrite';
-import { API_URL } from '@/constants/constants';
 import { tokenCache } from '@/store/persist-token-cache';
+import { API_URL, collectionId, databaseId, platform, projectId, storageId } from '@/constants/constants';
 // import { supabase } from '@/utils/supabase';
 
 
-// export const API_URL = "https://unrichunpauvre-rest-api.onrender.com/api";
 export const config = {
     endpoint: "https://cloud.appwrite.io/v1",
-    platform: "com.avom.AvomReactNativeApp",
-    projectId: "66c879ad0013609a2ce8",
-    databaseId: '66c87bd900181248590c',
-    userCollectionId: '66c87c0100368abc794f',
-    videoCollectionId: '66c87c2f002c00ff4ab8',
-    storageId: '6717f18b0023c23a8416'
+    platform,
+    projectId,
+    databaseId,
+    collectionId,
+    storageId
 }
 
 
@@ -43,8 +40,8 @@ const client = new Client();
 
 client
     .setEndpoint(config.endpoint) // Your Appwrite Endpoint
-    .setProject(config.projectId) // Your project ID
-    .setPlatform(config.platform) // Your application ID or bundle ID.
+    .setProject(config.projectId!) // Your project ID
+    .setPlatform(config.platform!) // Your application ID or bundle ID.
     ;
 
 // Init account instance
@@ -64,8 +61,8 @@ export const getCurrentUser = async () => {
         // if (!currentAccount) new AppError("\n\nNo account found");
 
         const currentUser = await databases.listDocuments(
-            config.databaseId,
-            config.userCollectionId,
+            config.databaseId!,
+            config.collectionId!,
             [Query.equal('accountId', "66d6e445001e3ab12932")],
         );
         console.log("current user appwrite account: ", currentUser)
@@ -85,10 +82,10 @@ export const getFilePreview = async (fileId: string, type: string) => {
     console.log("fileId: ", fileId);
     try {
         if (type === 'video' || type === 'pdf') {
-            fileUrl = storage.getFileView(config.storageId, fileId);
+            fileUrl = storage.getFileView(config.storageId!, fileId);
         }
         else if (type === 'image')
-            fileUrl = storage.getFilePreview(config.storageId, fileId, 2000, 2000, 'top' as ImageGravity, 100);
+            fileUrl = storage.getFilePreview(config.storageId!, fileId, 2000, 2000, 'top' as ImageGravity, 100);
         else
             throw new AppError('File type not supported');
 
@@ -131,7 +128,7 @@ export const uploadFile = async (file: any, type: string) => {
     try {
 
         // ID.unique() assigns a unique Id to this file
-        const uploadedFile = await storage.createFile(config.storageId, ID.unique(), asset);
+        const uploadedFile = await storage.createFile(config.storageId!, ID.unique(), asset);
         console.log(` uploadedFile file : ${uploadedFile}`);
         const fileUrl = await getFilePreview(uploadedFile?.$id, type);// getFilePreview is a bit different from audio and video.
         return fileUrl;
@@ -160,49 +157,9 @@ export const getFileUrlFromProvider = async (asset: {
     }
 }
 
-
-// supabase method
-
-// export const uploadFileToSupabase = async (file: any) => {
-//     if (!file) return;
-
-//     try {
-//         // Log the file details
-//         console.log('Uploading file:', file);
-//         // Read the file from the local filesystem (fetch it as binary)
-//         const response = await fetch(file.uri);
-//         const fileBlob = await response.blob(); // Convert the file to a Blob
-//         console.log('File Blob:', fileBlob);
-//         // Upload the file to a Supabase storage bucket (create the bucket in Supabase first)
-//         const { data, error } = await supabase.storage
-//             .from('1riche1pauvre') // Replace 'your-bucket-name' with your actual Supabase storage bucket name
-//             .upload(`public/${file.name}`, fileBlob, {
-//                 contentType: file.type, // Set the content type (e.g., 'application/pdf')
-//             });
-
-//         if (error) throw new Error(`File upload failed: ${error.message}`);
-//         console.log('Uploaded file:', data);
-
-
-//         // Get the public URL of the uploaded file
-//         const { data: publicURL } = supabase.storage
-//             .from('1riche1pauvre')
-//             .getPublicUrl(`public/${file.name}`);
-
-//         if (!data) throw new Error(`Error getting file URL`);
-
-//         // Return the public URL for storing in the database
-//         return publicURL;
-//     } catch (error) {
-//         console.log('Error uploading file to Supabase:', error);
-//         throw new Error('File upload failed');
-//     }
-// };
-
-
-console.log("\n\n API_URL: ", {
-    API_URL
-},)
+// console.log("\n\n API_URL: ", {
+//     API_URL
+// },)
 
 type TConnect = User;
 
@@ -310,7 +267,7 @@ export const getAllResourcesByTarget = async <T>(
             return console.error("\n\n in getAllResourcesByTarget fct, No token found");
 
         if (!id || !resource) {
-            console.error(` from api file Resource ${resource} not found or resource ${id} is missing`);
+            console.error(` from api file Resource ${resource} not found or resource id ${id} is missing`);
             return [];
         }
 
@@ -417,7 +374,7 @@ export const getAllPublications = async (page?: number, pageSize?: number): Prom
         }
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file getAllPublications fct", response?.data?.data);
+        // console.log("\n\nfrom api file getAllPublications fct", response?.data?.data);
 
         const data = response?.data?.data?.map((resp: any) => ({
             id: resp?.id,
@@ -473,7 +430,7 @@ export const updateResource = async <T>(resource: string, id: string, value: Par
                 'Content-Type': 'application/json',
             },
             data: value
-        }
+        };
 
         const response = await axios.request(options);
         console.log("\n\n from updateResource request fct", response?.data.data);
@@ -538,7 +495,7 @@ export const getSingleResource = async (resource: string, id: string) => {
         }
 
         const response = await axios.request(options);
-        console.log("from api file getSingleResource fct:", response?.data);
+        // console.log("from api file getSingleResource fct:", response?.data);
 
         if (resource.toLocaleLowerCase().includes('publication'))
             return {
@@ -593,7 +550,7 @@ export const getAllCategories = async () => {
         const data = await fetch(`${API_URL}/categories`, options);
         const response = await data.json();
 
-        console.log("\n\nfrom api file getAllCategories fct", response);
+        // console.log("\n\nfrom api file getAllCategories fct", response);
 
         return response?.data.map((cat: any) => ({
             id: cat?.id,
@@ -635,7 +592,7 @@ export const uploadResourceData = async <T>(
         }
 
         const response = await axios.request(options);
-        console.log(`\n\nfrom api file uploadResourceData fct, and resource: ${resource}`, response?.data);
+        // console.log(`\n\nfrom api file uploadResourceData fct, and resource: ${resource}`, response?.data);
         if (response.data)
             return response.data.data;
         return null;
@@ -669,7 +626,7 @@ export const getResourceByItsId = async (res_id: string, resource: string, origi
         };
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file getResourceByItsId fct", response?.data);
+        // console.log("\n\nfrom api file getResourceByItsId fct", response?.data);
         return response.data.data;
 
     } catch (error: any) {
@@ -738,7 +695,7 @@ export const deleteResourceData = async (resource: string, id: string) => {
         };
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file deleteResourceData fct", response?.data);
+        // console.log("\n\nfrom api file deleteResourceData fct", response?.data);
         return response.data.data;
 
     } catch (error: any) {
@@ -765,7 +722,7 @@ export const deleteResourceWithUserAndPub = async (resource: string, idPub: stri
         };
 
         const response = await axios.request(options);
-        console.log("\n\nfrom api file deleteResourceData fct", response?.data);
+        // console.log("\n\nfrom api file deleteResourceData fct", response?.data);
         return response.data.data;
 
     } catch (error: any) {
@@ -773,3 +730,4 @@ export const deleteResourceWithUserAndPub = async (resource: string, idPub: stri
         throw Error(error);
     }
 }
+

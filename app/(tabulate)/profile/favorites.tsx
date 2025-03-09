@@ -1,132 +1,235 @@
-import React, { useEffect, useState } from 'react';
+
+
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { SafeAreaView } from 'react-native-safe-area-context';
+// import PostCard from '../../../components/profile/components/post-card';
+// import useUserGlobal from '@/hooks/use-user-hook';
+// import { getAllResourcesByTarget, getResourceByItsId } from '@/lib/api';
+// import { ActivityIndicator, FlatList, View, RefreshControl } from 'react-native';
+// import EmptyState from '@/components/empty-state';
+// import { usePathname } from 'expo-router';
+
+// const Favorites = () => {
+//     const { currentUser, currentUserObj } = useUserGlobal();
+//     const [refreshing, setRefreshing] = useState(false);
+//     const pathname = usePathname();
+//     const [favoritePosts, setFavoritePosts] = useState<any[]>([]);
+//     const [isLoading, setIsLoading] = useState(false);
+
+//     // Memoize the function to fetch post author
+//     const getPostAuthor = useCallback(async (idUser: string) => {
+//         try {
+//             const author = await getResourceByItsId(idUser, "users", "useUserGlobal");
+//             return author;
+//         } catch (error) {
+//             console.error('Failed to get author:', error);
+//             return null;
+//         }
+//     }, []);
+
+//     // Fetch favorites and combine with author data
+//     const fetchFavoritesWithAuthors = useCallback(async () => {
+//         setIsLoading(true);
+//         try {
+//             // Get favorite posts
+//             const favorites = await getAllResourcesByTarget(
+//                 'favorites',
+//                 currentUser?.userId,
+//                 'idUser'
+//             );
+
+//             if (!favorites?.data) {
+//                 setFavoritePosts([]);
+//                 return;
+//             }
+
+//             // Get authors for each post
+//             const postsWithAuthors = await Promise.all(
+//                 favorites.data.map(async (fav: any) => {
+//                     const author = await getPostAuthor(fav?.pub?.authorId);
+//                     return {
+//                         ...fav,
+//                         pub: {
+//                             ...fav.pub,
+//                             pubId: fav?.idPub,
+//                             ...(author || {})
+//                         }
+//                     };
+//                 })
+//             );
+
+//             setFavoritePosts(postsWithAuthors.filter(post => post.pub)); // Filter out any posts without pub data
+//         } catch (error) {
+//             console.error('Failed to fetch favorites:', error);
+//             setFavoritePosts([]);
+//         } finally {
+//             setIsLoading(false);
+//         }
+//     }, [currentUser?.userId, getPostAuthor]);
+
+//     // Handle refresh
+//     const handleRefresh = useCallback(async () => {
+//         if (!isLoading) {
+//             setRefreshing(true);
+//             await fetchFavoritesWithAuthors();
+//             setRefreshing(false);
+//         }
+//     }, [fetchFavoritesWithAuthors, isLoading]);
+
+//     // Initial fetch and pathname-based fetch
+//     useEffect(() => {
+//         if (currentUser?.userId && (
+//             favoritePosts.length === 0 ||
+//             pathname.toLowerCase() === '/profile/favorite'
+//         )) {
+//             fetchFavoritesWithAuthors();
+//         }
+//     }, [currentUser?.userId, pathname]);
+
+//     if (isLoading) {
+//         return (
+//             <View className='flex-1 justify-center items-center bg-gray-900'>
+//                 <ActivityIndicator size="large" color='gray' />
+//             </View>
+//         );
+//     }
+
+//     return (
+//         <SafeAreaView className="flex-1 bg-gray-900 px-4 mb-6">
+//             <FlatList
+//                 data={favoritePosts}
+//                 keyExtractor={(post) => String(post?.id)}
+//                 renderItem={({ item: post }) => (
+//                     <PostCard
+//                         currentPost={post?.pub}
+//                         currentUser={currentUserObj}
+//                     />
+//                 )}
+//                 ListEmptyComponent={() => (
+//                     <EmptyState
+//                         title="Pas de publications favories..."
+//                         subtitle="Vous devez ajouter au moins un rêve a vos favoris."
+//                         label="Revenir a l'accueil"
+//                         subtitleStyle="text-[14px] text-center text-white"
+//                         route={'/accueil'}
+//                         titleStyle='text-[17px] font-bold text-center text-white'
+//                     />
+//                 )}
+//                 refreshControl={
+//                     <RefreshControl
+//                         refreshing={refreshing}
+//                         onRefresh={handleRefresh}
+//                         colors={['gray']}
+//                         tintColor={'gray'}
+//                     />
+//                 }
+//                 onEndReachedThreshold={0.5}
+//                 showsVerticalScrollIndicator={false}
+//             />
+//         </SafeAreaView>
+//     );
+// };
+
+// export default Favorites;
+
+
+
+import React, { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PostCard from '../../../components/profile/components/post-card';
-import useApiOps from '@/hooks/use-api';
 import useUserGlobal from '@/hooks/use-user-hook';
-import { getAllResourcesByTarget, getResourceByItsId, getSingleResource } from '@/lib/api';
+import { getAllResourcesByTarget, getResourceByItsId } from '@/lib/api';
 import { ActivityIndicator, FlatList, View, RefreshControl } from 'react-native';
-import { Colors } from '@/constants';
 import EmptyState from '@/components/empty-state';
 import { usePathname } from 'expo-router';
-
+import { useQuery } from '@tanstack/react-query';
 
 const Favorites = () => {
-
     const { currentUser, currentUserObj } = useUserGlobal();
-    // const { currentPub } = useAuthorAndPubGlobal();
-    const [refreshing, setRefreshing] = React.useState(false);
     const pathname = usePathname();
-    const [faPostWithAuthor, setFavPostWithAuthor] = React.useState<any[]>([]);
-    const [isFavPostsLoading, setIsFavPostsLoading] = useState(false);
-    const [favPosts, setFavPosts] = useState<any[]>([]);
 
-    // const {
-    //     data: favoritePosts, // get all the post for this current user, by its ID
-    //     refetch: refetchfavoritePosts,
-    //     isLoading: isLoadingfavritePosts
-    // } = useApiOps(() => getAllResourcesByTarget(
-    //     'favorites', currentUserObj?.id || currentUser?.userId, 'idUser'));
-
-    // console.log("current user posts: ", favoritePosts?.data);
-
-    // get all the favorites posts for this user
-    const getAllFavoritesPubsForThisUser = async () => {
-
-        setIsFavPostsLoading(true)
+    // Fetch post author using react-query
+    const getPostAuthor = useCallback(async (idUser: string) => {
         try {
-            const publications = await getAllResourcesByTarget(
-                'favorites', currentUser?.userId, 'idUser'); // get the publications made by this user with id : idUser
-            setFavPosts(publications?.data);
+            const author = await getResourceByItsId(idUser, "users", "useUserGlobal");
+            return author;
         } catch (error) {
-            console.error('Failed to get all publications:', error);
-            return [];
-        } finally {
-            setIsFavPostsLoading(false);
+            console.error('Failed to get author:', error);
+            return null;
         }
-    }
+    }, []);
 
-    useEffect(() => {
-        // if (!favoritePosts?.data?.length)
-        //     onRefresh();
-        // else {
-        //     (
-        //         async () => {
-        //             await getPubsAndAuthor();
-        //         }
-        //     )()
-        // }
-        getPubsAndAuthor();
-    }, [favPosts]);
+    // Fetch favorite posts with authors
+    const fetchFavoritesWithAuthors = async () => {
+        if (!currentUser?.userId) return [];
 
-    useEffect(() => {
-        if (pathname.toString().toLowerCase() === '/profile/favorite' && !favPosts?.length)
-            setTimeout(() => {
-                getAllFavoritesPubsForThisUser();
-            }, 2000);
-    }, [pathname]);
+        // Get favorite posts
+        const favorites = await getAllResourcesByTarget(
+            'favorites',
+            currentUser.userId,
+            'idUser'
+        );
 
-    const getPostAuthor = async (idUser: string) => {
-        const author = await getResourceByItsId(idUser, "users", "useUserGlobal");
-        console.log("\n\n from getPostAuthor author: ", author);
-        return author;
+        if (!favorites?.data) return [];
+
+        // Get authors for each post
+        const postsWithAuthors = await Promise.all(
+            favorites.data.map(async (fav: any) => {
+                const author = await getPostAuthor(fav?.pub?.authorId);
+                return {
+                    ...fav,
+                    pub: {
+                        ...fav.pub,
+                        pubId: fav?.idPub,
+                        ...(author || {})
+                    }
+                };
+            })
+        );
+
+        return postsWithAuthors.filter(post => post.pub); // Filter out posts without pub data
     };
 
-    const getPubsAndAuthor = async () => {
-        const authors = await Promise.all(
-            // favoritePosts?.data?.map(async (fav: any) => {
-            favPosts?.map(async (fav: any) => {
-                const author = await getPostAuthor(fav?.pub?.authorId as string)
-                console.log("\n\n from getPubsAndAuthor,  author: ", author);
-                // include author information inside the pub object from the favorite incoming data.
-                return fav?.idPub === fav?.pub.id ? ({ ...fav, pub: { ...fav.pub, pubId: fav?.idPub, ...author } }) : fav;
-            }));
+    // Use react-query to fetch and cache favorite posts
+    const {
+        data: favoritePosts = [],
+        isLoading,
+        isRefetching,
+        refetch
+    } = useQuery({
+        queryKey: ['favorites', currentUser?.userId], // Unique key for caching
+        queryFn: fetchFavoritesWithAuthors,
+        enabled: !!currentUser?.userId, // Only fetch if userId exists
+        staleTime: 1000 * 60 * 5, // Data is considered fresh for 5 minutes
+        refetchOnMount: false,
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: false
+    });
 
-        // console.log("\n\n from getPubsAndAuthor, new favorite posts author: ", authors);
-        setFavPostWithAuthor(authors);
-        return authors;
-    };
+    // Handle refresh
+    const handleRefresh = useCallback(async () => {
+        await refetch();
+    }, [refetch]);
 
-    // const onRefresh = React.useCallback(() => {
-    //     if (!isLoadingfavritePosts) {
-    //         setRefreshing(true);
-    //         refetchfavoritePosts().finally(() => setRefreshing(false));
-    //     }
-    // }, [setRefreshing, refetchfavoritePosts]);
-
-    // if (isLoadingfavritePosts)
-    //     return (
-    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 40 }}>
-    //             <ActivityIndicator size="small" color={Colors.primary} />
-    //         </View>
-    //     );
-
-    const onRefresh = React.useCallback(() => {
-        if (!isFavPostsLoading) {
-            setRefreshing(true);
-            getAllFavoritesPubsForThisUser().finally(() => setRefreshing(false));
-        }
-    }, [getAllFavoritesPubsForThisUser, isFavPostsLoading]);
-
-    if (isFavPostsLoading)
+    if (isLoading) {
         return (
-            <View className='flex-1 justify-center items-center'>
-                <ActivityIndicator size="small" color={'gray'} />
+            <View className='flex-1 justify-center items-center bg-gray-900'>
+                <ActivityIndicator size="large" color='gray' />
             </View>
         );
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-gray-900 px-4 mb-6">
             <FlatList
-                data={faPostWithAuthor?.length ? faPostWithAuthor : [] as any[]}
+                data={favoritePosts}
                 keyExtractor={(post) => String(post?.id)}
-                renderItem={({ item: post }) => {
-
-                    return <PostCard
+                renderItem={({ item: post }) => (
+                    <PostCard
                         currentPost={post?.pub}
                         currentUser={currentUserObj}
                     />
-                }}
-                // this property displays in case the list of data above is empty. it behave like a fallback.
+                )}
                 ListEmptyComponent={() => (
                     <EmptyState
                         title="Pas de publications favories..."
@@ -139,16 +242,37 @@ const Favorites = () => {
                 )}
                 refreshControl={
                     <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
+                        refreshing={isRefetching}
+                        onRefresh={handleRefresh}
+                        colors={['gray']}
+                        tintColor={'gray'}
                     />
                 }
+                onEndReachedThreshold={0.5}
+                showsVerticalScrollIndicator={false}
             />
         </SafeAreaView>
     );
 };
 
 export default Favorites;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /***
  * this is the post card array 

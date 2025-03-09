@@ -14,23 +14,41 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_PROD_API_URL": "https://rhysapi.iptvstreamerspro.com/api",
-        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "ATVerDHCbOIA-jAWuo1qpp2cPeeVlNld2LPuJt_czuSoYpHMqjcT5NRzHuXS9ft3eagWbRCEEUGO33-V",
-        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt",
-        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "XRXMACRT4J6KA"
+        "EXPO_PUBLIC_PROD_API_URL": "https://unrichunpauvre-rest-api.onrender.com/api",
+        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "AeMyWjOQG_FEG1rXcUSZSWITM0KPdINLFKanjJt7sVzPKGm0DXGfgnIQwoBoDlZ-MWSAYgqNcr_fk5qo",
+        "EXPO_PUBLIC_PAYPAL_SECRET": "EMvMa-j5bUTpho7MqHE3D6XVDgJFRxLHEEdW3Te63LTpy14QBaLA5PWy2y02lyovfXYDzeZWoZ_2ZNpH",
+        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "LW7NY7QKHDVY2",
+        "EXPO_PUBLIC_JWT_SECRET_KEY": "3c26dc0a9b416a6948d9fc42326ad7074b70e6d459b7adadbca754c6243d0199cb88768fca2f4f94b5e097a3266691d76feb5a9730b45c7a3cd90f14f7427b43",
+        "EXPO_PUBLIC_APPWRITE_PLATFORM": "com.avom.AvomReactNativeApp",
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "66c879ad0013609a2ce8",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "66c87bd900181248590c",
+        "EXPO_PUBLIC_APPWRITE_COLLECTION_ID": "66c87c0100368abc794f",
+        "EXPO_PUBLIC_APPWRITE_STORAGE_ID": "6717f18b0023c23a8416"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_PROD_API_URL": "https://rhysapi.iptvstreamerspro.com/api",
-        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "ATVerDHCbOIA-jAWuo1qpp2cPeeVlNld2LPuJt_czuSoYpHMqjcT5NRzHuXS9ft3eagWbRCEEUGO33-V",
-        "EXPO_PUBLIC_PAYPAL_SECRET": "EL1TkrK27vluPtasxW2-jtKeoxrk6LUE9QYrcbx-_S-yOAIDjGseLEgCOh9QSlefmmQ1CrnNqhwCJFqt",
-        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "XRXMACRT4J6KA"
+        "EXPO_PUBLIC_PROD_API_URL": "https://unrichunpauvre-rest-api.onrender.com/api",
+        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "AeMyWjOQG_FEG1rXcUSZSWITM0KPdINLFKanjJt7sVzPKGm0DXGfgnIQwoBoDlZ-MWSAYgqNcr_fk5qo",
+        "EXPO_PUBLIC_PAYPAL_SECRET": "EMvMa-j5bUTpho7MqHE3D6XVDgJFRxLHEEdW3Te63LTpy14QBaLA5PWy2y02lyovfXYDzeZWoZ_2ZNpH",
+        "EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID": "LW7NY7QKHDVY2",
+        "EXPO_PUBLIC_JWT_SECRET_KEY": "3c26dc0a9b416a6948d9fc42326ad7074b70e6d459b7adadbca754c6243d0199cb88768fca2f4f94b5e097a3266691d76feb5a9730b45c7a3cd90f14f7427b43",
+        "EXPO_PUBLIC_APPWRITE_PLATFORM": "com.avom.AvomReactNativeApp",
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "66c879ad0013609a2ce8",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "66c87bd900181248590c",
+        "EXPO_PUBLIC_APPWRITE_COLLECTION_ID": "66c87c0100368abc794f",
+        "EXPO_PUBLIC_APPWRITE_STORAGE_ID": "6717f18b0023c23a8416"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "Mkncolby@gmail.com",
+        "ascAppId": "6742672401",
+        "appleTeamId": "5R62Z98UU5"
+      }
+    }
   }
 }

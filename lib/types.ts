@@ -6,6 +6,7 @@ export type Post = {
     imageUrl: string;
     likes?: Jaime[];
     comments: Comment[];
+    favorites?: any[];
     timeAgo: string;
     idUser: string | undefined;
     statePub: boolean;

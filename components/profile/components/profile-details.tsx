@@ -52,7 +52,7 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
             <View className="flex-1 bg-black/50 mt-32">
                 <View className="bg-gray-800 rounded-t-3xl h-4/5">
                     <View className="flex-row justify-between items-center p-4 border-b border-gray-700">
-                        <Text className="text-white text-xl font-bold">detail de mon Profile</Text>
+                        <Text className="text-white text-lg ">detail de mon Profile</Text>
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color="white" />
                         </TouchableOpacity>
@@ -62,11 +62,11 @@ const ProfileModal = memo(({ isVisible, onClose, user }: {
                         {/* Profile Header */}
                         <View className="items-center mb-6">
                             <Image
-                                source={user?.photoUser ? { uri: user?.photoUser } : require('@/assets/images/profile.png')}
+                                source={user?.photoUser ? { uri: user?.photoUser } : require('@/assets/images/1riche1povreAvatar.png')}
                                 className="w-24 h-24 rounded-full mb-3"
                             />
                             <Text className="text-white text-xl font-bold">{user?.nomUser}</Text>
-                            <Text className="text-gray-400">@{user?.username}</Text>
+                            <Text className="text-gray-400">@{user?.nomUser}</Text>
                         </View>
 
                         {/* Profile Details */}

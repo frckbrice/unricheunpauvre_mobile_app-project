@@ -9,13 +9,15 @@ type TPicker = {
     options: Category[];
     getCurrentCat?: (...event: any) => void
     onCategorySelect?: (data: any) => void,
-    important?: boolean
+    important?: boolean,
+    isLoading?: boolean
 }
 export function SelectItem({
     options,
     getCurrentCat,
     onCategorySelect,
-    important
+    important,
+    isLoading
 }: TPicker) {
     const [uploading, setUploading] = useState(false);
     const handleCategoryPress = async (categoryId: string) => {
@@ -55,7 +57,7 @@ export function SelectItem({
                                         {(selectedItem && selectedItem.name) || `Selectionnez une categorie `}
                                         {important && !selectedItem?.name && <Text className="text-red-500">*</Text>}
                                     </Text>
-                                    <Text className='text-xs text-white'>▼</Text>
+                                    {isLoading ? <ActivityIndicator size="small" color="white" /> : <Text className='text-xs text-white'>▼</Text>}
                                 </View>
                         }
                     </View>
