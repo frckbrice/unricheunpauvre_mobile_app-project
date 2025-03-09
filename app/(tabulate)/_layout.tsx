@@ -96,7 +96,7 @@ export default function TabulateLayoutPage() {
           name="profile"
           options={{
             title: 'Profile',
-            // tabBarLabel: "Profile",
+            tabBarLabel: "Profile",
             tabBarIcon: ({ size, color, focused }: { size: number, color: string, focused: boolean }) => (
               <Ionicons name="person" size={size} color={color} />
             ),

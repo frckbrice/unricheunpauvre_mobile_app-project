@@ -63,7 +63,7 @@ const CommentItem = memo(({
         isProcessing: false
     });
 
-    // we fetch the author of each comment
+    console.log("\n\n comment: ", comment);    // we fetch the author of each comment
     const { data: commentAuthor } = useQuery({
         queryKey: ["comment_author", comment?.idUser],
         queryFn: async () => {
@@ -151,7 +151,7 @@ const CommentItem = memo(({
                 {/* Comment Content */}
                 <View className="bg-gray-700 rounded-2xl px-3 py-2">
                     <Text className="text-gray-400 font-medium text-[11px]">
-                        {currentUser?.nomUser || 'User'}
+                        {commentAuthor?.nomUser || 'User'}
                     </Text>
                     {comment?.replyToUser && commentAuthor && (
                         <Text className="text-blue-400 text-xs mb-1">

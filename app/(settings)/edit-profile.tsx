@@ -283,7 +283,7 @@ const ProfileEditScreen: React.FC = () => {
                         <Ionicons name="person-outline" size={24} color="gray" />
                         <TextInput
                             className="flex-1 ml-2 text-white"
-                            value={pseudo as string}
+                            value={name as string}
                             onChangeText={(text) => setPseudo(text)}
                         />
                     </View>

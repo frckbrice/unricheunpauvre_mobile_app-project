@@ -828,17 +828,19 @@ const Register: React.FC = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
+        const { mdpUser, username, nomUser } = formData;
+
         try {
             const response = await axios({
-                url: `${API_URL}/auth/login`,
+                url: `${API_URL}/users/signup`,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 data: {
-                    mdpUser: formData.mdpUser,
-                    username: formData.username,
-                    pseudo: formData.nomUser,
+                    mdpUser,
+                    username,
+                    nomUser,
                 },
                 signal: controller.signal,
                 timeout: 10000 // 10-second timeout
@@ -848,12 +850,12 @@ const Register: React.FC = () => {
 
             const newUser = response.data;
 
-            if (newUser.status === 201) {
+            if (newUser.data) {
                 setSubmitStatus('success');
                 // Add a success toast
                 setToast({
                     visible: true,
-                    message: "Inscription réussie!",
+                    message: `${newUser?.message}`,
                     type: "success",
                 });
 

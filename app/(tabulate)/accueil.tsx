@@ -110,7 +110,6 @@ const HomeScreen: React.FC = () => {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={refreshData} />
                 }
-
             />
         </SafeAreaView>
     );

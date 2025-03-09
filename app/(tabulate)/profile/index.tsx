@@ -81,7 +81,7 @@ const SocialFeedScreen = () => {
         );
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-900 px-4 mb-6">
+        <View className="flex-1 bg-gray-900 px-4 ">
             <FlatList
                 // data={posts?.data}
                 data={userPosts}
@@ -107,7 +107,7 @@ const SocialFeedScreen = () => {
                     />
                 )}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 export default SocialFeedScreen;

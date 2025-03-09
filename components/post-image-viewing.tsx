@@ -12,10 +12,10 @@ const PostImage: React.FC<PostImageProps> = ({ imageUrl }) => {
     return (
         <View className="items-center justify-center mb-3">
             {/* Post Image (Clickable) */}
-            <TouchableOpacity onPress={() => setVisible(true)}>
+            <TouchableOpacity onPress={() => setVisible(true)} className=" rounded-xl">
                 <Image
                     source={imageUrl ? { uri: imageUrl } : require('../assets/images/appdonateimg.jpg')}
-                    className={"w-96 h-48 rounded-lg"}
+                    className={"w-96 h-48 rounded-xl"}
                     resizeMode="cover"
                 />
 
