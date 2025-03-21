@@ -6,17 +6,17 @@ const uri =
     Constants.expoConfig?.hostUri?.split(':').shift()?.concat(':5000') ??
     'yourapi.com';
 
-export const API_URL = `http://${uri}/api`;
-// export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
+// export const API_URL = `http://${uri}/api`;
+export const API_URL = process.env.EXPO_PUBLIC_PROD_API_URL;
 
 export const TOKEN_KEY = process.env.EXPO_PUBLIC_JWT_SECRET_KEY;
+export const PAYPAL_DONATION_BUTTON_ID = process.env.EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID
 
 
 export const PAYPAL_CLIENT_ID = process.env.EXPO_PUBLIC_PAYPAL_CLIENT_ID
 export const PAYPAL_SECRET = process.env.EXPO_PUBLIC_PAYPAL_SECRET;
 
-export const PAYPAL_DONNATION_BUTTON_ID = process.env.EXPO_PUBLIC_PAYPAL_DONNATION_BUTTON_ID
-
+console.log({ PAYPAL_CLIENT_ID, PAYPAL_SECRET, PAYPAL_DONATION_BUTTON_ID })
 export const platform = process.env.EXPO_PUBLIC_APPWRITE_PLATFORM;
 export const projectId = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID;
 export const databaseId = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID;
@@ -24,7 +24,7 @@ export const collectionId = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID;
 export const storageId = process.env.EXPO_PUBLIC_APPWRITE_STORAGE_ID;
 
 
-
+// message for toast.
 export const MESSAGES = {
     emptyQuery: {
         en: "Please enter a search query",

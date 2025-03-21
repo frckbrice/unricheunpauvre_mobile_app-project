@@ -62,7 +62,7 @@ const LoginScreen: React.FC = () => {
         try {
             // Create a cancellable request with timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+            // const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
 
             const response = await axios({
                 url: `${API_URL}/auth/login`,
@@ -75,10 +75,10 @@ const LoginScreen: React.FC = () => {
                     mdpUser: data.password
                 },
                 signal: controller.signal,
-                timeout: 10000 // 10-second timeout
+                timeout: 30000 // 10-second timeout
             });
 
-            clearTimeout(timeoutId);
+            // clearTimeout(timeoutId);
 
             const responseData = response.data;
 

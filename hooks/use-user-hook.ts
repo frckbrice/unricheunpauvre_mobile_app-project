@@ -124,16 +124,17 @@ const useUserGlobal = () => {
 
     const verifyOnboarding = async () => {
         const onboardingSeen = await SecureStore.getItemAsync('hasSeenOnboarding');
-        if (onboardingSeen === 'true') {
-            // User has seen onboarding but not logged in, go to login
-            queryClient.invalidateQueries({ queryKey: ['currentUserToken'] }); // Invalidate token query
-            console.log("\n\n Invalidating token query");
-            router.replace('/login')
-        } else {
-            // First time user, show onboarding
-            console.log("First time user, showing onboarding");
-            router.replace('/')
-        }
+        if (!currentUser)
+            if (onboardingSeen === 'true') {
+                // User has seen onboarding but not logged in, go to login
+                queryClient.invalidateQueries({ queryKey: ['currentUserToken'] }); // Invalidate token query
+                console.log("\n\n Invalidating token query");
+                router.replace('/login')
+            } else {
+                // First time user, show onboarding
+                console.log("First time user, showing onboarding");
+                router.replace('/')
+            }
     };
 
     // Check token expiration

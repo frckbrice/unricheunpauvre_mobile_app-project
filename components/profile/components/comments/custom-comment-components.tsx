@@ -400,6 +400,8 @@ const EnhancedCommentSection = memo(({
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="mb-4"
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
             >
                 <View className="flex-row items-center bg-gray-700 rounded-[14px] w-full px-2 py-2">
                     {currentUser?.photoUser ? (
@@ -421,6 +423,7 @@ const EnhancedCommentSection = memo(({
                         placeholderTextColor="#9CA3AF"
                         multiline
                         className="flex-1 text-white text-sm mr-2"
+
                     />
                     {isSubmitting ? (
                         <ActivityIndicator size="small" color="#60A5FA" />

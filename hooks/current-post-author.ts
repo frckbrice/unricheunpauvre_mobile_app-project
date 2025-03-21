@@ -15,10 +15,10 @@ const useAuthorAndPubGlobal = () => {
     };
 
     // get the author of this publication fromthe API
-    const getPostAuthor = useCallback(async (idUser: number) => {
+    const getPostAuthor = useCallback(async (idUser: string) => {
         try {
             console.log("\n\n current Post user ID ", idUser);
-            const postAuthor = await getResourceByItsId(idUser as number, "User");
+            const postAuthor = await getResourceByItsId(idUser as string, "User");
             setPostAuthor(postAuthor);
         } catch (error: any) {
             console.error(` failed to fetch a user by its id ${idUser} : ${error}`);
@@ -29,12 +29,12 @@ const useAuthorAndPubGlobal = () => {
     useEffect(() => {
         getCurrentPost().then((post: Post) => {
             setCurrentPub(post);
-            getPostAuthor(post?.idUser as number)
+            getPostAuthor(post?.idUser as string)
         });
     }, []);
 
     const refetch = () => {
-        getPostAuthor(currentPub?.idUser as number);
+        getPostAuthor(currentPub?.idUser as string);
     };
 
     return { postAuthor, currentPub, refetch };

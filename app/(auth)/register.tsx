@@ -826,7 +826,7 @@ const Register: React.FC = () => {
 
         // Use AbortController for better fetch management
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+        // const timeoutId = setTimeout(() => controller.abort(), 20000); // 15s timeout
 
         const { mdpUser, username, nomUser } = formData;
 
@@ -843,10 +843,10 @@ const Register: React.FC = () => {
                     nomUser,
                 },
                 signal: controller.signal,
-                timeout: 10000 // 10-second timeout
+                timeout: 30000 // 20-second timeout
             });
 
-            clearTimeout(timeoutId);
+            // clearTimeout(timeoutId);
 
             const newUser = response.data;
 
